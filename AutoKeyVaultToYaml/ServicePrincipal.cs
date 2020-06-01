@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using Microsoft.Azure.Management.KeyVault.Fluent;
+using Microsoft.Azure.Management.KeyVault.Models;
+using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,55 +11,70 @@ namespace AutoKeyVaultToYaml
 {
     class ServicePrincipal
     {
-        public ServicePrincipal(IAzure azure, IAccessPolicy accessPolicies)
+        public ServicePrincipal(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
-            this.ObjectId = accessPolicies.ObjectId;
-            this.ApplicationId = accessPolicies.ApplicationId;
-            this.DisplayName = getDisplayName(azure);
-            this.PermissionsToKeys = getKeyPermissions(accessPolicies);
-            this.PermissionsToSecrets = getSecretPermissions(accessPolicies);
-            this.PermissionsToCertificates = getCertificatePermissions(accessPolicies);
+            this.ObjectId = accessPol.ObjectId;
+            this.ApplicationId = accessPol.ApplicationId.ToString();
+            this.DisplayName = getDisplayName(accessPol, graphClient);
+            this.PermissionsToKeys = getPermissions(accessPol.Permissions.Keys);
+            this.PermissionsToSecrets = getPermissions(accessPol.Permissions.Secrets);
+            this.PermissionsToCertificates = getPermissions(accessPol.Permissions.Certificates);
         }
 
-        private string getDisplayName(IAzure azure)
+        /**
+         * Retrieves and returns the service principal's DisplayName using the GraphServiceClient
+         */
+        private string getDisplayName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
-            //IActiveDirectoryUser user = azure.AccessManagement.ActiveDirectoryUsers.GetById(this.ObjectId);
-            return "name";
+            try // User
+            {
+                var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                return (user.DisplayName + " (" + user.UserPrincipalName + ")");
+            } catch 
+            {
+                try // Group
+                {
+                    var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                    return (group.DisplayName + " (" + group.Mail + ")");
+                } catch
+                {
+                    try // Application
+                    {
+                        return (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+                    } catch
+                    {
+                        try // Service Principal
+                        {
+                            return (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+                        } catch
+                        {
+                            return ""; // "Unknown" Application
+                        } 
+                    }
+                }
+            }
         }
-        private string[] getKeyPermissions(IAccessPolicy accessPolicies)
+
+        /**
+         * Converts permissions from an IList of strings to an array of strings
+         * Returns null if there were no granted permissions
+         * Otherwise, returns the string array
+         */
+        private string[] getPermissions(IList<string> permissions)
         {
             StringBuilder sb = new StringBuilder();
 
-            var keyEnum = accessPolicies.Permissions.Keys.GetEnumerator();
-            while (keyEnum.MoveNext())
+            if (permissions != null)
             {
-                sb.Append(keyEnum.Current).Append(" ");
+                var permissionsEnum = permissions.GetEnumerator();
+                while (permissionsEnum.MoveNext())
+                {
+                    sb.Append(permissionsEnum.Current).Append(" ");
+                   
+                }
+                return ((sb.ToString().Length == 0) ? null : (sb.ToString().Substring(0, sb.Length - 1).Split(" ")));
             }
-            return ((sb.ToString().Length == 0) ? null : (sb.ToString().Substring(0, sb.Length - 1).Split(" ")));
-        }
-        private string[] getSecretPermissions(IAccessPolicy accessPolicies)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            var secretEnum = accessPolicies.Permissions.Secrets.GetEnumerator();
-            while (secretEnum.MoveNext())
-            {
-                sb.Append(secretEnum.Current).Append(" ");
-            }
-
-            return ((sb.ToString().Length == 0) ? null : (sb.ToString().Substring(0, sb.Length - 1).Split(" ")));
-        }
-
-        private string[] getCertificatePermissions(IAccessPolicy accessPolicies)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            var certifEnum = accessPolicies.Permissions.Certificates.GetEnumerator();
-            while (certifEnum.MoveNext())
-            {
-                sb.Append(certifEnum.Current).Append(" ");
-            }
-            return ((sb.ToString().Length == 0) ? null : (sb.ToString().Substring(0, sb.Length - 1).Split(" ")));
+            return null;
         }
 
         public string ObjectId;
