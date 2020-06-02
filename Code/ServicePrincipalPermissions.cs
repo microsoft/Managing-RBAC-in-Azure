@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace RBAC
 {
+    /// <summary>
+    /// This class stores the AccessPolicies of a Service Principal.
+    /// </summary>
     class ServicePrincipalPermissions
     {
         public ServicePrincipalPermissions() { }
@@ -23,33 +26,39 @@ namespace RBAC
         /// This method gets the DisplayName of the ServicePrincipal using the GraphServiceClient.
         /// </summary>
         /// <param name="accessPol">The current AccessPolicyEntry</param>
-        /// <param name="graphClient"></param>
-        /// <returns></returns>
+        /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
+        /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns en empty string.</returns>
         private string getDisplayName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
-            try // User
+            // User
+            try
             {
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
                 return (user.DisplayName + " (" + user.UserPrincipalName + ")");
             } catch 
             {
-                try // Group
+                // Group
+                try
                 {
                     var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
                     return (group.DisplayName + " (" + group.Mail + ")");
                 } catch
                 {
-                    try // Application
+                    // Application
+                    try
                     {
                         return (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
                     } catch
                     {
-                        try // Service Principal
+                        // Service Principal
+                        try
                         {
                             return (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
-                        } catch
+                        }
+                        // "Unknown" Application
+                        catch
                         {
-                            return ""; // "Unknown" Application
+                            return ""; 
                         } 
                     }
                 }
@@ -57,10 +66,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// Converts permissions from an IList of strings to an array of strings
+        /// This method returns a string array of the permissions.Null if there were no granted permissions. Otherwise, returns the string array. 
         /// </summary>
-        /// <param name="permissions"></param>
-        /// <returns> Null if there were no granted permissions. Otherwise, returns the string array. </returns>
+        /// <param name="permissions">The list of Key, Secret, or Certificate permissions</param>
+        /// <returns></returns>
         private string[] getPermissions(IList<string> permissions)
         {
             if (permissions != null)
@@ -71,32 +80,32 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method overrides the Equals operator to allow comparison between two ServicePrincipalPermissions objects.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(Object obj)
+        /// <param name="rhs">The object to compare against</param>
+        /// <returns>True if rhs is of type ServicePrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
+        public override bool Equals(Object rhs)
         {
-            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            if ((rhs == null) || !this.GetType().Equals(rhs.GetType()))
             {
                 return false;
             }
             else
             {
-                var o = (ServicePrincipalPermissions)obj;
-                if ((o.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && o.PermissionsToKeys != null))
+                var spp = (ServicePrincipalPermissions)rhs;
+                if ((spp.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && spp.PermissionsToKeys != null))
                 {
                     return false;
                 }
-                if ((o.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && o.PermissionsToSecrets != null))
+                if ((spp.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && spp.PermissionsToSecrets != null))
                 {
                     return false;
                 }
-                if ((o.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && o.PermissionsToCertificates != null))
+                if ((spp.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && spp.PermissionsToCertificates != null))
                 {
                     return false;
                 }
-                return (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(o.PermissionsToKeys)) && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(o.PermissionsToSecrets)) && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(o.PermissionsToCertificates));
+                return (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
             }
         }
 

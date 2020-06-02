@@ -49,14 +49,14 @@ namespace RBAC
         /// <summary>
         /// This method retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets.
         /// </summary>
-        /// <param name="vaultList">KeyVault information obtaind from MasterConfig.json file</param>
-        /// <returns>Dictionary of secretes obtained from the SecretClient</returns>
+        /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
+        /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
         public static Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
 
-            // Creates SecretClient and grabs secrets
+            // Creates the SecretClient and grabs secrets
             string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
             string keyVaultUri = "https://" + keyVaultName + ".vault.azure.net";
 
@@ -73,10 +73,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates and returns a KeyVaulManagementClient
+        /// This method creates and returns a KeyVaulManagementClient.
         /// </summary>
-        /// <param name="secrets">Dictionary of information obtained from SecretClient</param>
-        /// <returns>KeyVaultManagementClient created using secret information</returns>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <returns>The KeyVaultManagementClient created using the secret information</returns>
         public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
             AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
@@ -86,8 +86,8 @@ namespace RBAC
         /// <summary>
         /// This method creates and returns a GraphServiceClient.
         /// </summary>
-        /// <param name="secrets">Dictionary of information obtained from SecretClient</param>
-        /// <returns>GraphServiceClient created using secret information</returns>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <returns>The GraphServiceClient created using the secret information</returns>
         public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
             string auth = "https://login.microsoftonline.com/" + secrets["tenantId"] + "/v2.0";
@@ -109,35 +109,36 @@ namespace RBAC
 
 
         /// <summary>
-        /// This method creates an IAzure client for each Resource in the MasterConfig, each associated with the specified subscription, and retrieves the specified KeyVaults,
-        /// Converts each IVault object to a Vault object, adds each to a list of Vault objects, and returns that list.
+        /// This method retrieves each of the KeyVaults specified in the vaultList.
         /// </summary>
-        /// <param name="vaultList">Data obtained from deserializing json file</param>
-        /// <param name="kvmClient">KeyVaultManagementClient containing Vaults</param>
-        /// <param name="graphClient">Microsoft Graph Client for obtaining display names and emails</param>
-        /// <returns>List of KeyVaultProperties containing properties of each Key Vault</returns>
+        /// <param name="vaultList">The data obtained from deserializing json file</param>
+        /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
+        /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
+        /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
         public static List<KeyVaultProperties> getVaults(JsonInput vaultList, Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
             foreach (Resource res in vaultList.Resources)
             {
-                // Associate the client with the subscription
+                // Associates the client with the subscription
                 kvmClient.SubscriptionId = res.SubscriptionId;
 
-                // Retrieves all KeyVaults
-                if (res.ResourceGroups == null) // then get all vaults at subscription scope
+                // Retrieves all KeyVaults at the Subscription scope
+                if (res.ResourceGroups == null)
                 { 
                     vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved);
-                } 
-                else 
+                }
+                else
                 {
                     foreach (ResourceGroup resGroup in res.ResourceGroups) 
                     {
-                        if (resGroup.KeyVaults == null) // then get all vaults at resource group scope
+                        // Retrieves all KeyVaults at the ResourceGroup scope
+                        if (resGroup.KeyVaults == null) 
                         { 
                             vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved, resGroup.ResourceGroupName);
                         }
-                        else // then get specific Key Vaults
+                        // Retrieves all KeyVaults at the Resource scope
+                        else
                         { 
                             foreach (string vaultName in resGroup.KeyVaults) 
                             {
@@ -157,21 +158,22 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method retrieves all the KeyVaults from all the pages of KeyVaults.
+        /// This method retrieves the KeyVaults from all the pages of KeyVaults as one page can only store a limited number of KeyVaults.
         /// </summary>
-        /// <param name="kvmClient">KeyVaultManagementClient containing Vaults</param>
-        /// <param name="vaultsRetrieved">List of Vault objects to add to</param>
-        /// <param name="resourceGroup">Name of resource group containing vaults if applicable</param>
-        /// <returns></returns>
+        /// <param name="kvmClient">The KeyVaultManagementClient</param>
+        /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
+        /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
+        /// <returns>The updated vaultsRetrieved list</returns>
         public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, List<Vault> vaultsRetrieved, string resourceGroup = null)
         {
-            // Get first page
             IPage<Vault> vaults_curPg;
-            if (resourceGroup == null) // then by Subscription
+            // Retrieves the first page of KeyVaults at the Subscription scope
+            if (resourceGroup == null) 
             { 
                 vaults_curPg = kvmClient.Vaults.ListBySubscription();
             }
-            else // then by ResourceGroup
+            // Retrieves the first page of KeyVaults at the ResourceGroup scope
+            else
             { 
                 vaults_curPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
             }
@@ -181,10 +183,13 @@ namespace RBAC
             while (vaults_curPg.NextPageLink != null) 
             {
                 IPage<Vault> vaults_nextPg;
+                // Retrieves the remaining pages of KeyVaults at the Subscription scope
                 if (resourceGroup == null) // then by Subscription
                 {
                     vaults_nextPg = kvmClient.Vaults.ListBySubscriptionNext(vaults_curPg.NextPageLink);
-                } else // then by ResourceGroup
+                }
+                // Retrieves the remaining pages of KeyVaults at the ResourceGroup scope
+                else
                 {
                     vaults_nextPg = kvmClient.Vaults.ListByResourceGroupNext(vaults_curPg.NextPageLink);
                 }
@@ -197,7 +202,7 @@ namespace RBAC
         /// <summary>
         /// This method serializes the list of Vault objects and outputs the YAML.
         /// </summary>
-        /// <param name="vaultsRetrieved">List of KeyVault Properties to serialize</param>
+        /// <param name="vaultsRetrieved">The list of KeyVault Properties to serialize</param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved)
         {
             var serializer = new SerializerBuilder().Build();
