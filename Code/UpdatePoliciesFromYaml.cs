@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Management.KeyVault;
+using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using Newtonsoft.Json;
 using System;
@@ -32,14 +33,46 @@ namespace RBAC
             List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("Updating key vaults...");
-            updateVaults(yamlVaults, vaultsRetrieved, kvmClient, graphClient);
+            Console.WriteLine("\nUpdating key vaults...");
+            updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets);
             Console.WriteLine("Success!");
         }
 
-        private static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
+        private static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
         {
-            throw new NotImplementedException();
+            foreach(KeyVaultProperties kv in yamlVaults)
+            {
+                if (!vaultsRetrieved.Contains(kv))
+                {
+                    updateVault(kv, kvmClient, secrets);
+                }
+            }
+            /*
+            foreach(KeyVaultProperties kv in vaultsRetrieved)
+            {
+                if (!yamlVaults.Contains(kv))
+                {
+                    deleteVault(kv, kvmClient);
+                }
+            }
+            */
+        }
+
+        private static void deleteVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient)
+        {
+            kvmClient.Vaults.DeleteAsync(kv.ResourceGroupName, kv.VaultName);
+        }
+
+        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
+        {
+            Console.WriteLine("Updating " + kv.VaultName);
+            kvmClient.SubscriptionId = kv.SubscriptionId;
+            var p = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
+            foreach(ServicePrincipalPermissions sp in kv.AccessPolicies)
+            {
+                p.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+            }
+            var res = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new Microsoft.Azure.Management.KeyVault.Models.VaultCreateOrUpdateParameters(kv.Location, p)).Result;
         }
     }
 }
