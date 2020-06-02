@@ -15,8 +15,15 @@ using Microsoft.Graph;
 
 namespace RBAC
 {
+    /// <summary>
+    /// "Phase 1" Code that serializes a list of Key Vaults into Yaml.
+    /// </summary>
     class AccessPoliciesToYaml
     {
+        /// <summary>
+        /// This method Reads in a JSON config file and prints out a serialized list of Key Vaults into a YAML file.
+        /// </summary>
+        /// <param name="args">None</param>
         static void Main(string[] args)
 
         {
@@ -41,10 +48,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// Retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets
+        /// This method retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets.
         /// </summary>
-        /// <param name="vaultList"></param>
-        /// <returns></returns>
+        /// <param name="vaultList">KeyVault information obtaind from MasterConfig.json file</param>
+        /// <returns>Dictionary of secretes obtained from the SecretClient</returns>
         public static Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
@@ -66,18 +73,22 @@ namespace RBAC
             return secrets;
         }
 
-        /**
-         * Creates and returns a KeyVaultManagementClient
-         */
+        /// <summary>
+        /// This method creates and returns a KeyVaulManagementClient
+        /// </summary>
+        /// <param name="secrets">Dictionary of information obtained from SecretClient</param>
+        /// <returns>KeyVaultManagementClient created using secret information</returns>
         public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
             AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
             return (new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials));
         }
 
-        /**
-         * Creates and returns a GraphServiceClient
-         */
+        /// <summary>
+        /// This method creates and returns a GraphServiceClient.
+        /// </summary>
+        /// <param name="secrets">Dictionary of information obtained from SecretClient</param>
+        /// <returns>GraphServiceClient created using secret information</returns>
         public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
             string auth = "https://login.microsoftonline.com/" + secrets["tenantId"] + "/v2.0";
@@ -98,10 +109,14 @@ namespace RBAC
         }
 
 
-        /**
-         * Creates an IAzure client for each Resource in the MasterConfig, each associated with the specified subscription, and retrieves the specified KeyVaults
-         * Converts each IVault object to a Vault object, adds each to a list of Vault objects, and returns that list
-         */
+        /// <summary>
+        /// This method creates an IAzure client for each Resource in the MasterConfig, each associated with the specified subscription, and retrieves the specified KeyVaults,
+        /// Converts each IVault object to a Vault object, adds each to a list of Vault objects, and returns that list.
+        /// </summary>
+        /// <param name="vaultList">Data obtained from deserializing json file</param>
+        /// <param name="kvmClient">KeyVaultManagementClient containing Vaults</param>
+        /// <param name="graphClient">Microsoft Graph Client for obtaining display names and emails</param>
+        /// <returns>List of KeyVaultProperties containing properties of each Key Vault</returns>
         public static List<KeyVaultProperties> getVaults(JsonInput vaultList, Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
@@ -142,9 +157,13 @@ namespace RBAC
             return keyVaultsRetrieved;
         }
 
-        /* 
-         * Retrieves all the KeyVaults from all the pages of KeyVaults
-         */
+        /// <summary>
+        /// This method retrieves all the KeyVaults from all the pages of KeyVaults.
+        /// </summary>
+        /// <param name="kvmClient">KeyVaultManagementClient containing Vaults</param>
+        /// <param name="vaultsRetrieved">List of Vault objects to add to</param>
+        /// <param name="resourceGroup">Name of resource group containing vaults if applicable</param>
+        /// <returns></returns>
         public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, List<Vault> vaultsRetrieved, string resourceGroup = null)
         {
             // Get first page
@@ -176,9 +195,10 @@ namespace RBAC
             return vaultsRetrieved;
         }
 
-        /**
-         * Serializes the list of Vault objects and outputs the YAML
-         */
+        /// <summary>
+        /// This method serializes the list of Vault objects and outputs the YAML.
+        /// </summary>
+        /// <param name="vaultsRetrieved">List of KeyVault Properties to serialize</param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved)
         {
             var serializer = new SerializerBuilder().Build();
