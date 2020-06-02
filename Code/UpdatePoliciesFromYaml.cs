@@ -68,6 +68,7 @@ namespace RBAC
             Console.WriteLine("Updating " + kv.VaultName);
             kvmClient.SubscriptionId = kv.SubscriptionId;
             var p = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
+            p.AccessPolicies = new List<AccessPolicyEntry>();
             foreach(ServicePrincipalPermissions sp in kv.AccessPolicies)
             {
                 p.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
