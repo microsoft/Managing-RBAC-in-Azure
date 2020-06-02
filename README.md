@@ -1,4 +1,13 @@
+# Prerequisites
+This project uses the following NuGet packages:
+- Newtonsoft.Json
+- YamlDotNet
+- Microsoft.Graph*
+- Microsoft.Azure.Management
+- Azure.Security.KeyVault
+- Azure.Identity
 
+*App needs azure permissions
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
