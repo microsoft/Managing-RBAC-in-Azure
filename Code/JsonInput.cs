@@ -1,12 +1,8 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Azure.Management.Network.Fluent.HasPublicIPAddress.Definition;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace AutoKeyVaultToYaml
+namespace RBAC
 {
-    class Config
+    class JsonInput
     {
         public AadAppKey AadAppKeyDetails { get; set; }
         public List<Resource> Resources { get; set; }

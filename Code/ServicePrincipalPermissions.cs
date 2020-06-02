@@ -1,17 +1,16 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.KeyVault.Fluent;
-using Microsoft.Azure.Management.KeyVault.Models;
+﻿using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
-namespace AutoKeyVaultToYaml
+namespace RBAC
 {
-    class ServicePrincipal
+    class ServicePrincipalPermissions
     {
-        public ServicePrincipal(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        public ServicePrincipalPermissions() { }
+        public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             this.ObjectId = accessPol.ObjectId;
             this.ApplicationId = accessPol.ApplicationId.ToString();
@@ -62,26 +61,43 @@ namespace AutoKeyVaultToYaml
          */
         private string[] getPermissions(IList<string> permissions)
         {
-            StringBuilder sb = new StringBuilder();
-
             if (permissions != null)
             {
-                var permissionsEnum = permissions.GetEnumerator();
-                while (permissionsEnum.MoveNext())
-                {
-                    sb.Append(permissionsEnum.Current).Append(" ");
-                   
-                }
-                return ((sb.ToString().Length == 0) ? null : (sb.ToString().Substring(0, sb.Length - 1).Split(" ")));
+                return permissions.ToArray();
             }
             return null;
         }
 
-        public string ObjectId;
-        public string ApplicationId;
-        public string DisplayName;
-        public string[] PermissionsToKeys;
-        public string[] PermissionsToSecrets;
-        public string[] PermissionsToCertificates;
+        public override bool Equals(Object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                var o = (ServicePrincipalPermissions)obj;
+                if ((o.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && o.PermissionsToKeys != null))
+                {
+                    return false;
+                }
+                if ((o.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && o.PermissionsToSecrets != null))
+                {
+                    return false;
+                }
+                if ((o.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && o.PermissionsToCertificates != null))
+                {
+                    return false;
+                }
+                return (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(o.PermissionsToKeys)) && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(o.PermissionsToSecrets)) && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(o.PermissionsToCertificates));
+            }
+        }
+
+        public string ObjectId { get; set; }
+        public string ApplicationId { get; set; }
+        public string DisplayName { get; set; }
+        public string[] PermissionsToKeys { get; set; }
+        public string[] PermissionsToSecrets { get; set; }
+        public string[] PermissionsToCertificates { get; set; }
     }
 }

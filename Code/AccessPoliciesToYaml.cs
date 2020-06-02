@@ -1,44 +1,28 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using Newtonsoft.Json;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.KeyVault.Fluent;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Identity.Client;
-using Microsoft.Azure.Management;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using System.Linq;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core.ResourceActions;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Collections.ObjectModel;
-using Microsoft.Azure.Management.AppService.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Rest.Azure;
-using Namotion.Reflection;
-using YamlDotNet.Core.Tokens;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Graph;
 
-namespace AutoKeyVaultToYaml
+namespace RBAC
 {
-    class Program
+    class AccessPoliciesToYaml
     {
         static void Main(string[] args)
 
         {
             Console.WriteLine("Reading input file...");
-            string masterConfig = System.IO.File.ReadAllText(@"C:\src\SRE.common\Automation\RBACAutomation\MasterConfig.json");
-            Config vaultList = JsonConvert.DeserializeObject<Config>(masterConfig);
+            string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\MasterConfig.json");
+            JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
@@ -48,7 +32,7 @@ namespace AutoKeyVaultToYaml
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nRetrieving key vaults...");
-            List<KeyVault> vaultsRetrieved = getVaults(vaultList, kvmClient, graphClient);
+            List<KeyVaultProperties> vaultsRetrieved = getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nGenerating YAML output...");
@@ -56,10 +40,12 @@ namespace AutoKeyVaultToYaml
             Console.WriteLine("Success!");
         }
 
-        /**
-         * Retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets
-         */
-        public static Dictionary<string, string> getSecrets(Config vaultList)
+        /// <summary>
+        /// Retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets
+        /// </summary>
+        /// <param name="vaultList"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
@@ -94,7 +80,7 @@ namespace AutoKeyVaultToYaml
          */
         public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
-            string auth = "https://" + "login.microsoftonline.com/" + secrets["tenantId"] + "/v2.0";
+            string auth = "https://login.microsoftonline.com/" + secrets["tenantId"] + "/v2.0";
             string redirectUri = "https://" + secrets["appName"];
 
             IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(secrets["clientId"])
@@ -116,9 +102,9 @@ namespace AutoKeyVaultToYaml
          * Creates an IAzure client for each Resource in the MasterConfig, each associated with the specified subscription, and retrieves the specified KeyVaults
          * Converts each IVault object to a Vault object, adds each to a list of Vault objects, and returns that list
          */
-        public static List<KeyVault> getVaults(Config vaultList, Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
+        public static List<KeyVaultProperties> getVaults(JsonInput vaultList, Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
-            List<Vault> vaultsRetreived = new List<Vault>();
+            List<Vault> vaultsRetrieved = new List<Vault>();
             foreach (Resource res in vaultList.Resources)
             {
                 // Associate the client with the subscription
@@ -127,7 +113,7 @@ namespace AutoKeyVaultToYaml
                 // Retrieves all KeyVaults
                 if (res.ResourceGroups == null) // then get all vaults at subscription scope
                 { 
-                    vaultsRetreived = getVaultsAllPages(kvmClient, vaultsRetreived);
+                    vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved);
                 } 
                 else 
                 {
@@ -135,23 +121,23 @@ namespace AutoKeyVaultToYaml
                     {
                         if (resGroup.KeyVaults == null) // then get all vaults at resource group scope
                         { 
-                            vaultsRetreived = getVaultsAllPages(kvmClient, vaultsRetreived, resGroup.ResourceGroupName);
+                            vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved, resGroup.ResourceGroupName);
                         }
                         else // then get specific Key Vaults
                         { 
                             foreach (string vaultName in resGroup.KeyVaults) 
                             {
-                                vaultsRetreived.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName));
+                                vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName));
                             }
                         }
                     }
                 }
             }
 
-            List<KeyVault> keyVaultsRetrieved = new List<KeyVault>();
-            foreach (Vault curVault in vaultsRetreived) 
+            List<KeyVaultProperties> keyVaultsRetrieved = new List<KeyVaultProperties>();
+            foreach (Vault curVault in vaultsRetrieved) 
             {
-                keyVaultsRetrieved.Add(new KeyVault(curVault, graphClient));
+                keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
             return keyVaultsRetrieved;
         }
@@ -193,14 +179,11 @@ namespace AutoKeyVaultToYaml
         /**
          * Serializes the list of Vault objects and outputs the YAML
          */
-        public static void convertToYaml(List<KeyVault> vaultsRetrieved)
+        public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved)
         {
             var serializer = new SerializerBuilder().Build();
-
-            StringBuilder yamlOutput = new StringBuilder();
-            yamlOutput.Append(serializer.Serialize(vaultsRetrieved));
-
-            System.IO.File.WriteAllText(@"C:\src\SRE.common\Automation\RBACAutomation\AutoKeyVaultToYaml\outputFile.yml", yamlOutput.ToString());
+            string yaml = serializer.Serialize(vaultsRetrieved);
+            System.IO.File.WriteAllText(@"..\..\..\..\Config\YamlOutput.yml", yaml);
         }
 
     }
