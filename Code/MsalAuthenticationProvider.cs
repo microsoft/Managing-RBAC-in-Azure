@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace RBAC
 {
     /// <summary>
-    /// This class is an Authentication Provider obtained from
-    /// the Microsoft Authentication Library(MSAL)
+    /// This class is an Authentication Provider obtained from the Microsoft Authentication Library (MSAL).
     /// </summary>
     public class MsalAuthenticationProvider : IAuthenticationProvider
     {

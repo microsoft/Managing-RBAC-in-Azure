@@ -3,7 +3,6 @@ using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace RBAC
 {
@@ -20,9 +19,12 @@ namespace RBAC
             this.PermissionsToCertificates = getPermissions(accessPol.Permissions.Certificates);
         }
 
-        /**
-         * Retrieves and returns the service principal's DisplayName using the GraphServiceClient
-         */
+        /// <summary>
+        /// This method gets the DisplayName of the ServicePrincipal using the GraphServiceClient.
+        /// </summary>
+        /// <param name="accessPol">The current AccessPolicyEntry</param>
+        /// <param name="graphClient"></param>
+        /// <returns></returns>
         private string getDisplayName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             try // User
@@ -54,11 +56,11 @@ namespace RBAC
             }
         }
 
-        /**
-         * Converts permissions from an IList of strings to an array of strings
-         * Returns null if there were no granted permissions
-         * Otherwise, returns the string array
-         */
+        /// <summary>
+        /// Converts permissions from an IList of strings to an array of strings
+        /// </summary>
+        /// <param name="permissions"></param>
+        /// <returns> Null if there were no granted permissions. Otherwise, returns the string array. </returns>
         private string[] getPermissions(IList<string> permissions)
         {
             if (permissions != null)
@@ -68,6 +70,11 @@ namespace RBAC
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(Object obj)
         {
             if ((obj == null) || !this.GetType().Equals(obj.GetType()))

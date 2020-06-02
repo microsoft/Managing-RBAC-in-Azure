@@ -10,8 +10,9 @@ namespace RBAC
         public AadAppKey AadAppKeyDetails { get; set; }
         public List<Resource> Resources { get; set; }
     }
+
     /// <summary>
-    /// This class stores information for accessing client information obtaind from the MasterConfig.json file.
+    /// This class stores the client information obtained from the MasterConfig.json file that is later needed to create the KeyVaultManagementClient and GraphServiceClient.
     /// </summary>
     class AadAppKey
     {
@@ -21,9 +22,11 @@ namespace RBAC
         public string ClientKeySecretName { get; set; }
         public string TenantIdSecretName { get; set; }
     }
+
     /// <summary>
-    /// This class stores information on resources specified in the MasterConfig.json file.
+    /// This class stores the Resources information specified in the MasterConfig.json file.
     /// </summary>
+    /// <remarks>The MasterConfig.json file must include a SubscriptionId, but specific ResourceGroups are not required.</remarks>
     class Resource
     {
         Resource()
@@ -32,16 +35,14 @@ namespace RBAC
         }
         public string SubscriptionId { get; set; }
         public List<ResourceGroup> ResourceGroups { get; set; }
-        //You must include a SubscriptionId, but specific ResourceGroups are not required
     }
+
     /// <summary>
-    /// This class stores details on the resource groups specified in the MasterConfig.json file.
+    /// This class stores the details on the ResourceGroups specified in the MasterConfig.json file.
     /// </summary>
+    /// <remarks>If the ResourceGroups field is not null, the MasterConfig.json file must include a ResourceGroup Name, but specific KeyVault names are not required.</remarks>
     class ResourceGroup
     {
-        /**
-         * If ResourceGroups is not null, you must include a ResourceGroup Name, but specific KeyVault names are not required
-         */
         ResourceGroup()
         {
             this.KeyVaults = null;
