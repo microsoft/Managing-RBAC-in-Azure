@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
-using Newtonsoft.Json;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -19,33 +18,6 @@ namespace RBAC
     /// </summary>
     class AccessPoliciesToYaml
     {
-        /// <summary>
-        /// This method Reads in a JSON config file and prints out a serialized list of Key Vaults into a YAML file.
-        /// </summary>
-        /// <param name="args">None</param>
-        static void Main(string[] args)
-
-        {
-            Console.WriteLine("Reading input file...");
-            string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\MasterConfig.json");
-            JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-            Console.WriteLine("Success!");
-
-            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
-            var secrets = getSecrets(vaultList);
-            var kvmClient = createKVMClient(secrets);
-            var graphClient = createGraphClient(secrets);
-            Console.WriteLine("Success!");
-
-            Console.WriteLine("\nRetrieving key vaults...");
-            List<KeyVaultProperties> vaultsRetrieved = getVaults(vaultList, kvmClient, graphClient);
-            Console.WriteLine("Success!");
-
-            Console.WriteLine("\nGenerating YAML output...");
-            convertToYaml(vaultsRetrieved);
-            Console.WriteLine("Success!");
-        }
-
         /// <summary>
         /// This method retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets.
         /// </summary>
@@ -79,7 +51,8 @@ namespace RBAC
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
         public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
-            AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
+            AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
+                secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
             return (new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials));
         }
 
@@ -90,7 +63,7 @@ namespace RBAC
         /// <returns>The GraphServiceClient created using the secret information</returns>
         public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
-            string auth = "https://login.microsoftonline.com/" + secrets["tenantId"] + "/v2.0";
+            string auth = "https://login.microsoftonline.com/" + secrets["tenantId"];
             string redirectUri = "https://" + secrets["appName"];
 
             IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(secrets["clientId"])
@@ -115,7 +88,8 @@ namespace RBAC
         /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
         /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
-        public static List<KeyVaultProperties> getVaults(JsonInput vaultList, Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
+        public static List<KeyVaultProperties> getVaults(JsonInput vaultList, 
+            Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
             foreach (Resource res in vaultList.Resources)
@@ -166,35 +140,35 @@ namespace RBAC
         /// <returns>The updated vaultsRetrieved list</returns>
         public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, List<Vault> vaultsRetrieved, string resourceGroup = null)
         {
-            IPage<Vault> vaults_curPg;
+            IPage<Vault> vaultsCurPg;
             // Retrieves the first page of KeyVaults at the Subscription scope
             if (resourceGroup == null) 
             { 
-                vaults_curPg = kvmClient.Vaults.ListBySubscription();
+                vaultsCurPg = kvmClient.Vaults.ListBySubscription();
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
             else
             { 
-                vaults_curPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
+                vaultsCurPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
             }
-            vaultsRetrieved.AddRange(vaults_curPg);
+            vaultsRetrieved.AddRange(vaultsCurPg);
 
             // Get remaining pages
-            while (vaults_curPg.NextPageLink != null) 
+            while (vaultsCurPg.NextPageLink != null) 
             {
-                IPage<Vault> vaults_nextPg;
+                IPage<Vault> vaultsNextPg;
                 // Retrieves the remaining pages of KeyVaults at the Subscription scope
                 if (resourceGroup == null) // then by Subscription
                 {
-                    vaults_nextPg = kvmClient.Vaults.ListBySubscriptionNext(vaults_curPg.NextPageLink);
+                    vaultsNextPg = kvmClient.Vaults.ListBySubscriptionNext(vaultsCurPg.NextPageLink);
                 }
                 // Retrieves the remaining pages of KeyVaults at the ResourceGroup scope
                 else
                 {
-                    vaults_nextPg = kvmClient.Vaults.ListByResourceGroupNext(vaults_curPg.NextPageLink);
+                    vaultsNextPg = kvmClient.Vaults.ListByResourceGroupNext(vaultsCurPg.NextPageLink);
                 }
-                vaultsRetrieved.AddRange(vaults_nextPg);
-                vaults_curPg = vaults_nextPg;
+                vaultsRetrieved.AddRange(vaultsNextPg);
+                vaultsCurPg = vaultsNextPg;
             }
             return vaultsRetrieved;
         }
@@ -209,6 +183,5 @@ namespace RBAC
             string yaml = serializer.Serialize(vaultsRetrieved);
             System.IO.File.WriteAllText(@"..\..\..\..\Config\YamlOutput.yml", yaml);
         }
-
     }
 }
