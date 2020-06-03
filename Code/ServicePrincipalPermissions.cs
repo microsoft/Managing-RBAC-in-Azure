@@ -35,33 +35,33 @@ namespace RBAC
             {
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
                 return (user.DisplayName + " (" + user.UserPrincipalName + ")");
-            } catch 
+            }
+            catch { }
+
+            // Group
+            try
             {
-                // Group
-                try
-                {
-                    var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                    return (group.DisplayName + " (" + group.Mail + ")");
-                } catch
-                {
-                    // Application
-                    try
-                    {
-                        return (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
-                    } catch
-                    {
-                        // Service Principal
-                        try
-                        {
-                            return (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
-                        }
-                        // "Unknown" Application
-                        catch
-                        {
-                            return ""; 
-                        } 
-                    }
-                }
+                var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                return (group.DisplayName + " (" + group.Mail + ")");
+            }
+            catch { }
+
+            // Application
+            try
+            {
+                return (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+            }
+            catch { }
+
+            // Service Principal
+            try
+            {
+                return (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+            }
+            // "Unknown Application
+            catch
+            {
+                return "";
             }
         }
 

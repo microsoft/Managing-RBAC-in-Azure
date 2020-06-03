@@ -1,0 +1,2732 @@
+- VaultName: CertRotationTest
+  ResourceGroupName: CertRotation
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: eastus
+  ResourceId: /subscriptions/82bf28a8-6374-4908-b89c-5d1ab5495c5e/resourceGroups/CertRotation/providers/Microsoft.KeyVault/vaults/CertRotationTest
+  VaultUri: https://certrotationtest.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: 15cde4fd-d5d0-437f-8665-6c18c7de21a3
+    ApplicationId: ''
+    DisplayName: 1ES Site Reliability Engineering (1essre@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 76c0e7c1-85cb-4884-a4f7-6c6288bc0c07
+    ApplicationId: ''
+    DisplayName: 1ESSRESecretAutomationAccount
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+  - ObjectId: 46cd3cd9-aba3-41cc-8c14-39dee0e1ee60
+    ApplicationId: ''
+    DisplayName: Conor Byrne (coby@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 29c9274e-4661-4075-adf4-5ea419d4933e
+    ApplicationId: ''
+    DisplayName: vkonev-TestServicePrincipal
+    PermissionsToKeys: &o0 []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    PermissionsToCertificates: *o0
+  - ObjectId: 6a08869c-7bdf-497f-b68c-fd0c35b62475
+    ApplicationId: ''
+    DisplayName: Vitaliy Konev (vkonev@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: c23c0215-e866-478a-a378-dfd55ccd4552
+    ApplicationId: ''
+    DisplayName: Thomas Finney (IRELAND) (tfinney@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+  - ObjectId: a34b5f24-f6ee-4a6a-bdb5-6f48926bc0d7
+    ApplicationId: ''
+    DisplayName: Soumya Mishra (somish@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+- VaultName: RBAC-KeyVault
+  ResourceGroupName: RBAC-KeyVault
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: eastus
+  ResourceId: /subscriptions/82bf28a8-6374-4908-b89c-5d1ab5495c5e/resourceGroups/RBAC-KeyVault/providers/Microsoft.KeyVault/vaults/RBAC-KeyVault
+  VaultUri: https://rbac-keyvault.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: d7372fb0-4b90-40e8-9c93-dbddd82ea99f
+    ApplicationId: ''
+    DisplayName: RBACAutomationApp
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 24fc0e3e-23db-48d8-a376-17fe5f3ec7d9
+    ApplicationId: ''
+    DisplayName: Mazin Shaaeldin (t-mashaa@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d994c3f0-34cc-4ac7-b838-754c80a363c0
+    ApplicationId: ''
+    DisplayName: opeRBACkv
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 1ad19553-e84a-4f21-a5b2-e16a71a90446
+    ApplicationId: ''
+    DisplayName: TestKV
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: c0e2c91b-610f-49d0-8d9f-12cbb11ab592
+    ApplicationId: ''
+    DisplayName: Katie Helman (t-kahelm@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: a64efb37-b6a5-4a8f-a2e4-b6884105cbdd
+    ApplicationId: ''
+    DisplayName: RBACKeyVault (RBACKeyVault@service.microsoft.com)
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 90964f20-0803-489d-a1a1-f5eecd423e24
+    ApplicationId: ''
+    DisplayName: Josh Becker (jobecker@microsoft.com)
+    PermissionsToKeys:
+    - List
+    - Get
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: a34b5f24-f6ee-4a6a-bdb5-6f48926bc0d7
+    ApplicationId: ''
+    DisplayName: Soumya Mishra (somish@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d457c62c-ddaa-40df-9a92-2ba0c4d9317c
+    ApplicationId: ''
+    DisplayName: Opeyemi Olaoluwa (t-opolao@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    PermissionsToSecrets:
+    - Get
+    PermissionsToCertificates: 
+- VaultName: SRECommonVault
+  ResourceGroupName: SRECommonVault
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: westus2
+  ResourceId: /subscriptions/82bf28a8-6374-4908-b89c-5d1ab5495c5e/resourceGroups/SRECommonVault/providers/Microsoft.KeyVault/vaults/SRECommonVault
+  VaultUri: https://srecommonvault.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 752d188e-d566-473a-b759-d649cf096d74
+    ApplicationId: ''
+    DisplayName: Jacob Thomas (jacobt@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: a4096395-1f72-4022-9d64-5749f4c10542
+    ApplicationId: ''
+    DisplayName: 'Matt Vevang (GITHUB: @MATTVEVANG) (mattve@microsoft.com)'
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: TSESD-Vault
+  ResourceGroupName: TSESD-Vault
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: westus2
+  ResourceId: /subscriptions/82bf28a8-6374-4908-b89c-5d1ab5495c5e/resourceGroups/TSESD-Vault/providers/Microsoft.KeyVault/vaults/TSESD-Vault
+  VaultUri: https://tsesd-vault.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: true
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 90964f20-0803-489d-a1a1-f5eecd423e24
+    ApplicationId: ''
+    DisplayName: Josh Becker (jobecker@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 752d188e-d566-473a-b759-d649cf096d74
+    ApplicationId: ''
+    DisplayName: Jacob Thomas (jacobt@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: bde0ac6a-09a3-464f-8c8e-d632bad6c975
+    ApplicationId: ''
+    DisplayName: Alex Peckron (apeckron@microsoft.com)
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates: *o0
+  - ObjectId: 76c0e7c1-85cb-4884-a4f7-6c6288bc0c07
+    ApplicationId: ''
+    DisplayName: 1ESSRESecretAutomationAccount
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+  - ObjectId: d059518f-7965-403f-8910-8a9a812f846f
+    ApplicationId: ''
+    DisplayName: cmtestbuild
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates:
+    - Get
+    - List
+  - ObjectId: e5d0a6f6-f15c-4532-9524-007910d4c0f6
+    ApplicationId: ''
+    DisplayName: RMOTestBuild
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates:
+    - Get
+    - List
+  - ObjectId: 55a8c54f-cc67-4b47-b991-4c629f2f9b6e
+    ApplicationId: ''
+    DisplayName: AZ3TFSPWDAS
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates:
+    - Get
+    - List
+- VaultName: almiliTemp
+  ResourceGroupName: almiliTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: northcentralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/almiliTest/providers/Microsoft.KeyVault/vaults/almiliTemp
+  VaultUri: https://almilitemp.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: 590a8682-c0e8-4133-be60-74658834214d
+    ApplicationId: ''
+    DisplayName: Danny van Velzen (dannyvv@microsoft.com)
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates: *o0
+  - ObjectId: e140442a-8717-40dc-b461-f9c28c80744e
+    ApplicationId: ''
+    DisplayName: Aleksandar Milicevic (almili@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: almiliTest
+  ResourceGroupName: almiliTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: northcentralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/almiliTest/providers/Microsoft.KeyVault/vaults/almiliTest
+  VaultUri: https://almilitest.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: e140442a-8717-40dc-b461-f9c28c80744e
+    ApplicationId: ''
+    DisplayName: Aleksandar Milicevic (almili@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 52e0f773-5965-463d-ae0d-81d0831e6c2e
+    ApplicationId: ''
+    DisplayName: almili-Test1-7d3b156b-1072-4060-97f6-42057dc19952
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates: *o0
+- VaultName: bxlms
+  ResourceGroupName: bxl.ms
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: northcentralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/bxl.ms/providers/Microsoft.KeyVault/vaults/bxlms
+  VaultUri: https://bxlms.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 590a8682-c0e8-4133-be60-74658834214d
+    ApplicationId: ''
+    DisplayName: Danny van Velzen (dannyvv@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: ed47c2a1-bd23-4341-b39c-f4fd69138dd3
+    ApplicationId: ''
+    DisplayName: Microsoft.Azure.CertificateRegistration
+    PermissionsToKeys: 
+    PermissionsToSecrets:
+    - get
+    - set
+    - delete
+    PermissionsToCertificates: 
+  - ObjectId: f8daea97-62e7-4026-becf-13c2ea98e8b4
+    ApplicationId: ''
+    DisplayName: Microsoft.Azure.WebSites
+    PermissionsToKeys: 
+    PermissionsToSecrets:
+    - get
+    PermissionsToCertificates: 
+- VaultName: QSign-Prototype-Vault
+  ResourceGroupName: QSign-Prototype
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: North Central US
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/QSign-Prototype/providers/Microsoft.KeyVault/vaults/QSign-Prototype-Vault
+  VaultUri: https://qsign-prototype-vault.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Premium
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 758e96ed-21f6-4cc9-8c8a-4774d10eed3e
+    ApplicationId: ''
+    DisplayName: Stephan Adler (stephana@microsoft.com)
+    PermissionsToKeys:
+    - get
+    - create
+    - delete
+    - list
+    - update
+    - import
+    - backup
+    - restore
+    PermissionsToSecrets:
+    - all
+    PermissionsToCertificates: 
+  - ObjectId: 50f1dadd-ec9c-4ef9-a746-e58ddfbc9ae7
+    ApplicationId: ''
+    DisplayName: qsignprototype
+    PermissionsToKeys:
+    - sign
+    PermissionsToSecrets: 
+    PermissionsToCertificates: 
+  - ObjectId: ecf15770-f0b5-4665-941a-2fdf711b9f72
+    ApplicationId: ''
+    DisplayName: QSign-Ppe-User
+    PermissionsToKeys:
+    - sign
+    PermissionsToSecrets: 
+    PermissionsToCertificates: 
+  - ObjectId: a43145e8-42eb-4108-9344-11cd179e6f1f
+    ApplicationId: ''
+    DisplayName: QSign-Test-User
+    PermissionsToKeys:
+    - sign
+    PermissionsToSecrets: 
+    PermissionsToCertificates: 
+- VaultName: RBACPrototypeTestVault1
+  ResourceGroupName: RBACPrototypeTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: eastus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/RBACPrototypeTest/providers/Microsoft.KeyVault/vaults/RBACPrototypeTestVault1
+  VaultUri: https://rbacprototypetestvault1.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: d457c62c-ddaa-40df-9a92-2ba0c4d9317c
+    ApplicationId: ''
+    DisplayName: Opeyemi Olaoluwa (t-opolao@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: c0e2c91b-610f-49d0-8d9f-12cbb11ab592
+    ApplicationId: ''
+    DisplayName: Katie Helman (t-kahelm@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates:
+    - Get
+    - List
+- VaultName: amirdavcb
+  ResourceGroupName: amirdavcb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/amirdavcb/providers/Microsoft.KeyVault/vaults/amirdavcb
+  VaultUri: https://amirdavcb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 3cca3454-7c42-47c5-ab03-57a036e660ec
+    ApplicationId: ''
+    DisplayName: amirdavcboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 3e6c9956-ea93-45f7-a15b-06b420ea8a1b
+    ApplicationId: ''
+    DisplayName: Amir Davoodi (amirdav@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: arfreitacb
+  ResourceGroupName: arfreitacb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/arfreitacb/providers/Microsoft.KeyVault/vaults/arfreitacb
+  VaultUri: https://arfreitacb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 8530e940-37e4-4fd3-87ed-146cfcc0425e
+    ApplicationId: ''
+    DisplayName: arfreitacboneboxro
+    PermissionsToKeys:
+    - List
+    - Get
+    PermissionsToSecrets:
+    - List
+    - Get
+    PermissionsToCertificates:
+    - Get
+    - List
+  - ObjectId: c478565b-2aad-4b23-8772-fa30e55be324
+    ApplicationId: ''
+    DisplayName: Arthur Freitas Ramos (arfreita@microsoft.com)
+    PermissionsToKeys:
+    - Encrypt
+    - Decrypt
+    - WrapKey
+    - UnwrapKey
+    - Sign
+    - Verify
+    - Get
+    - List
+    - Create
+    - Update
+    - Import
+    - Delete
+    - Backup
+    - Restore
+    - Recover
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Backup
+    - Restore
+    - Recover
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Import
+    - delete
+    - create
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: cohanicb
+  ResourceGroupName: cohanicb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/cohanicb/providers/Microsoft.KeyVault/vaults/cohanicb
+  VaultUri: https://cohanicb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 64c46b90-ef97-412b-a3ff-186bdd9e547a
+    ApplicationId: ''
+    DisplayName: cohanicboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 7f181bb2-b434-41ab-bb50-9d6b0c5ee01e
+    ApplicationId: ''
+    DisplayName: Cody Hanika (cohani@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: ctannercb
+  ResourceGroupName: ctannercb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/ctannercb/providers/Microsoft.KeyVault/vaults/ctannercb
+  VaultUri: https://ctannercb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 0f79dde1-b92a-4d38-aa5e-95b805e50203
+    ApplicationId: ''
+    DisplayName: ctannercboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 41210a44-c52e-4e34-8567-36453c7f3073
+    ApplicationId: ''
+    DisplayName: Carl Tanner (ctanner@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: dannyvvcb
+  ResourceGroupName: dannyvvcb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/dannyvvcb/providers/Microsoft.KeyVault/vaults/dannyvvcb
+  VaultUri: https://dannyvvcb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: c82ee9e6-8196-4374-b939-bdfed55513fe
+    ApplicationId: ''
+    DisplayName: ''
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 590a8682-c0e8-4133-be60-74658834214d
+    ApplicationId: ''
+    DisplayName: Danny van Velzen (dannyvv@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: EdgarSilSecrets1
+  ResourceGroupName: edgarsilKVTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: westus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/edgarsilKVTest/providers/Microsoft.KeyVault/vaults/EdgarSilSecrets1
+  VaultUri: https://edgarsilsecrets1.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: a1fc6f81-e410-4fb6-8e76-ced6fad1b665
+    ApplicationId: ''
+    DisplayName: Edgar Ruiz Silva (edgarsil@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d55c5619-fb73-44b8-bd37-c1466b605e49
+    ApplicationId: ''
+    DisplayName: EdgarSilTestKVApp1
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+- VaultName: edgarsilsecrets2
+  ResourceGroupName: edgarsilKVTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: westus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/edgarsilKVTest/providers/Microsoft.KeyVault/vaults/edgarsilsecrets2
+  VaultUri: https://edgarsilsecrets2.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: a1fc6f81-e410-4fb6-8e76-ced6fad1b665
+    ApplicationId: ''
+    DisplayName: Edgar Ruiz Silva (edgarsil@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d55c5619-fb73-44b8-bd37-c1466b605e49
+    ApplicationId: ''
+    DisplayName: EdgarSilTestKVApp1
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+- VaultName: SergeyKeys1
+  ResourceGroupName: lancec_eh_res_group
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: westus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/lancec_eh_res_group/providers/Microsoft.KeyVault/vaults/SergeyKeys1
+  VaultUri: https://sergeykeys1.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 9c0be69a-8c8d-4880-b784-032b3ef6a8a9
+    ApplicationId: ''
+    DisplayName: Sergey Tepliakov (seteplia@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 6d490e91-74a1-4966-80ac-35a60bfaf194
+    ApplicationId: ''
+    DisplayName: TestKeyVaultSampleApp
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: CloudBuildPilotFishProto
+  ResourceGroupName: CloudBuildPilotFishPrototype
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: westus2
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/CloudBuildPilotFishPrototype/providers/Microsoft.KeyVault/vaults/CloudBuildPilotFishProto
+  VaultUri: https://cloudbuildpilotfishproto.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 7f181bb2-b434-41ab-bb50-9d6b0c5ee01e
+    ApplicationId: ''
+    DisplayName: Cody Hanika (cohani@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 7bd587b3-8c4e-4a13-8676-899223e5c52a
+    ApplicationId: ''
+    DisplayName: CloudBuildPilotFishProtoCentralVaultPrincipal
+    PermissionsToKeys:
+    - Get
+    - List
+    - Encrypt
+    - Decrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates:
+    - Get
+    - List
+    - GetIssuers
+    - ListIssuers
+- VaultName: CodexKeys
+  ResourceGroupName: LanceTest
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: westus2
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/LanceTest/providers/Microsoft.KeyVault/vaults/CodexKeys
+  VaultUri: https://codexkeys.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: b40b053d-c1c5-483e-91b4-53fcb4e25c57
+    ApplicationId: ''
+    DisplayName: Lance Collins (lancec@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: bcd84254-5625-49ed-968e-726c2b78a0f6
+    ApplicationId: ''
+    DisplayName: cloudbuild-CodexIngest-7d3b156b-1072-4060-97f6-42057dc19952
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates: *o0
+  - ObjectId: ec3ff5b2-4450-4bd0-a78f-c1b89078d717
+    ApplicationId: ''
+    DisplayName: mseng-TSE-7d3b156b-1072-4060-97f6-42057dc19952
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates: *o0
+- VaultName: edgarsilcb
+  ResourceGroupName: edgarsilcb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/edgarsilcb/providers/Microsoft.KeyVault/vaults/edgarsilcb
+  VaultUri: https://edgarsilcb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 9f839be4-a4b9-46c9-af51-18d7b85d8f1b
+    ApplicationId: ''
+    DisplayName: edgarsilcboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: a1fc6f81-e410-4fb6-8e76-ced6fad1b665
+    ApplicationId: ''
+    DisplayName: Edgar Ruiz Silva (edgarsil@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: jobolescb
+  ResourceGroupName: jobolescb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/jobolescb/providers/Microsoft.KeyVault/vaults/jobolescb
+  VaultUri: https://jobolescb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 24daab87-9db7-42ef-8840-045d106efb6b
+    ApplicationId: ''
+    DisplayName: jobolescboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 48a50363-43d0-404a-9c1d-d713be0055e2
+    ApplicationId: ''
+    DisplayName: Jonathan Boles (joboles@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: juncchencb
+  ResourceGroupName: juncchencb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/juncchencb/providers/Microsoft.KeyVault/vaults/juncchencb
+  VaultUri: https://juncchencb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: e92d9305-7e49-44f9-bfbe-a8f446222c30
+    ApplicationId: ''
+    DisplayName: juncchencboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: 8ab1223f-ac23-442c-8465-3543e94f177b
+    ApplicationId: ''
+    DisplayName: Juncheng Chen (juncchen@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: cloudbuildkeyvault
+  ResourceGroupName: juncchencloudbuild
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/juncchencloudbuild/providers/Microsoft.KeyVault/vaults/cloudbuildkeyvault
+  VaultUri: https://cloudbuildkeyvault.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 51598598-89a2-4313-b438-a319e9e2920a
+    ApplicationId: ''
+    DisplayName: Venkat Jasti (vejas@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 8ab1223f-ac23-442c-8465-3543e94f177b
+    ApplicationId: ''
+    DisplayName: Juncheng Chen (juncchen@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+- VaultName: marthawcb
+  ResourceGroupName: marthawcb
+  SubscriptionId: 7d3b156b-1072-4060-97f6-42057dc19952
+  Location: centralus
+  ResourceId: /subscriptions/7d3b156b-1072-4060-97f6-42057dc19952/resourceGroups/marthawcb/providers/Microsoft.KeyVault/vaults/marthawcb
+  VaultUri: https://marthawcb.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: 
+  EnabledForDiskEncryption: 
+  EnableSoftDelete: 
+  AccessPolicies:
+  - ObjectId: 194f2044-d43d-4a33-93e5-5e4404faa10b
+    ApplicationId: ''
+    DisplayName: marthawcboneboxro
+    PermissionsToKeys:
+    - list
+    - get
+    PermissionsToSecrets:
+    - list
+    - get
+    PermissionsToCertificates:
+    - list
+    - get
+  - ObjectId: d9440418-05f3-4824-b4e8-2a7c0d3a80a5
+    ApplicationId: ''
+    DisplayName: Martha Wieczorek (marthaw@microsoft.com)
+    PermissionsToKeys:
+    - encrypt
+    - decrypt
+    - wrapKey
+    - unwrapKey
+    - sign
+    - verify
+    - get
+    - list
+    - create
+    - update
+    - import
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToSecrets:
+    - get
+    - list
+    - set
+    - delete
+    - backup
+    - restore
+    - recover
+    - purge
+    PermissionsToCertificates:
+    - get
+    - list
+    - delete
+    - create
+    - import
+    - update
+    - managecontacts
+    - getissuers
+    - listissuers
+    - setissuers
+    - deleteissuers
+    - manageissuers
+    - recover
+    - purge
+- VaultName: RBACTestVault1
+  ResourceGroupName: RBACTest
+  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  Location: eastus
+  ResourceId: /subscriptions/6b94a915-57a9-4023-8fe8-3792e113ddff/resourceGroups/RBACTest/providers/Microsoft.KeyVault/vaults/RBACTestVault1
+  VaultUri: https://rbactestvault1.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: 90964f20-0803-489d-a1a1-f5eecd423e24
+    ApplicationId: ''
+    DisplayName: Josh Becker (jobecker@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: 24fc0e3e-23db-48d8-a376-17fe5f3ec7d9
+    ApplicationId: ''
+    DisplayName: Mazin Shaaeldin (t-mashaa@microsoft.com)
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: c0e2c91b-610f-49d0-8d9f-12cbb11ab592
+    ApplicationId: ''
+    DisplayName: Katie Helman (t-kahelm@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+  - ObjectId: a34b5f24-f6ee-4a6a-bdb5-6f48926bc0d7
+    ApplicationId: ''
+    DisplayName: Soumya Mishra (somish@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d7372fb0-4b90-40e8-9c93-dbddd82ea99f
+    ApplicationId: ''
+    DisplayName: RBACAutomationApp
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d457c62c-ddaa-40df-9a92-2ba0c4d9317c
+    ApplicationId: ''
+    DisplayName: Opeyemi Olaoluwa (t-opolao@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RBACTestVault2
+  ResourceGroupName: RBACTest
+  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  Location: eastus
+  ResourceId: /subscriptions/6b94a915-57a9-4023-8fe8-3792e113ddff/resourceGroups/RBACTest/providers/Microsoft.KeyVault/vaults/RBACTestVault2
+  VaultUri: https://rbactestvault2.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: 90964f20-0803-489d-a1a1-f5eecd423e24
+    ApplicationId: ''
+    DisplayName: Josh Becker (jobecker@microsoft.com)
+    PermissionsToKeys: *o0
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: a34b5f24-f6ee-4a6a-bdb5-6f48926bc0d7
+    ApplicationId: ''
+    DisplayName: Soumya Mishra (somish@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets: *o0
+    PermissionsToCertificates: *o0
+  - ObjectId: 24fc0e3e-23db-48d8-a376-17fe5f3ec7d9
+    ApplicationId: ''
+    DisplayName: Mazin Shaaeldin (t-mashaa@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: c0e2c91b-610f-49d0-8d9f-12cbb11ab592
+    ApplicationId: ''
+    DisplayName: Katie Helman (t-kahelm@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d7372fb0-4b90-40e8-9c93-dbddd82ea99f
+    ApplicationId: ''
+    DisplayName: RBACAutomationApp
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: d457c62c-ddaa-40df-9a92-2ba0c4d9317c
+    ApplicationId: ''
+    DisplayName: Opeyemi Olaoluwa (t-opolao@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: PremiumRBACTest
+  ResourceGroupName: RBACTest
+  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  Location: eastus
+  ResourceId: /subscriptions/6b94a915-57a9-4023-8fe8-3792e113ddff/resourceGroups/RBACTest/providers/Microsoft.KeyVault/vaults/PremiumRBACTest
+  VaultUri: https://premiumrbactest.vault.azure.net/
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  Sku: Premium
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: c0e2c91b-610f-49d0-8d9f-12cbb11ab592
+    ApplicationId: ''
+    DisplayName: Katie Helman (t-kahelm@microsoft.com)
+    PermissionsToKeys:
+    - List
+    - Update
+    - Create
+    - Import
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - List
+    - Set
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+  - ObjectId: d457c62c-ddaa-40df-9a92-2ba0c4d9317c
+    ApplicationId: ''
+    DisplayName: Opeyemi Olaoluwa (t-opolao@microsoft.com)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Recover
+    - Backup
+    - Restore
+    - Create
+    - Delete
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
