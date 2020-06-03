@@ -10,6 +10,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Rest.Azure;
 using Microsoft.Graph;
+using System.Management.Automation;
 
 namespace RBAC
 {
@@ -32,15 +33,21 @@ namespace RBAC
             string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
             string keyVaultUri = "https://" + keyVaultName + ".vault.azure.net";
 
-            SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+            try
+            {
+                SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
 
-            KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
-            secrets["clientId"] = clientIdSecret.Value;
-            KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
-            secrets["clientKey"] = clientKeySecret.Value;
-            KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
-            secrets["tenantId"] = tenantIdSecret.Value;
-
+                KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
+                secrets["clientId"] = clientIdSecret.Value;
+                KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
+                secrets["clientKey"] = clientKeySecret.Value;
+                KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
+                secrets["tenantId"] = tenantIdSecret.Value;
+            } catch (Exception e)
+            {
+                Console.WriteLine("\nERROR: " + e.Message);
+            }
+         
             return secrets;
         }
 
@@ -51,9 +58,17 @@ namespace RBAC
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
         public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
-            AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
-                secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-            return (new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials));
+            try
+            {
+                AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
+                    secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
+                return (new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials));
+            } 
+            catch (Exception e)
+            {
+                Console.WriteLine("\nERROR: " + e.Message);
+                return null;
+            }
         }
 
         /// <summary>
@@ -63,23 +78,30 @@ namespace RBAC
         /// <returns>The GraphServiceClient created using the secret information</returns>
         public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
-            string auth = "https://login.microsoftonline.com/" + secrets["tenantId"];
-            string redirectUri = "https://" + secrets["appName"];
-
-            IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(secrets["clientId"])
-                                                          .WithAuthority(auth)
-                                                          .WithRedirectUri(redirectUri)
-                                                          .WithClientSecret(secrets["clientKey"])
-                                                          .Build();
-
-            List<string> scopes = new List<string>()
+            try
             {
-                "https://graph.microsoft.com/.default"
-            };
-            MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
-            return (new GraphServiceClient(authProvider));
-        }
+                string auth = "https://login.microsoftonline.com/" + secrets["tenantId"];
+                string redirectUri = "https://" + secrets["appName"];
 
+                IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(secrets["clientId"])
+                                                              .WithAuthority(auth)
+                                                              .WithRedirectUri(redirectUri)
+                                                              .WithClientSecret(secrets["clientKey"])
+                                                              .Build();
+
+                List<string> scopes = new List<string>()
+                {
+                    "https://graph.microsoft.com/.default"
+                };
+                MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
+                return (new GraphServiceClient(authProvider));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\nERROR: " + e.Message);
+                return null;
+            }
+        }
 
         /// <summary>
         /// This method retrieves each of the KeyVaults specified in the vaultList.
@@ -96,7 +118,7 @@ namespace RBAC
             {
                 // Associates the client with the subscription
                 kvmClient.SubscriptionId = res.SubscriptionId;
-
+               
                 // Retrieves all KeyVaults at the Subscription scope
                 if (res.ResourceGroups == null)
                 { 
@@ -104,8 +126,15 @@ namespace RBAC
                 }
                 else
                 {
+                    bool notFound = false;
                     foreach (ResourceGroup resGroup in res.ResourceGroups) 
                     {
+                        // If the Subscription is not found, then do not continue in this Subscription
+                        if (notFound)
+                        {
+                            break;
+                        }
+
                         // Retrieves all KeyVaults at the ResourceGroup scope
                         if (resGroup.KeyVaults == null) 
                         { 
@@ -113,10 +142,23 @@ namespace RBAC
                         }
                         // Retrieves all KeyVaults at the Resource scope
                         else
-                        { 
+                        {
                             foreach (string vaultName in resGroup.KeyVaults) 
                             {
-                                vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName));
+
+                                try
+                                {
+                                    vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName)); 
+                                } 
+                                catch (CloudException e)
+                                {
+                                    Console.WriteLine("\nERROR: " + e.Message);
+                                    if (e.Body.Code == "SubscriptionNotFound")
+                                    {
+                                        notFound = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -138,37 +180,55 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
-        public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, List<Vault> vaultsRetrieved, string resourceGroup = null)
+        public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
+            List<Vault> vaultsRetrieved, string resourceGroup = null)
         {
-            IPage<Vault> vaultsCurPg;
+            IPage<Vault> vaultsCurPg = null;
             // Retrieves the first page of KeyVaults at the Subscription scope
             if (resourceGroup == null) 
             { 
-                vaultsCurPg = kvmClient.Vaults.ListBySubscription();
+                try
+                {
+                    vaultsCurPg = kvmClient.Vaults.ListBySubscription();
+                }
+                catch (CloudException e)
+                {
+                    Console.WriteLine("\nERROR: " + e.Message);
+                }
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
             else
             { 
-                vaultsCurPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
+                try
+                {
+                    vaultsCurPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
+                }
+                catch (CloudException e)
+                {
+                    Console.WriteLine("\nERROR: " + e.Message);
+                }
             }
-            vaultsRetrieved.AddRange(vaultsCurPg);
-
-            // Get remaining pages
-            while (vaultsCurPg.NextPageLink != null) 
+            
+            // Get remaining pages if vaults were found
+            if (vaultsCurPg != null)
             {
-                IPage<Vault> vaultsNextPg;
-                // Retrieves the remaining pages of KeyVaults at the Subscription scope
-                if (resourceGroup == null) // then by Subscription
+                vaultsRetrieved.AddRange(vaultsCurPg);
+                while (vaultsCurPg.NextPageLink != null)
                 {
-                    vaultsNextPg = kvmClient.Vaults.ListBySubscriptionNext(vaultsCurPg.NextPageLink);
+                    IPage<Vault> vaultsNextPg = null;
+                    // Retrieves the remaining pages of KeyVaults at the Subscription scope
+                    if (resourceGroup == null) // then by Subscription
+                    {
+                        vaultsNextPg = kvmClient.Vaults.ListBySubscriptionNext(vaultsCurPg.NextPageLink);
+                    }
+                    // Retrieves the remaining pages of KeyVaults at the ResourceGroup scope
+                    else
+                    {
+                        vaultsNextPg = kvmClient.Vaults.ListByResourceGroupNext(vaultsCurPg.NextPageLink);
+                    }
+                    vaultsRetrieved.AddRange(vaultsNextPg);
+                    vaultsCurPg = vaultsNextPg;
                 }
-                // Retrieves the remaining pages of KeyVaults at the ResourceGroup scope
-                else
-                {
-                    vaultsNextPg = kvmClient.Vaults.ListByResourceGroupNext(vaultsCurPg.NextPageLink);
-                }
-                vaultsRetrieved.AddRange(vaultsNextPg);
-                vaultsCurPg = vaultsNextPg;
             }
             return vaultsRetrieved;
         }

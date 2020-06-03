@@ -23,15 +23,15 @@ Take note of the ClientKey value.
 7. Now click "Add Permissions". Note that depending on your associated Tenant, your access requests for these API permissions may require manual approval 
 and could result in a multi-day process. 
 
-For more information on setting up your AAD Applciation, visit https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-app. 
+For more information on setting up your AAD Application, [click here.](https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-app)
 
 ### Granting Access to the AAD Application
 Your AAD Application must be given permissions to access the KeyVaults you want to retrieve.
 
-To do so, follow [these steps](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal") and grant your AAD Application permissions with 
+To do so, follow [these steps](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) and grant your AAD Application permissions with 
 the "Contributor" role in each KeyVault you want to access.
 
-For more information on RBAC in Azure, visit https://docs.microsoft.com/en-us/azure/key-vault/general/overview-security.
+For more information on RBAC in Azure, [click here.](https://docs.microsoft.com/en-us/azure/key-vault/general/overview-security)
 
 ## Storing the Secrets in a KeyVault 
 Follow [these steps](https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal) to create an Azure KeyVault and add three secrets 
@@ -39,14 +39,17 @@ for the AAD Application ClientId, ClientKey, and your AAD tenantId. The tenantId
 
 ## Creating the MasterConfig.json File 
 This project requires a custom MasterConfig.json file upload. 
-Refer to the [MasterConfigExample.json file](Config\MasterConfigExample.json) for formatting and inputs.
-``` Note: All of the fields within "AadAppKeyDetails" are required, but not all fields are required within "Resources" for each Resource object.```
+Refer to the [MasterConfigExample.json file](Config/MasterConfigExample.json) for formatting and inputs.
+
+``` 
+Note: All of the fields within "AadAppKeyDetails" are required, but not all fields are required within "Resources" for each Resource object.
+```
 
 There are 3 ways to obtain a list of KeyVaults: 
-- EXAMPLE1: Provide only the SubscriptionId -> this gets all of the KeyVaults in the subscription.
-- EXAMPLE2: Provide a SubscriptionId and a ResourceGroupName -> this gets all of the KeyVaults within the specified ResourceGroup. 
+- EXAMPLE 1: Provide only the SubscriptionId, which gets all of the KeyVaults in the subscription.
+- EXAMPLE 2: Provide a SubscriptionId and a ResourceGroupName, which gets all of the KeyVaults within the specified ResourceGroup. 
 Note that you can add multiple ResourceGroup names per SubscriptionId and can specify specific KeyVaults if you wish. 
-- EXAMPLE3: Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names -> this gets all of the KeyVaults specified in the list.
+- EXAMPLE 3: Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names, which gets all of the KeyVaults specified in the list.
 
 # Contributing 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a 

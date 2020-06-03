@@ -27,19 +27,31 @@ namespace RBAC
             JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+            Console.WriteLine("\nGrabbing secrets...");
             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
-            var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-            var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
-            Console.WriteLine("Success!");
 
-            Console.WriteLine("\nRetrieving key vaults...");
-            List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
-            Console.WriteLine("Success!");
+            // If secrets contains all 4 secrets needed, continue
+            if (secrets.Count == 4)
+             {
+                Console.WriteLine("Success!");
+                Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+                var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
+                var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
 
-            Console.WriteLine("\nGenerating YAML output...");
-            AccessPoliciesToYaml.convertToYaml(vaultsRetrieved);
-            Console.WriteLine("Success!");
+                // If both clients were created successfully, continue
+                if (kvmClient != null && graphClient != null)
+                {
+                    Console.WriteLine("Success!");
+
+                    Console.WriteLine("\nRetrieving key vaults...");
+                    List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
+                    Console.WriteLine("Success!");
+
+                    Console.WriteLine("\nGenerating YAML output...");
+                    AccessPoliciesToYaml.convertToYaml(vaultsRetrieved);
+                    Console.WriteLine("Success!");
+                }
+            }
         }
     }
 }
