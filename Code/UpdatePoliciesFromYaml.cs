@@ -35,7 +35,7 @@ namespace RBAC
 
             Console.WriteLine("\nUpdating key vaults...");
             updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets);
-            Console.WriteLine("Success!");
+            Console.WriteLine("Updates finished!");
         }
 
         private static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
@@ -47,25 +47,11 @@ namespace RBAC
                     updateVault(kv, kvmClient, secrets);
                 }
             }
-            /*
-            foreach(KeyVaultProperties kv in vaultsRetrieved)
-            {
-                if (!yamlVaults.Contains(kv))
-                {
-                    deleteVault(kv, kvmClient);
-                }
-            }
-            */
-        }
-
-        private static void deleteVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient)
-        {
-            kvmClient.Vaults.DeleteAsync(kv.ResourceGroupName, kv.VaultName);
         }
 
         private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
         {
-            Console.WriteLine("Updating " + kv.VaultName);
+            Console.WriteLine("\nUpdating " + kv.VaultName + "...");
             kvmClient.SubscriptionId = kv.SubscriptionId;
             var p = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
             p.AccessPolicies = new List<AccessPolicyEntry>();
@@ -74,6 +60,7 @@ namespace RBAC
                 p.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
             }
             var res = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new Microsoft.Azure.Management.KeyVault.Models.VaultCreateOrUpdateParameters(kv.Location, p)).Result;
+            Console.WriteLine("" + res.Name + " successfully updated!");
         }
     }
 }
