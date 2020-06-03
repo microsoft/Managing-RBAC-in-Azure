@@ -53,13 +53,13 @@ namespace RBAC
         {
             Console.WriteLine("\nUpdating " + kv.VaultName + "...");
             kvmClient.SubscriptionId = kv.SubscriptionId;
-            var p = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
-            p.AccessPolicies = new List<AccessPolicyEntry>();
+            var properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
+            properties.AccessPolicies = new List<AccessPolicyEntry>();
             foreach(ServicePrincipalPermissions sp in kv.AccessPolicies)
             {
-                p.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                properties.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
             }
-            var res = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new Microsoft.Azure.Management.KeyVault.Models.VaultCreateOrUpdateParameters(kv.Location, p)).Result;
+            var res = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new Microsoft.Azure.Management.KeyVault.Models.VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
             Console.WriteLine("" + res.Name + " successfully updated!");
         }
     }
