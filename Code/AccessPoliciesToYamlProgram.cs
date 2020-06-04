@@ -11,6 +11,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Rest.Azure;
 using Microsoft.Graph;
+using Microsoft.Azure.Management.KeyVault.Fluent.Models;
 
 namespace RBAC
 {
@@ -32,7 +33,7 @@ namespace RBAC
 
             // If secrets contains all 4 secrets needed, continue
             if (secrets.Count == 4)
-             {
+            {
                 Console.WriteLine("Success!");
                 Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
                 var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);

@@ -43,7 +43,8 @@ namespace RBAC
                 secrets["clientKey"] = clientKeySecret.Value;
                 KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
                 secrets["tenantId"] = tenantIdSecret.Value;
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 Console.WriteLine("\nERROR: " + e.Message);
             }
@@ -120,7 +121,7 @@ namespace RBAC
                 kvmClient.SubscriptionId = res.SubscriptionId;
                
                 // Retrieves all KeyVaults at the Subscription scope
-                if (res.ResourceGroups == null)
+                if (res.ResourceGroups.Count != 0)
                 { 
                     vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved);
                 }
@@ -129,14 +130,14 @@ namespace RBAC
                     bool notFound = false;
                     foreach (ResourceGroup resGroup in res.ResourceGroups) 
                     {
-                        // If the Subscription is not found, then do not continue in this Subscription
+                        // If the Subscription is not found, then do not continue looking for vaults in this subscription
                         if (notFound)
                         {
                             break;
                         }
 
                         // Retrieves all KeyVaults at the ResourceGroup scope
-                        if (resGroup.KeyVaults == null) 
+                        if (resGroup.KeyVaults.Count == 0) 
                         { 
                             vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved, resGroup.ResourceGroupName);
                         }
@@ -145,7 +146,6 @@ namespace RBAC
                         {
                             foreach (string vaultName in resGroup.KeyVaults) 
                             {
-
                                 try
                                 {
                                     vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName)); 
@@ -153,6 +153,7 @@ namespace RBAC
                                 catch (CloudException e)
                                 {
                                     Console.WriteLine("\nERROR: " + e.Message);
+                                    // If the Subscription is not found, then do not continue looking for vaults in this subscription
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
                                         notFound = true;

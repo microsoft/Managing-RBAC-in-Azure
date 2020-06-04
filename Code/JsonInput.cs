@@ -31,7 +31,7 @@ namespace RBAC
     {
         Resource()
         {
-            this.ResourceGroups = null;
+            this.ResourceGroups = new List<ResourceGroup>();
         }
         public string SubscriptionId { get; set; }
         public List<ResourceGroup> ResourceGroups { get; set; }
@@ -45,7 +45,7 @@ namespace RBAC
     {
         ResourceGroup()
         {
-            this.KeyVaults = null;
+            this.KeyVaults = new List<string>();
         }
         public string ResourceGroupName { get; set; }
         public List<string> KeyVaults { get; set; }

@@ -126,7 +126,7 @@ namespace RBAC
             else
             {
                 var kvp = (KeyVaultProperties)rhs;
-                return this.AccessPolicies.SequenceEqual(kvp.AccessPolicies);
+                return (this.VaultName == kvp.VaultName) && (this.AccessPolicies.SequenceEqual(kvp.AccessPolicies));
             }
         }
 
