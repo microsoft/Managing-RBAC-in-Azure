@@ -4,7 +4,9 @@ using Microsoft.Graph;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Text;
 using YamlDotNet.Serialization;
 
@@ -57,10 +59,45 @@ namespace RBAC
             properties.AccessPolicies = new List<AccessPolicyEntry>();
             foreach(ServicePrincipalPermissions sp in kv.AccessPolicies)
             {
-                properties.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                try
+                {
+                    checkPermissions(sp);
+                    properties.AccessPolicies.Add(new Microsoft.Azure.Management.KeyVault.Models.AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId, new Microsoft.Azure.Management.KeyVault.Models.Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine($"{e.Message} for {sp.DisplayName} in {kv.VaultName}");
+                    System.Environment.Exit(1);
+                }
             }
             var res = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new Microsoft.Azure.Management.KeyVault.Models.VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
             Console.WriteLine("" + res.Name + " successfully updated!");
+        }
+
+        private static bool checkPermissions(ServicePrincipalPermissions sp)
+        {
+            foreach(string kp in sp.PermissionsToKeys)
+            {
+                if (!ServicePrincipalPermissions.allKeyPermissions.Contains(kp.ToLower()))
+                {
+                    throw new Exception($"Invalid key permission {kp}");
+                }
+            }
+            foreach(string s in sp.PermissionsToSecrets)
+            {
+                if (!ServicePrincipalPermissions.allSecretPermissions.Contains(s.ToLower()))
+                {
+                    throw new Exception($"Invalid secret permission {s}");
+                }
+            }
+            foreach (string cp in sp.PermissionsToCertificates)
+            {
+                if (!ServicePrincipalPermissions.allCertificatePermissions.Contains(cp.ToLower()))
+                {
+                    throw new Exception($"Invalid certificate permission {cp}");
+                }
+            }
+            return true;
         }
     }
 }

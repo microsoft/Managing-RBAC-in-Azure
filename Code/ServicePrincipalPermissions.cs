@@ -115,5 +115,10 @@ namespace RBAC
         public string[] PermissionsToKeys { get; set; }
         public string[] PermissionsToSecrets { get; set; }
         public string[] PermissionsToCertificates { get; set; }
+        public static string[] allKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
+            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"};
+        public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
+        public static string[] allCertificatePermissions = {"get", "list", "update", "create", "import", "delete", "recover",
+            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge"};
     }
 }
