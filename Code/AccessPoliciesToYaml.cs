@@ -11,6 +11,7 @@ using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Rest.Azure;
 using Microsoft.Graph;
 using System.Management.Automation;
+using System.Linq;
 
 namespace RBAC
 {
@@ -182,11 +183,11 @@ namespace RBAC
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
         public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
-            List<Vault> vaultsRetrieved, string resourceGroup = null)
+            List<Vault> vaultsRetrieved, string resourceGroup = "")
         {
             IPage<Vault> vaultsCurPg = null;
             // Retrieves the first page of KeyVaults at the Subscription scope
-            if (resourceGroup == null) 
+            if (resourceGroup.Length == 0) 
             { 
                 try
                 {
@@ -218,7 +219,7 @@ namespace RBAC
                 {
                     IPage<Vault> vaultsNextPg = null;
                     // Retrieves the remaining pages of KeyVaults at the Subscription scope
-                    if (resourceGroup == null) // then by Subscription
+                    if (resourceGroup.Length == 0) // then by Subscription
                     {
                         vaultsNextPg = kvmClient.Vaults.ListBySubscriptionNext(vaultsCurPg.NextPageLink);
                     }
