@@ -1,0 +1,42 @@
+{
+  "AadAppKeyDetails": {
+    "AadAppName": "AppName",
+    "VaultName": "KeyVaultNameWithStoredSecrets",
+    "ClientIdSecretName": "NameOfClientIdSecret",
+    "ClientKeySecretName": "NameOfClientKeySecret",
+    "TenantIdSecretName": "NameOfTenantIdSecret"
+  },
+  "Resources": [
+    {
+      "SubscriptionId": "EXAMPLE1-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    },
+    {
+      "SubscriptionId": "EXAMPLE2-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "ResourceGroups": [
+        {
+          "ResourceGroupName": "ResourceGroup1"
+        },
+        {
+          "ResourceGroupName": "ResourceGroup2",
+          "KeyVaults": [
+            "KeyVault1"
+          ]
+        }
+      ]
+    },
+
+    {
+      "SubscriptionId": "EXAMPLE3-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "ResourceGroups": [
+        {
+          "ResourceGroupName": "ResourceGroupEx5",
+          "KeyVaults": [
+            "KeyVault2",
+            "KeyVault3",
+            "KeyVault4"
+          ]
+        }
+      ]
+    }
+  ]
+}
