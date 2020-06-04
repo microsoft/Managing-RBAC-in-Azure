@@ -1,0 +1,220 @@
+- VaultName: YOUR-VAULT-NAME
+  ResourceGroupName: Your Resource Group Name
+  SubscriptionId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  Location: eastus
+  ResourceId: /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/resourceGroups/Your Resource Group Name/providers/Microsoft.KeyVault/vaults/YOUR-VAULT-NAME
+  VaultUri: https://YOUR-VAULT-NAME.vault.azure.net/
+  TenantId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  Sku: Standard
+  EnabledForDeployment: false
+  EnabledForTemplateDeployment: false
+  EnabledForDiskEncryption: false
+  EnableSoftDelete: true
+  AccessPolicies:
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys: 
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - List
+    - Get
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - ObjectId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+    ApplicationId: ''
+    DisplayName: Name (Email)
+    PermissionsToKeys:
+    - Get
+    PermissionsToSecrets:
+    - Get
+    PermissionsToCertificates: 
