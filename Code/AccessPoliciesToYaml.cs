@@ -121,7 +121,7 @@ namespace RBAC
                 kvmClient.SubscriptionId = res.SubscriptionId;
                
                 // Retrieves all KeyVaults at the Subscription scope
-                if (res.ResourceGroups.Count != 0)
+                if (res.ResourceGroups.Count == 0)
                 { 
                     vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved);
                 }
