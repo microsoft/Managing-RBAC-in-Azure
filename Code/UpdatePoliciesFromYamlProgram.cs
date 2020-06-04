@@ -39,7 +39,7 @@ namespace RBAC
                     List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
                     Console.WriteLine("Success!");
 
-                    Console.WriteLine("Reading yaml file...");
+                    Console.WriteLine("\nReading yaml file...");
                     string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
                     var deserializer = new DeserializerBuilder().Build();
                     List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);

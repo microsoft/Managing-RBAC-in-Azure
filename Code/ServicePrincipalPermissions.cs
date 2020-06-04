@@ -72,11 +72,11 @@ namespace RBAC
         /// <returns></returns>
         private string[] getPermissions(IList<string> permissions)
         {
-            if (permissions != null)
+            if (permissions.Count != 0)
             {
                 return permissions.ToArray();
             }
-            return null;
+            return new string[] { };
         }
 
         /// <summary>
@@ -109,12 +109,61 @@ namespace RBAC
             }
         }
 
+        
         public string ObjectId { get; set; }
         public string ApplicationId { get; set; }
         public string DisplayName { get; set; }
-        public string[] PermissionsToKeys { get; set; }
-        public string[] PermissionsToSecrets { get; set; }
-        public string[] PermissionsToCertificates { get; set; }
+        private string[] KeyPermissions;
+        public string[] PermissionsToKeys
+        {
+            get => KeyPermissions;
+            set
+            {
+                if (value != null)
+                {
+                    KeyPermissions = value;
+                }
+                else
+                {
+                    KeyPermissions = new string[] { };
+                }
+            }
+        }
+
+        private string[] SecretsPermissions;
+        public string[] PermissionsToSecrets
+        {
+            get => SecretsPermissions;
+            set
+            {
+                if (value != null)
+                {
+                    SecretsPermissions = value;
+                }
+                else
+                {
+                    SecretsPermissions = new string[] { };
+                }
+            }
+        }
+
+        private string[] CertificatePermissions;
+        public string[] PermissionsToCertificates
+        {
+            get => CertificatePermissions;
+            set
+            {
+                if (value != null) 
+                { 
+                    CertificatePermissions = value; 
+                } 
+                else 
+                { 
+                    CertificatePermissions = new string[] { }; 
+                }
+            }
+        }
+
         public static string[] allKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
             "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"};
         public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };

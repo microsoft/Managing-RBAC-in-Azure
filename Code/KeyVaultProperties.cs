@@ -108,7 +108,6 @@ namespace RBAC
             {
                 policies.Add(new ServicePrincipalPermissions(policiesEnum.Current, graphClient));
             }
-
             return policies;
         }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
+using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
