@@ -3,7 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+<<<<<<< HEAD
     <RootNamespace>RBAC</RootNamespace>
+=======
+    <StartupObject>RBAC.UpdatePoliciesFromYaml</StartupObject>
+>>>>>>> fea6601a061e9966d2aaa48e9c2959b1c0d1bf4d
   </PropertyGroup>
 
   <ItemGroup>
