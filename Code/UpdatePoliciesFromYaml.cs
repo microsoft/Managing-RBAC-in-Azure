@@ -1,5 +1,7 @@
 ﻿using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
+using Microsoft.Azure.Management.Network.Fluent.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Graph;
 using Newtonsoft.Json;
 using System;
@@ -14,6 +16,7 @@ namespace RBAC
 {
     class UpdatePoliciesFromYaml
     {
+<<<<<<< Updated upstream
         static void Main(string[] args)
         {
             Console.WriteLine("Reading input files...");
@@ -99,5 +102,8 @@ namespace RBAC
             }
             return true;
         }
+=======
+        
+>>>>>>> Stashed changes
     }
 }
