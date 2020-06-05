@@ -22,11 +22,11 @@ namespace RBAC
         }
         public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
-            string[] typeAndName = getTypeAndName(accessPol, graphClient);
+            Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
             this.ObjectId = accessPol.ObjectId;
             this.ApplicationId = accessPol.ApplicationId.ToString();
-            this.Type = typeAndName[0];
+            this.Type = typeAndName["Type"];
             this.DisplayName = getDisplayName(typeAndName);
             this.Alias = getAlias(typeAndName);
             this.PermissionsToKeys = getPermissions(accessPol.Permissions.Keys);
@@ -41,13 +41,18 @@ namespace RBAC
         /// <param name="accessPol">The current AccessPolicyEntry</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>A string array holding the Type, DisplayName, and Alias if applicable</returns>
-        private string[] getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        private Dictionary<string,string> getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             // User
             try
             {
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return new string[] { "User", user.DisplayName, user.UserPrincipalName };
+                Dictionary<string,string> dict = new Dictionary<string, string> ();
+                dict.Add("Type","User");
+                dict.Add("DisplayName", user.DisplayName);
+                dict.Add("Email", user.UserPrincipalName);
+                return dict;
+
             }
             catch { }
 
@@ -55,7 +60,12 @@ namespace RBAC
             try
             {
                 var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return new string[] { "Group", group.DisplayName, group.Mail };
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("Type", "Group");
+                dict.Add("DisplayName", group.DisplayName);
+                dict.Add("Email", group.Mail);
+                return dict;
+     
             }
             catch { }
 
@@ -63,7 +73,10 @@ namespace RBAC
             try
             {
                 var app = (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return new string[] { "Application", app.DisplayName };
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("Type", "Application");
+                dict.Add("DisplayName", app.DisplayName);
+                return dict;
             }
             catch { }
 
@@ -71,12 +84,18 @@ namespace RBAC
             try
             {
                 var sp = (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return new string[] { "Service Principal", sp.DisplayName };
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("Type", "Service Principal");
+                dict.Add("DisplayName", sp.DisplayName);
+                return dict;
+
             }
             // "Unknown Application
             catch
             {
-                return new string[] { "Unknown" };
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("Type", "Uknown");
+                return dict;
             }
         }
 
@@ -85,11 +104,11 @@ namespace RBAC
         /// </summary>
         /// <param name="typeAndName">The string array holding the Type, DisplayName, and Alias</param>
         /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
-        private string getDisplayName(string[] typeAndName)
+        private string getDisplayName(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 1)
             {
-                return typeAndName[1];
+                return typeAndName["DisplayName"];
             }
             return "";
         }
@@ -99,11 +118,11 @@ namespace RBAC
         /// </summary>
         /// <param name="typeAndName">A string array holding the Type, DisplayName, and Alias if applicable</param>
         /// <returns>The Alias of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
-        private string getAlias(string[] typeAndName)
+        private string getAlias(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 2)
             {
-                return typeAndName[2];
+                return typeAndName["Email"];
             }
             return "";
         }
@@ -115,7 +134,7 @@ namespace RBAC
         /// <returns></returns>
         private string[] getPermissions(IList<string> permissions)
         {
-            if (permissions.Count != 0)
+            if (permissions != null && permissions.Count != 0 )
             {
                 return permissions.ToArray();
             }
