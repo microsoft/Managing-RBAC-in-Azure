@@ -46,7 +46,7 @@ namespace RBAC
                     Console.WriteLine("Success!");
 
                     Console.WriteLine("\nUpdating key vaults...");
-                    UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets);
+                    UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
                     Console.WriteLine("Updates finished!");
                 }
             }

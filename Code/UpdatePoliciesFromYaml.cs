@@ -16,14 +16,15 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
-        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
+        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
+            GraphServiceClient graphClient)
         {
             foreach(KeyVaultProperties kv in yamlVaults)
             {
                 if (!vaultsRetrieved.Contains(kv))
                 {
                     Console.WriteLine("\nUpdating " + kv.VaultName + "...");
-                    updateVault(kv, kvmClient, secrets);
+                    updateVault(kv, kvmClient, secrets, graphClient);
                 }
             }
         }
@@ -34,7 +35,7 @@ namespace RBAC
         /// <param name="kv">The KeyVault you want to update</param>
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
-        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets)
+        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             kvmClient.SubscriptionId = kv.SubscriptionId;
 
@@ -43,6 +44,8 @@ namespace RBAC
 
             foreach(ServicePrincipalPermissions sp in kv.AccessPolicies)
             {
+                //set object id
+                //
                 try
                 {
                     checkPermissions(sp);

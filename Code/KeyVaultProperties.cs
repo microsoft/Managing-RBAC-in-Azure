@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
+using YamlDotNet.Serialization;
 
 namespace RBAC
 {

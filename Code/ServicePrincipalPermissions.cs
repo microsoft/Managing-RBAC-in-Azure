@@ -1,8 +1,11 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
+﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using YamlDotNet.Serialization;
 
 namespace RBAC
 {
@@ -11,30 +14,40 @@ namespace RBAC
     /// </summary>
     class ServicePrincipalPermissions
     {
-        public ServicePrincipalPermissions() { }
+        public ServicePrincipalPermissions() 
+        {
+            this.ObjectId = "";
+            this.ApplicationId = "";
+            this.Alias = "";
+        }
         public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
+            string[] typeAndName = getTypeAndName(accessPol, graphClient);
+
             this.ObjectId = accessPol.ObjectId;
             this.ApplicationId = accessPol.ApplicationId.ToString();
-            this.DisplayName = getDisplayName(accessPol, graphClient);
+            this.Type = typeAndName[0];
+            this.DisplayName = getDisplayName(typeAndName);
+            this.Alias = getAlias(typeAndName);
             this.PermissionsToKeys = getPermissions(accessPol.Permissions.Keys);
             this.PermissionsToSecrets = getPermissions(accessPol.Permissions.Secrets);
             this.PermissionsToCertificates = getPermissions(accessPol.Permissions.Certificates);
         }
 
+
         /// <summary>
-        /// This method gets the DisplayName of the ServicePrincipal using the GraphServiceClient.
+        /// This method gets the Type, DisplayName, and Alias of the ServicePrincipal using the GraphServiceClient.
         /// </summary>
         /// <param name="accessPol">The current AccessPolicyEntry</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
-        /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns en empty string.</returns>
-        private string getDisplayName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        /// <returns>A string array holding the Type, DisplayName, and Alias if applicable</returns>
+        private string[] getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             // User
             try
             {
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return (user.DisplayName + " (" + user.UserPrincipalName + ")");
+                return new string[] { "User", user.DisplayName, user.UserPrincipalName };
             }
             catch { }
 
@@ -42,27 +55,57 @@ namespace RBAC
             try
             {
                 var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                return (group.DisplayName + " (" + group.Mail + ")");
+                return new string[] { "Group", group.DisplayName, group.Mail };
             }
             catch { }
 
             // Application
             try
             {
-                return (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+                var app = (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                return new string[] { "Application", app.DisplayName };
             }
             catch { }
 
             // Service Principal
             try
             {
-                return (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0].DisplayName;
+                var sp = (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                return new string[] { "Service Principal", sp.DisplayName };
             }
             // "Unknown Application
             catch
             {
-                return "";
+                return new string[] { "Unknown" };
             }
+        }
+
+        /// <summary>
+        /// This method gets the DisplayName of the ServicePrincipal.
+        /// </summary>
+        /// <param name="typeAndName">The string array holding the Type, DisplayName, and Alias</param>
+        /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        private string getDisplayName(string[] typeAndName)
+        {
+            if (typeAndName.Count() > 1)
+            {
+                return typeAndName[1];
+            }
+            return "";
+        }
+
+        /// <summary>
+        ///  This method gets the Alias of the ServicePrincipal.
+        /// </summary>
+        /// <param name="typeAndName">A string array holding the Type, DisplayName, and Alias if applicable</param>
+        /// <returns>The Alias of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        private string getAlias(string[] typeAndName)
+        {
+            if (typeAndName.Count() > 2)
+            {
+                return typeAndName[2];
+            }
+            return "";
         }
 
         /// <summary>
@@ -112,7 +155,9 @@ namespace RBAC
         
         public string ObjectId { get; set; }
         public string ApplicationId { get; set; }
+        public string Type { get; set; }
         public string DisplayName { get; set; }
+        public string Alias { get; set; }
         private string[] KeyPermissions;
         public string[] PermissionsToKeys
         {
