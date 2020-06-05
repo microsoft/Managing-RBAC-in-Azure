@@ -25,7 +25,7 @@ namespace RBAC
         static void Main(string[] args)
         {
              Console.WriteLine("Reading input file...");
-             string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\MasterConfig.json");
+             string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\json2.json");
              JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
              Console.WriteLine("Success!");
 

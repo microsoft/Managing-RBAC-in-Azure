@@ -112,10 +112,10 @@ namespace RBAC
         /// This method returns a string array of the permissions.Null if there were no granted permissions. Otherwise, returns the string array. 
         /// </summary>
         /// <param name="permissions">The list of Key, Secret, or Certificate permissions</param>
-        /// <returns></returns>
+        /// <returns>The string array of permissions</returns>
         private string[] getPermissions(IList<string> permissions)
         {
-            if (permissions.Count != 0)
+            if (permissions != null && permissions.Count != 0)
             {
                 return permissions.ToArray();
             }
