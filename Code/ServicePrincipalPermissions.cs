@@ -43,16 +43,15 @@ namespace RBAC
         /// <returns>A string array holding the Type, DisplayName, and Alias if applicable</returns>
         private Dictionary<string,string> getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
+            Dictionary<string, string> data = new Dictionary<string, string>();
             // User
             try
             {
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                Dictionary<string,string> dict = new Dictionary<string, string> ();
-                dict.Add("Type","User");
-                dict.Add("DisplayName", user.DisplayName);
-                dict.Add("Email", user.UserPrincipalName);
-                return dict;
-
+                data["Type"] = "User";
+                data["DisplayName"] = user.DisplayName;
+                data["Email"] = user.UserPrincipalName;
+                return data;
             }
             catch { }
 
@@ -60,12 +59,10 @@ namespace RBAC
             try
             {
                 var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                Dictionary<string, string> dict = new Dictionary<string, string>();
-                dict.Add("Type", "Group");
-                dict.Add("DisplayName", group.DisplayName);
-                dict.Add("Email", group.Mail);
-                return dict;
-     
+                data["Type"] = "Group";
+                data["DisplayName"] = group.DisplayName;
+                data["Email"] = group.Mail;
+                return data;
             }
             catch { }
 
@@ -73,10 +70,9 @@ namespace RBAC
             try
             {
                 var app = (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                Dictionary<string, string> dict = new Dictionary<string, string>();
-                dict.Add("Type", "Application");
-                dict.Add("DisplayName", app.DisplayName);
-                return dict;
+                data["Type"] = "App";
+                data["DisplayName"] = app.DisplayName;
+                return data;
             }
             catch { }
 
@@ -84,18 +80,15 @@ namespace RBAC
             try
             {
                 var sp = (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
-                Dictionary<string, string> dict = new Dictionary<string, string>();
-                dict.Add("Type", "Service Principal");
-                dict.Add("DisplayName", sp.DisplayName);
-                return dict;
-
+                data["Type"] = "Service Principal";
+                data["DisplayName"] = sp.DisplayName;
+                return data;
             }
             // "Unknown Application
             catch
             {
-                Dictionary<string, string> dict = new Dictionary<string, string>();
-                dict.Add("Type", "Uknown");
-                return dict;
+                data["Type"] = "Unknown";
+                return data;
             }
         }
 
@@ -134,11 +127,7 @@ namespace RBAC
         /// <returns>The string array of permissions</returns>
         private string[] getPermissions(IList<string> permissions)
         {
-<<<<<<< HEAD
             if (permissions != null && permissions.Count != 0)
-=======
-            if (permissions != null && permissions.Count != 0 )
->>>>>>> e4cdd7293db8ed6b7d6a3c89f65d3a54ce9cda49
             {
                 return permissions.ToArray();
             }
