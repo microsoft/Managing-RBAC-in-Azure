@@ -285,10 +285,10 @@ namespace RBAC
                 throw new Exception($"\nMissing TenantId for {kv.VaultName}");
             }
 
-            foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
-            {
-                checkSPInvalidFields(kv.VaultName, sp);
-            }
+            // foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+            // {
+            //     checkSPInvalidFields(kv.VaultName, sp);
+            // }
         }
 
         /// <summary>
@@ -306,6 +306,12 @@ namespace RBAC
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
+
+                    foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        checkSPInvalidFields(kv.VaultName, sp);
+                    }
+
                 }
                 return yamlVaults;
             }
