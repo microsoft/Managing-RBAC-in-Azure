@@ -108,7 +108,16 @@ namespace RBAC
                 return (this.VaultName == kvp.VaultName) && (this.AccessPolicies.SequenceEqual(kvp.AccessPolicies));
             }
         }
-
+        public int UsersContained()
+        {
+            int ret = 0;
+            foreach(ServicePrincipalPermissions sp in AccessPolicies)
+            {
+                if(sp.Type.ToLower() == "user")
+                    ret++;
+            }
+            return ret;
+        }
         public string VaultName { get; set; }
         public string ResourceGroupName { get; set; }
         public string SubscriptionId { get; set; }
