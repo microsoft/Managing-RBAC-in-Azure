@@ -58,31 +58,26 @@ namespace RBAC
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
             {
-                throw new Exception($"\nError: VaultName for {kv.VaultName} was changed or removed.");
+                throw new Exception($"\nError: VaultName {kv.VaultName} was changed or added.");
             }
 
-            var lookupRG = vaultsRetrieved.ToLookup(kv => kv.ResourceGroupName);
-            if (lookupName[kv.ResourceGroupName].ToList().Count != 1)
+            // If Key Vault name was correct, then check the other fields
+            KeyVaultProperties originalKV = lookupName[kv.VaultName].ToList()[0];
+            if (originalKV.ResourceGroupName != kv.ResourceGroupName.Trim())
             {
-                throw new Exception($"\nError: ResourceGroupName for {kv.VaultName} was changed or removed.");
+                throw new Exception($"\nError: ResourceGroupName for {kv.VaultName} was changed.");
             }
-
-            var lookupSubId = vaultsRetrieved.ToLookup(kv => kv.SubscriptionId);
-            if (lookupName[kv.SubscriptionId].ToList().Count != 1)
+            if (originalKV.SubscriptionId != kv.SubscriptionId.Trim())
             {
-                throw new Exception($"\nError: SubscriptionId for {kv.VaultName} was changed or removed.");
+                throw new Exception($"\nError: SubscriptionId for {kv.VaultName} was changed.");
             }
-
-            var lookupLoc = vaultsRetrieved.ToLookup(kv => kv.Location);
-            if (lookupName[kv.Location].ToList().Count != 1)
+            if (originalKV.Location != kv.Location.Trim())
             {
-                throw new Exception($"\nError: Location for {kv.VaultName} was changed or removed.");
+                throw new Exception($"\nError: Location for {kv.VaultName} was changed.");
             }
-
-            var lookupTenant = vaultsRetrieved.ToLookup(kv => kv.TenantId);
-            if (lookupName[kv.TenantId].ToList().Count != 1)
+            if (originalKV.TenantId != kv.TenantId.Trim())
             {
-                throw new Exception($"\nError: TenantId for {kv.VaultName} was changed or removed.");
+                throw new Exception($"\nError: TenantId for {kv.VaultName} was changed.");
             }
         }
 
@@ -165,6 +160,11 @@ namespace RBAC
                         .Request()
                         .GetAsync().Result;
                     data["ObjectId"] = user.Id;
+
+                    if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
+                    {
+                        throw new Exception($"{sp.DisplayName} could not be found.");
+                    }
                 }
                 else if (type == "group")
                 {
