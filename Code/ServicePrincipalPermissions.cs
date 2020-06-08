@@ -16,16 +16,12 @@ namespace RBAC
     {
         public ServicePrincipalPermissions() 
         {
-            this.ObjectId = "";
-            this.ApplicationId = "";
             this.Alias = "";
         }
         public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
-            this.ObjectId = accessPol.ObjectId;
-            this.ApplicationId = accessPol.ApplicationId.ToString();
             this.Type = typeAndName["Type"];
             this.DisplayName = getDisplayName(typeAndName);
             this.Alias = getAlias(typeAndName);
@@ -50,7 +46,7 @@ namespace RBAC
                 var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
                 data["Type"] = "User";
                 data["DisplayName"] = user.DisplayName;
-                data["Email"] = user.UserPrincipalName;
+                data["Alias"] = user.UserPrincipalName;
                 return data;
             }
             catch { }
@@ -60,8 +56,8 @@ namespace RBAC
             {
                 var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
                 data["Type"] = "Group";
-                data["DisplayName"] = group.DisplayName;
-                data["Email"] = group.Mail;
+                data["DisplayName"] = group.DisplayName; 
+                data["Alias"] = group.Mail;
                 return data;
             }
             catch { }
@@ -115,7 +111,7 @@ namespace RBAC
         {
             if (typeAndName.Count() > 2)
             {
-                return typeAndName["Email"];
+                return typeAndName["Alias"];
             }
             return "";
         }
@@ -164,8 +160,9 @@ namespace RBAC
             }
         }
 
-        
+        [YamlIgnore]
         public string ObjectId { get; set; }
+        [YamlIgnore]
         public string ApplicationId { get; set; }
         public string Type { get; set; }
         public string DisplayName { get; set; }

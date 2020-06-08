@@ -19,14 +19,7 @@ namespace RBAC
             this.ResourceGroupName = getResourceGroup(vault.Id);
             this.SubscriptionId = getSubscription(vault.Id);
             this.Location = vault.Location;
-            this.ResourceId = vault.Id;
-            this.VaultUri = vault.Properties.VaultUri;
             this.TenantId = vault.Properties.TenantId.ToString();
-            this.Sku = vault.Properties.Sku.Name.ToString();
-            this.EnabledForDeployment = getValue(vault.Properties.EnabledForDeployment);
-            this.EnabledForTemplateDeployment = getValue(vault.Properties.EnabledForTemplateDeployment);
-            this.EnabledForDiskEncryption = getValue(vault.Properties.EnabledForDiskEncryption);
-            this.EnableSoftDelete = getValue(vault.Properties.EnableSoftDelete);
             this.AccessPolicies = getAccessPolicies(vault.Properties.AccessPolicies, graphClient);
         }
 
@@ -81,20 +74,6 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method gets the value of the enabledProp if one was defined. 
-        /// </summary>
-        /// <param name="enabledProp">The EnabledForDeployment, EnabledForTemplateDeployment, EnabledForDiskEncryption, or EnableSoftDelete property</param>
-        /// <returns>The boolean value of the enabledProp if one exists. Otherwise, returns null.</returns>
-        private bool? getValue(bool? enabledProp)
-        {
-            if (enabledProp.HasValue)
-            {
-                return (enabledProp.Value);
-            }
-            return null;
-        }
-
-        /// <summary>
         /// This method parses through each AccessPolicyEntry and stores the data from each policy entry in a ServicePrincipal object.
         /// </summary>
         /// <param name="accessPolicies">The list of AccessPolicyEntrys</param>
@@ -134,14 +113,7 @@ namespace RBAC
         public string ResourceGroupName { get; set; }
         public string SubscriptionId { get; set; }
         public string Location { get; set; }
-        public string ResourceId { get; set; }
-        public string VaultUri { get; set; }
         public string TenantId { get; set; }
-        public string Sku { get; set; }
-        public bool? EnabledForDeployment { get; set; }
-        public bool? EnabledForTemplateDeployment { get; set; }
-        public bool? EnabledForDiskEncryption { get; set; }
-        public bool? EnableSoftDelete { get; set; }
         public List<ServicePrincipalPermissions> AccessPolicies { get; set; }
     }
 }
