@@ -47,7 +47,7 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                Console.WriteLine("\nERROR: " + e.Message);
+                Console.WriteLine("\nError: " + e.Message);
             }
          
             return secrets;
@@ -68,7 +68,8 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                Console.WriteLine("\nERROR: " + e.Message);
+                Console.WriteLine("\nError: " + e.Message);
+                System.Environment.Exit(1);
                 return null;
             }
         }
@@ -100,7 +101,8 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine("\nERROR: " + e.Message);
+                Console.WriteLine("\nError: " + e.Message);
+                System.Environment.Exit(1);
                 return null;
             }
         }
@@ -153,7 +155,7 @@ namespace RBAC
                                 } 
                                 catch (CloudException e)
                                 {
-                                    Console.WriteLine("\nERROR: " + e.Message);
+                                    Console.WriteLine("\nError: " + e.Message);
                                     // If the Subscription is not found, then do not continue looking for vaults in this subscription
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
@@ -195,7 +197,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    Console.WriteLine("\nERROR: " + e.Message);
+                    Console.WriteLine("\nError: " + e.Message);
                 }
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
@@ -207,7 +209,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    Console.WriteLine("\nERROR: " + e.Message);
+                    Console.WriteLine("\nError: " + e.Message);
                 }
             }
             

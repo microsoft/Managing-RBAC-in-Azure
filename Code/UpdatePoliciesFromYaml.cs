@@ -24,11 +24,59 @@ namespace RBAC
         {
             foreach(KeyVaultProperties kv in yamlVaults)
             {
+                try
+                {
+                    checkVaultChanges(vaultsRetrieved, kv);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    System.Environment.Exit(1);
+                }
+                
                 if (!vaultsRetrieved.Contains(kv))
                 {
                     Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                     updateVault(kv, kvmClient, secrets, graphClient);
                 }
+            }
+        }
+
+        /// <summary>
+        /// This method throws an error if any of the fields for a KeyVault have been changed in the Yaml, other than the AccessPolicies.
+        /// </summary>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+        /// <param name="kv">The current KeyVault</param>
+        private static void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
+        {
+            var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
+            if (lookupName[kv.VaultName].ToList().Count == 0 || lookupName[kv.VaultName].ToList().Count >= 2)
+            {
+                throw new Exception("\nError: VaultName for " + kv.VaultName + " changed.");
+            }
+
+            var lookupRG = vaultsRetrieved.ToLookup(kv => kv.ResourceGroupName);
+            if (lookupName[kv.ResourceGroupName].ToList().Count == 0 || lookupName[kv.ResourceGroupName].ToList().Count >= 2)
+            {
+                throw new Exception("\nError: ResourceGroupName for " + kv.VaultName + " changed.");
+            }
+
+            var lookupSubId = vaultsRetrieved.ToLookup(kv => kv.SubscriptionId);
+            if (lookupName[kv.SubscriptionId].ToList().Count == 0 || lookupName[kv.SubscriptionId].ToList().Count >= 2)
+            {
+                throw new Exception("\nError: SubscriptionId for " + kv.VaultName + " changed.");
+            }
+
+            var lookupLoc = vaultsRetrieved.ToLookup(kv => kv.Location);
+            if (lookupName[kv.Location].ToList().Count == 0 || lookupName[kv.Location].ToList().Count >= 2)
+            {
+                throw new Exception("\nError: Location for " + kv.VaultName + " changed.");
+            }
+
+            var lookupTenant = vaultsRetrieved.ToLookup(kv => kv.TenantId);
+            if (lookupName[kv.TenantId].ToList().Count == 0 || lookupName[kv.TenantId].ToList().Count >= 2)
+            {
+                throw new Exception("\nError: TenantId for " + kv.VaultName + " changed.");
             }
         }
 
@@ -41,45 +89,52 @@ namespace RBAC
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
         private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
-            kvmClient.SubscriptionId = kv.SubscriptionId;
-
-            VaultProperties properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
-            properties.AccessPolicies = new List<AccessPolicyEntry>();
-
-            foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+            try
             {
-                string type = sp.Type.ToLower().Trim();
-                Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
+                kvmClient.SubscriptionId = kv.SubscriptionId;
 
-                if (data.ContainsKey("ObjectId"))
+                VaultProperties properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
+                properties.AccessPolicies = new List<AccessPolicyEntry>();
+
+                foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
                 {
-                    // Set ServicePrincipal data
-                    sp.ObjectId = data["ObjectId"];
-                    if (type == "group")
-                    {
-                        sp.Alias = data["Alias"];
-                    }
-                    else if (type == "application")
-                    {
-                        sp.ApplicationId = data["ApplicationId"];
-                    }
+                    string type = sp.Type.ToLower().Trim();
+                    Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
 
-                    try
+                    if (data.ContainsKey("ObjectId"))
                     {
-                        checkPermissions(sp);
-                        properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
-                            new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                        // Set ServicePrincipal data
+                        sp.ObjectId = data["ObjectId"];
+                        if (type == "group")
+                        {
+                            sp.Alias = data["Alias"];
+                        }
+                        else if (type == "application")
+                        {
+                            sp.ApplicationId = data["ApplicationId"];
+                        }
+
+                        try
+                        {
+                            checkPermissions(sp);
+                            properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
+                                    new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("\nError: " + e.Message + " for " + sp.DisplayName + " in " + kv.VaultName);
+                            System.Environment.Exit(1);
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"{e.Message} for {sp.DisplayName} in {kv.VaultName}");
-                        System.Environment.Exit(1);
-                    }
-                } 
+                }
+
+                Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                Console.WriteLine("" + updatedVault.Name + " successfully updated!");
             }
-
-            Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
-            Console.WriteLine("" + updatedVault.Name + " successfully updated!");
+            catch (Exception e)
+            {
+                Console.WriteLine("\nError: " + e.Message);
+            }
         }
 
         /// <summary>
@@ -134,7 +189,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine("\nERROR: " + e.Message);
+                Console.WriteLine("\nError: " + e.Message);
             }
 
             return data;
