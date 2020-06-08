@@ -14,6 +14,117 @@ namespace RBAC
     class UpdatePoliciesFromYaml
     {
         /// <summary>
+        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
+        /// </summary>
+        /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
+        public static List<KeyVaultProperties> deserializeYaml()
+        {
+            try
+            {
+                string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
+                var deserializer = new DeserializerBuilder().Build();
+                List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+
+                foreach (KeyVaultProperties kv in yamlVaults)
+                {
+                    checkVaultInvalidFields(kv);
+                    foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        checkSPInvalidFields(kv.VaultName, sp);
+                    }
+                }
+                return yamlVaults;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nError: {e.Message}");
+                System.Environment.Exit(1);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
+        /// </summary>
+        /// <param name="kv">The current KeyVaultProperties object</param>
+        private static void checkVaultInvalidFields(KeyVaultProperties kv)
+        {
+            if (kv.VaultName == null)
+            {
+                throw new Exception($"\nMissing VaultName for {kv.VaultName}");
+            }
+            if (kv.ResourceGroupName == null)
+            {
+                throw new Exception($"\nMissing ResourceGroupName for {kv.VaultName}");
+            }
+            if (kv.SubscriptionId == null)
+            {
+                throw new Exception($"\nMissing SubscriptionId for {kv.VaultName}");
+            }
+            if (kv.Location == null)
+            {
+                throw new Exception($"\nMissing Location for {kv.VaultName}");
+            }
+            if (kv.TenantId == null)
+            {
+                throw new Exception($"\nMissing TenantId for {kv.VaultName}");
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that each ServicePrincipal has the necessary fields and valid permissions.
+        /// </summary>
+        /// <param name="name">The Key Vault name</param>
+        /// <param name="sp">The ServicePrincipalPermissions for which we want to validate</param>
+        private static void checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
+        {
+            if (sp.Type == null)
+            {
+                throw new Exception($"\nMissing Type for {name}");
+            }
+            if (sp.DisplayName == null)
+            {
+                throw new Exception($"\nMissing DisplayName for {name}");
+            }
+            if (sp.PermissionsToKeys == null)
+            {
+                throw new Exception($"\nMissing PermissionsToKeys for {name}");
+            }
+            if (sp.PermissionsToSecrets == null)
+            {
+                throw new Exception($"\nMissing PermissionsToSecrets for {name}");
+            }
+            if (sp.PermissionsToCertificates == null)
+            {
+                throw new Exception($"\nMissing PermissionsToCertificates for {name}");
+            }
+
+            foreach (string kp in sp.PermissionsToKeys)
+            {
+                if (!ServicePrincipalPermissions.allKeyPermissions.Contains(kp.ToLower()))
+                {
+                    throw new Exception($"Invalid key permission {kp}");
+                }
+            }
+            foreach (string s in sp.PermissionsToSecrets)
+            {
+                if (!ServicePrincipalPermissions.allSecretPermissions.Contains(s.ToLower()))
+                {
+                    throw new Exception($"Invalid secret permission {s}");
+                }
+            }
+            foreach (string cp in sp.PermissionsToCertificates)
+            {
+                if (!ServicePrincipalPermissions.allCertificatePermissions.Contains(cp.ToLower()))
+                {
+                    throw new Exception($"Invalid certificate permission {cp}");
+                }
+            }
+        }
+
+
+
+        /// <summary>
         /// This method updates the access policies for each KeyVault in the yamlVaults list.
         /// </summary>
         /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
@@ -212,113 +323,5 @@ namespace RBAC
             return data;
         }
 
-        /// <summary>
-        /// This method verifies that each ServicePrincipal has the necessary fields and valid permissions.
-        /// </summary>
-        /// <param name="name">The Key Vault name</param>
-        /// <param name="sp">The ServicePrincipalPermissions for which we want to validate</param>
-        private static void checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
-        {
-            if (sp.Type == null)
-            {
-                throw new Exception($"\nMissing Type for {name}");
-            }
-            if (sp.DisplayName == null)
-            {
-                throw new Exception($"\nMissing DisplayName for {name}");
-            }
-            if (sp.PermissionsToKeys == null)
-            {
-                throw new Exception($"\nMissing PermissionsToKeys for {name}");
-            }
-            if (sp.PermissionsToSecrets == null)
-            {
-                throw new Exception($"\nMissing PermissionsToSecrets for {name}");
-            }
-            if (sp.PermissionsToCertificates == null)
-            {
-                throw new Exception($"\nMissing PermissionsToCertificates for {name}");
-            }
-
-            foreach (string kp in sp.PermissionsToKeys)
-            {
-                if (!ServicePrincipalPermissions.allKeyPermissions.Contains(kp.ToLower()))
-                {
-                    throw new Exception($"Invalid key permission {kp}");
-                }
-            }
-            foreach(string s in sp.PermissionsToSecrets)
-            {
-                if (!ServicePrincipalPermissions.allSecretPermissions.Contains(s.ToLower()))
-                {
-                    throw new Exception($"Invalid secret permission {s}");
-                }
-            }
-            foreach (string cp in sp.PermissionsToCertificates)
-            {
-                if (!ServicePrincipalPermissions.allCertificatePermissions.Contains(cp.ToLower()))
-                {
-                    throw new Exception($"Invalid certificate permission {cp}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
-        /// </summary>
-        /// <param name="kv">The current KeyVaultProperties object</param>
-        private static void checkVaultInvalidFields(KeyVaultProperties kv)
-        {
-            if (kv.VaultName == null)
-            {
-                throw new Exception($"\nMissing VaultName for {kv.VaultName}");
-            }
-            if (kv.ResourceGroupName == null)
-            {
-                throw new Exception($"\nMissing ResourceGroupName for {kv.VaultName}");
-            }
-            if (kv.SubscriptionId == null)
-            {
-                throw new Exception($"\nMissing SubscriptionId for {kv.VaultName}");
-            }
-            if (kv.Location == null)
-            {
-                throw new Exception($"\nMissing Location for {kv.VaultName}");
-            }
-            if (kv.TenantId == null)
-            {
-                throw new Exception($"\nMissing TenantId for {kv.VaultName}");
-            }
-        }
-
-        /// <summary>
-        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
-        /// </summary>
-        /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
-        public static List<KeyVaultProperties> deserializeYaml()
-        {
-            try
-            {
-                string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
-                var deserializer = new DeserializerBuilder().Build();
-                List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
-
-                foreach (KeyVaultProperties kv in yamlVaults)
-                {
-                    checkVaultInvalidFields(kv);
-                    foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
-                    {
-                        checkSPInvalidFields(kv.VaultName, sp);
-                    }
-                }
-                return yamlVaults;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"\nError: {e.Message}");
-                System.Environment.Exit(1);
-                return null;
-            }
-        }
     }
 }
