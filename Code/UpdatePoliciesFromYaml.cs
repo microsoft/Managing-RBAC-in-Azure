@@ -99,32 +99,39 @@ namespace RBAC
 
                 foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
                 {
-                    string type = sp.Type.ToLower().Trim();
-                    Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
-
-                    if (data.ContainsKey("ObjectId"))
+                    try
                     {
-                        // Set ServicePrincipal data
-                        sp.ObjectId = data["ObjectId"];
-                        if (type == "group")
-                        {
-                            sp.Alias = data["Alias"];
-                        }
-                        else if (type == "application")
-                        {
-                            sp.ApplicationId = data["ApplicationId"];
-                        }
+                        string type = sp.Type.ToLower().Trim();
+                        Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
 
-                        try
+                        if (data.ContainsKey("ObjectId"))
                         {
-                            properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
-                                    new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                            // Set ServicePrincipal data
+                            sp.ObjectId = data["ObjectId"];
+                            if (type == "group")
+                            {
+                                sp.Alias = data["Alias"];
+                            }
+                            else if (type == "application")
+                            {
+                                sp.ApplicationId = data["ApplicationId"];
+                            }
+
+                            try
+                            {
+                                properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
+                                        new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                System.Environment.Exit(1);
+                            }
                         }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
-                            System.Environment.Exit(1);
-                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"\nError: {e.Message}");
                     }
                 }
 
@@ -163,7 +170,7 @@ namespace RBAC
 
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"{sp.DisplayName} could not be found.");
+                        throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. Service principal skipped.");
                     }
                 }
                 else if (type == "group")
@@ -194,7 +201,7 @@ namespace RBAC
                 }
                 else
                 {
-                    // Unknown service principal, do nothing
+                    throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Service principal skipped.");
                 }
             }
             catch (Exception e)
@@ -210,8 +217,7 @@ namespace RBAC
         /// </summary>
         /// <param name="name">The Key Vault name</param>
         /// <param name="sp">The ServicePrincipalPermissions for which we want to validate</param>
-        /// <returns>True if all of the permission entries are valid and are defined. Otherwise, returns throws an exception.</returns>
-        private static bool checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
+        private static void checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
         {
             if (sp.Type == null)
             {
@@ -255,7 +261,6 @@ namespace RBAC
                     throw new Exception($"Invalid certificate permission {cp}");
                 }
             }
-            return true;
         }
 
         /// <summary>
@@ -284,11 +289,6 @@ namespace RBAC
             {
                 throw new Exception($"\nMissing TenantId for {kv.VaultName}");
             }
-
-            foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
-            {
-                checkSPInvalidFields(kv.VaultName, sp);
-            }
         }
 
         /// <summary>
@@ -306,6 +306,10 @@ namespace RBAC
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
+                    foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        checkSPInvalidFields(kv.VaultName, sp);
+                    }
                 }
                 return yamlVaults;
             }
