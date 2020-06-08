@@ -2,6 +2,7 @@
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
 using Microsoft.Graph;
+using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,33 +56,33 @@ namespace RBAC
         private static void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
         {
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
-            if (lookupName[kv.VaultName].ToList().Count == 0 || lookupName[kv.VaultName].ToList().Count >= 2)
+            if (lookupName[kv.VaultName].ToList().Count != 1)
             {
-                throw new Exception($"\nError: VaultName for [{kv.VaultName} changed.");
+                throw new Exception($"\nError: VaultName for {kv.VaultName} was changed or removed.");
             }
 
             var lookupRG = vaultsRetrieved.ToLookup(kv => kv.ResourceGroupName);
-            if (lookupName[kv.ResourceGroupName].ToList().Count == 0 || lookupName[kv.ResourceGroupName].ToList().Count >= 2)
+            if (lookupName[kv.ResourceGroupName].ToList().Count != 1)
             {
-                throw new Exception($"\nError: ResourceGroupName for [{kv.VaultName} changed.");
+                throw new Exception($"\nError: ResourceGroupName for {kv.VaultName} was changed or removed.");
             }
 
             var lookupSubId = vaultsRetrieved.ToLookup(kv => kv.SubscriptionId);
-            if (lookupName[kv.SubscriptionId].ToList().Count == 0 || lookupName[kv.SubscriptionId].ToList().Count >= 2)
+            if (lookupName[kv.SubscriptionId].ToList().Count != 1)
             {
-                throw new Exception($"\nError: SubscriptionId for [{kv.VaultName} changed.");
+                throw new Exception($"\nError: SubscriptionId for {kv.VaultName} was changed or removed.");
             }
 
             var lookupLoc = vaultsRetrieved.ToLookup(kv => kv.Location);
-            if (lookupName[kv.Location].ToList().Count == 0 || lookupName[kv.Location].ToList().Count >= 2)
+            if (lookupName[kv.Location].ToList().Count != 1)
             {
-                throw new Exception($"\nError: Location for [{kv.VaultName} changed.");
+                throw new Exception($"\nError: Location for {kv.VaultName} was changed or removed.");
             }
 
             var lookupTenant = vaultsRetrieved.ToLookup(kv => kv.TenantId);
-            if (lookupName[kv.TenantId].ToList().Count == 0 || lookupName[kv.TenantId].ToList().Count >= 2)
+            if (lookupName[kv.TenantId].ToList().Count != 1)
             {
-                throw new Exception($"\nError: TenantId for [{kv.VaultName} changed.");
+                throw new Exception($"\nError: TenantId for {kv.VaultName} was changed or removed.");
             }
         }
 
@@ -121,7 +122,6 @@ namespace RBAC
 
                         try
                         {
-                            checkPermissions(sp);
                             properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
                                     new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
                         }
@@ -156,6 +156,11 @@ namespace RBAC
             {
                 if (type == "user")
                 {
+                    if (sp.Alias.Trim().Length == 0)
+                    {
+                        throw new Exception($"Alias is required for {sp.DisplayName}.");
+                    }
+
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
                         .Request()
                         .GetAsync().Result;
@@ -201,13 +206,35 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that each permission entry is valid.
+        /// This method verifies that each ServicePrincipal has the necessary fields and valid permissions.
         /// </summary>
+        /// <param name="name">The Key Vault name</param>
         /// <param name="sp">The ServicePrincipalPermissions for which we want to validate</param>
-        /// <returns>True if all of the permission entries are valid. Otherwise, returns throws an exception.</returns>
-        private static bool checkPermissions(ServicePrincipalPermissions sp)
+        /// <returns>True if all of the permission entries are valid and are defined. Otherwise, returns throws an exception.</returns>
+        private static bool checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
         {
-            foreach(string kp in sp.PermissionsToKeys)
+            if (sp.Type == null)
+            {
+                throw new Exception($"\nMissing Type for {name}");
+            }
+            if (sp.DisplayName == null)
+            {
+                throw new Exception($"\nMissing DisplayName for {name}");
+            }
+            if (sp.PermissionsToKeys == null)
+            {
+                throw new Exception($"\nMissing PermissionsToKeys for {name}");
+            }
+            if (sp.PermissionsToSecrets == null)
+            {
+                throw new Exception($"\nMissing PermissionsToSecrets for {name}");
+            }
+            if (sp.PermissionsToCertificates == null)
+            {
+                throw new Exception($"\nMissing PermissionsToCertificates for {name}");
+            }
+
+            foreach (string kp in sp.PermissionsToKeys)
             {
                 if (!ServicePrincipalPermissions.allKeyPermissions.Contains(kp.ToLower()))
                 {
@@ -232,7 +259,40 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties.
+        /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
+        /// </summary>
+        /// <param name="kv">The current KeyVaultProperties object</param>
+        private static void checkVaultInvalidFields(KeyVaultProperties kv)
+        {
+            if (kv.VaultName == null)
+            {
+                throw new Exception($"\nMissing VaultName for {kv.VaultName}");
+            }
+            if (kv.ResourceGroupName == null)
+            {
+                throw new Exception($"\nMissing ResourceGroupName for {kv.VaultName}");
+            }
+            if (kv.SubscriptionId == null)
+            {
+                throw new Exception($"\nMissing SubscriptionId for {kv.VaultName}");
+            }
+            if (kv.Location == null)
+            {
+                throw new Exception($"\nMissing Location for {kv.VaultName}");
+            }
+            if (kv.TenantId == null)
+            {
+                throw new Exception($"\nMissing TenantId for {kv.VaultName}");
+            }
+
+            foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+            {
+                checkSPInvalidFields(kv.VaultName, sp);
+            }
+        }
+
+        /// <summary>
+        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
         /// </summary>
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         public static List<KeyVaultProperties> deserializeYaml()
@@ -241,11 +301,17 @@ namespace RBAC
             {
                 string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
                 var deserializer = new DeserializerBuilder().Build();
-                return (deserializer.Deserialize<List<KeyVaultProperties>>(yaml));
+                List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+
+                foreach (KeyVaultProperties kv in yamlVaults)
+                {
+                    checkVaultInvalidFields(kv);
+                }
+                return yamlVaults;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: Issue with Yaml format. {e.Message}");
+                Console.WriteLine($"\nError: {e.Message}");
                 System.Environment.Exit(1);
                 return null;
             }
