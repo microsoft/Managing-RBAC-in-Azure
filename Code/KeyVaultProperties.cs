@@ -108,16 +108,24 @@ namespace RBAC
                 return (this.VaultName == kvp.VaultName) && (this.AccessPolicies.SequenceEqual(kvp.AccessPolicies));
             }
         }
-        public int UsersContained()
+
+        /// <summary>
+        /// This method counts the amount of users contained in the KeyVault.
+        /// </summary>
+        /// <returns>The number of users with access policies</returns>
+        public int usersContained()
         {
-            int ret = 0;
+            int count = 0;
             foreach(ServicePrincipalPermissions sp in AccessPolicies)
             {
-                if(sp.Type.ToLower() == "user")
-                    ret++;
+                if (sp.Type.Trim().ToLower() == "user")
+                {
+                    count++;
+                }
             }
-            return ret;
+            return count;
         }
+
         public string VaultName { get; set; }
         public string ResourceGroupName { get; set; }
         public string SubscriptionId { get; set; }

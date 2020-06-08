@@ -25,7 +25,6 @@ namespace RBAC
         {
             foreach(KeyVaultProperties kv in yamlVaults)
             {
-<<<<<<< HEAD
                 try
                 {
                     checkVaultChanges(vaultsRetrieved, kv);
@@ -36,14 +35,11 @@ namespace RBAC
                     System.Environment.Exit(1);
                 }
                 
-                if (!vaultsRetrieved.Contains(kv))
-=======
-                if(kv.UsersContained() < 2)
+                if (kv.usersContained() < 2)
                 {
-                    Console.WriteLine($"{kv.VaultName} does not contain at least two users. Vault skipped.");
+                    Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
                 }
                 else if (!vaultsRetrieved.Contains(kv))
->>>>>>> c1688e72b7e9765de57684257d1f3e3a3b550da9
                 {
                     Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                     updateVault(kv, kvmClient, secrets, graphClient);
@@ -61,31 +57,31 @@ namespace RBAC
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count == 0 || lookupName[kv.VaultName].ToList().Count >= 2)
             {
-                throw new Exception("\nError: VaultName for " + kv.VaultName + " changed.");
+                throw new Exception($"\nError: VaultName for [{kv.VaultName} changed.");
             }
 
             var lookupRG = vaultsRetrieved.ToLookup(kv => kv.ResourceGroupName);
             if (lookupName[kv.ResourceGroupName].ToList().Count == 0 || lookupName[kv.ResourceGroupName].ToList().Count >= 2)
             {
-                throw new Exception("\nError: ResourceGroupName for " + kv.VaultName + " changed.");
+                throw new Exception($"\nError: ResourceGroupName for [{kv.VaultName} changed.");
             }
 
             var lookupSubId = vaultsRetrieved.ToLookup(kv => kv.SubscriptionId);
             if (lookupName[kv.SubscriptionId].ToList().Count == 0 || lookupName[kv.SubscriptionId].ToList().Count >= 2)
             {
-                throw new Exception("\nError: SubscriptionId for " + kv.VaultName + " changed.");
+                throw new Exception($"\nError: SubscriptionId for [{kv.VaultName} changed.");
             }
 
             var lookupLoc = vaultsRetrieved.ToLookup(kv => kv.Location);
             if (lookupName[kv.Location].ToList().Count == 0 || lookupName[kv.Location].ToList().Count >= 2)
             {
-                throw new Exception("\nError: Location for " + kv.VaultName + " changed.");
+                throw new Exception($"\nError: Location for [{kv.VaultName} changed.");
             }
 
             var lookupTenant = vaultsRetrieved.ToLookup(kv => kv.TenantId);
             if (lookupName[kv.TenantId].ToList().Count == 0 || lookupName[kv.TenantId].ToList().Count >= 2)
             {
-                throw new Exception("\nError: TenantId for " + kv.VaultName + " changed.");
+                throw new Exception($"\nError: TenantId for [{kv.VaultName} changed.");
             }
         }
 
@@ -131,7 +127,7 @@ namespace RBAC
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("\nError: " + e.Message + " for " + sp.DisplayName + " in " + kv.VaultName);
+                            Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                             System.Environment.Exit(1);
                         }
                     }
@@ -142,7 +138,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine("\nError: " + e.Message);
+                Console.WriteLine($"\nError: {e.Message}");
             }
         }
 
@@ -198,7 +194,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine("\nError: " + e.Message);
+                Console.WriteLine($"\nError: {e.Message}");
             }
 
             return data;
@@ -235,26 +231,24 @@ namespace RBAC
             return true;
         }
 
+        /// <summary>
+        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties.
+        /// </summary>
+        /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         public static List<KeyVaultProperties> deserializeYaml()
         {
-            List<KeyVaultProperties> yamlVaults = null;
             try
             {
                 string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
                 var deserializer = new DeserializerBuilder().Build();
-                yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
-
+                return (deserializer.Deserialize<List<KeyVaultProperties>>(yaml));
             }
             catch (Exception e)
             {
-                Console.WriteLine("Issue with yaml format");
-                Console.WriteLine("Error: " + e.Message);
+                Console.WriteLine($"\nError: Issue with Yaml format. {e.Message}");
                 System.Environment.Exit(1);
+                return null;
             }
-
-            return yamlVaults;
         }
-
     }
-
 }
