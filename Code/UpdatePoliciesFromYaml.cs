@@ -24,6 +24,7 @@ namespace RBAC
         {
             foreach(KeyVaultProperties kv in yamlVaults)
             {
+<<<<<<< HEAD
                 try
                 {
                     checkVaultChanges(vaultsRetrieved, kv);
@@ -35,6 +36,13 @@ namespace RBAC
                 }
                 
                 if (!vaultsRetrieved.Contains(kv))
+=======
+                if(kv.UsersContained() < 2)
+                {
+                    Console.WriteLine($"{kv.VaultName} does not contain at least two users. Vault skipped.");
+                }
+                else if (!vaultsRetrieved.Contains(kv))
+>>>>>>> c1688e72b7e9765de57684257d1f3e3a3b550da9
                 {
                     Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                     updateVault(kv, kvmClient, secrets, graphClient);
