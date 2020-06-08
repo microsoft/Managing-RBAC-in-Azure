@@ -40,9 +40,14 @@ namespace RBAC
                     Console.WriteLine("Success!");
 
                     Console.WriteLine("\nReading yaml file...");
-                    string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
-                    var deserializer = new DeserializerBuilder().Build();
-                    List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+
+                    // string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
+                    // var deserializer = new DeserializerBuilder().Build();
+                    // List<KeyVaultProperties> yamlVaultsTEST = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+
+                    List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml();
+
+
                     Console.WriteLine("Success!");
 
                     Console.WriteLine("\nUpdating key vaults...");
@@ -53,3 +58,5 @@ namespace RBAC
         }
     }
 }
+
+

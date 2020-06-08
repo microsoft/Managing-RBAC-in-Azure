@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using YamlDotNet.Serialization;
 
 namespace RBAC
 {
@@ -170,5 +171,27 @@ namespace RBAC
             }
             return true;
         }
+
+        public static List<KeyVaultProperties> deserializeYaml()
+        {
+            List<KeyVaultProperties> yamlVaults = null;
+            try
+            {
+                string yaml = System.IO.File.ReadAllText(@"..\..\..\..\Config\YamlOutput.yml");
+                var deserializer = new DeserializerBuilder().Build();
+                yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Issue with yaml format");
+                Console.WriteLine("Error: " + e.Message);
+                System.Environment.Exit(1);
+            }
+
+            return yamlVaults;
+        }
+
     }
+
 }
