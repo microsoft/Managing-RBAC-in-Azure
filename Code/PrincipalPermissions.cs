@@ -12,13 +12,13 @@ namespace RBAC
     /// <summary>
     /// This class stores the AccessPolicies of a Service Principal.
     /// </summary>
-    class ServicePrincipalPermissions
+    class PrincipalPermissions
     {
-        public ServicePrincipalPermissions() 
+        public PrincipalPermissions() 
         {
             this.Alias = "";
         }
-        public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        public PrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
@@ -131,10 +131,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method overrides the Equals operator to allow comparison between two ServicePrincipalPermissions objects.
+        /// This method overrides the Equals operator to allow comparison between two PrincipalPermissions objects.
         /// </summary>
         /// <param name="rhs">The object to compare against</param>
-        /// <returns>True if rhs is of type ServicePrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
+        /// <returns>True if rhs is of type PrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
         public override bool Equals(Object rhs)
         {
             if ((rhs == null) || !this.GetType().Equals(rhs.GetType()))
@@ -143,7 +143,7 @@ namespace RBAC
             }
             else
             {
-                var spp = (ServicePrincipalPermissions)rhs;
+                var spp = (PrincipalPermissions)rhs;
 
                 string type = this.Type.Trim().ToLower();
                 string rhsType = spp.Type.Trim().ToLower();
@@ -225,5 +225,10 @@ namespace RBAC
         public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
         public static string[] allCertificatePermissions = {"get", "list", "update", "create", "import", "delete", "recover",
             "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge"};
+        public static string[] validKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
+            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge", "all"};
+        public static string[] validSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge", "all" };
+        public static string[] validCertificatePermissions = {"get", "list", "update", "create", "import", "delete", "recover",
+            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge", "all"};
     }
 }
