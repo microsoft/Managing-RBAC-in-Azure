@@ -282,7 +282,7 @@ namespace RBAC
             {
                 if (type == "user")
                 {
-                    if (sp.Alias.Trim().Length == 0)
+                    if (sp.Alias == null || sp.Alias.Trim().Length == 0)
                     {
                         throw new Exception($"Alias is required for {sp.DisplayName}.");
                     }
@@ -290,12 +290,12 @@ namespace RBAC
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
                         .Request()
                         .GetAsync().Result;
-                    data["ObjectId"] = user.Id;
-
+                    
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
                         throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. Service principal skipped.");
                     }
+                    data["ObjectId"] = user.Id;
                 }
                 else if (type == "group")
                 {
@@ -303,6 +303,7 @@ namespace RBAC
                         .Request()
                         .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                         .GetAsync().Result[0];
+
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
                 }
@@ -312,6 +313,7 @@ namespace RBAC
                         .Request()
                         .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                         .GetAsync().Result[0];
+
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
                 }
@@ -321,6 +323,7 @@ namespace RBAC
                         .Request()
                         .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                         .GetAsync().Result[0];
+
                     data["ObjectId"] = principal.Id;
                 }
                 else
@@ -332,7 +335,6 @@ namespace RBAC
             {
                 Console.WriteLine($"\nError: {e.Message}");
             }
-
             return data;
         }
 

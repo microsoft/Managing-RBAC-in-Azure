@@ -19,9 +19,9 @@ namespace RBAC
     class AccessPoliciesToYamlProgram
     {
         /// <summary>
-        /// This method reads in a JSON config file and prints out a serialized list of Key Vaults into a YAML file.
+        /// This method reads in a json config file and prints out a serialized list of Key Vaults into a Yaml file.
         /// </summary>
-        /// <param name="args">Contains the json directory & yaml directory</param>
+        /// <param name="args">Contains the json directory and Yaml directory</param>
         static void Main(string[] args)
         {
             // ..\..\..\..\Config\MasterConfig.json 
