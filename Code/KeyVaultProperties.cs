@@ -79,14 +79,14 @@ namespace RBAC
         /// <param name="accessPolicies">The list of AccessPolicyEntrys</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>The list of ServicePrincipal objects</returns>
-        private List<ServicePrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
+        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
         {
-            List<ServicePrincipalPermissions> policies = new List<ServicePrincipalPermissions>();
+            List<PrincipalPermissions> policies = new List<PrincipalPermissions>();
 
             var policiesEnum = accessPolicies.GetEnumerator();
             while (policiesEnum.MoveNext())
             {
-                policies.Add(new ServicePrincipalPermissions(policiesEnum.Current, graphClient));
+                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient));
             }
             return policies;
         }
@@ -116,7 +116,7 @@ namespace RBAC
         public int usersContained()
         {
             int count = 0;
-            foreach(ServicePrincipalPermissions sp in AccessPolicies)
+            foreach(PrincipalPermissions sp in AccessPolicies)
             {
                 if (sp.Type.Trim().ToLower() == "user")
                 {
@@ -131,6 +131,6 @@ namespace RBAC
         public string SubscriptionId { get; set; }
         public string Location { get; set; }
         public string TenantId { get; set; }
-        public List<ServicePrincipalPermissions> AccessPolicies { get; set; }
+        public List<PrincipalPermissions> AccessPolicies { get; set; }
     }
 }
