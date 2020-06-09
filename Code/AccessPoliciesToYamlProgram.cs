@@ -19,23 +19,21 @@ namespace RBAC
     class AccessPoliciesToYamlProgram
     {
         /// <summary>
-        /// This method reads in a json config file and prints out a serialized list of Key Vaults into a Yaml file.
+        /// This method reads in a Json config file and prints out a serialized list of Key Vaults into a Yaml file.
         /// </summary>
-        /// <param name="args">Contains the json directory and Yaml directory</param>
+        /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
 
-            if (args[0].Substring(args[0].Length-4) != "json")
+            if (System.IO.Path.GetExtension(args[0]) != ".json")
             {
-                throw new Exception("The 1st argument is not a json file");
-                
+                throw new Exception("The 1st argument is not a .json file");
             }
-
-            if (args[1].Substring(args[1].Length - 3) != "yml")
+            if (System.IO.Path.GetExtension(args[1]) != ".yml")
             {
-                throw new Exception("The 2nd argument is not a yml file");
+                throw new Exception("The 2nd argument is not a .yml file");
             }
 
             Console.WriteLine("Reading input file...");
@@ -52,7 +50,6 @@ namespace RBAC
                 System.Environment.Exit(1);
             }
             Console.WriteLine("Success!");
-
 
             Console.WriteLine("\nGrabbing secrets...");
             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
