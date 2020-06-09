@@ -28,7 +28,7 @@ namespace RBAC
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
-                    foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
                     {
                         checkSPInvalidFields(kv.VaultName, sp);
                     }
@@ -75,8 +75,8 @@ namespace RBAC
         /// This method verifies that each ServicePrincipal has the necessary fields and valid permissions.
         /// </summary>
         /// <param name="name">The Key Vault name</param>
-        /// <param name="sp">The ServicePrincipalPermissions for which we want to validate</param>
-        private static void checkSPInvalidFields(string name, ServicePrincipalPermissions sp)
+        /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
+        private static void checkSPInvalidFields(string name, PrincipalPermissions sp)
         {
             if (sp.Type == null)
             {
@@ -101,24 +101,36 @@ namespace RBAC
 
             foreach (string kp in sp.PermissionsToKeys)
             {
-                if (!ServicePrincipalPermissions.allKeyPermissions.Contains(kp.ToLower()))
+                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()))
                 {
-                    throw new Exception($"Invalid key permission {kp}");
+                    throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {name}.");
                 }
             }
             foreach (string s in sp.PermissionsToSecrets)
             {
-                if (!ServicePrincipalPermissions.allSecretPermissions.Contains(s.ToLower()))
+                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()))
                 {
-                    throw new Exception($"Invalid secret permission {s}");
+                    throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {name}.");
                 }
             }
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!ServicePrincipalPermissions.allCertificatePermissions.Contains(cp.ToLower()))
+                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()))
                 {
-                    throw new Exception($"Invalid certificate permission {cp}");
+                    throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {name}.");
                 }
+            }
+            if (sp.PermissionsToCertificates.Contains("all"))
+            {
+                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
+            }
+            if (sp.PermissionsToSecrets.Contains("all"))
+            {
+                sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
+            }
+            if (sp.PermissionsToKeys.Contains("all"))
+            {
+                sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
             }
         }
 
@@ -208,7 +220,7 @@ namespace RBAC
                 VaultProperties properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
                 properties.AccessPolicies = new List<AccessPolicyEntry>();
 
-                foreach (ServicePrincipalPermissions sp in kv.AccessPolicies)
+                foreach (PrincipalPermissions sp in kv.AccessPolicies)
                 {
                     try
                     {
@@ -258,11 +270,11 @@ namespace RBAC
         /// <summary>
         /// This method verifies that the ServicePrincipal exists and returns a dictionary that holds its data.
         /// </summary>
-        /// <param name="sp">The current ServicePrincipalPermissions object</param>
-        /// <param name="type">The ServicePrincipalPermissions type</param>
+        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="type">The PrincipalPermissions type</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
         /// <returns>A dictionary containing the service principal data</returns>
-        private static Dictionary<string, string> verifyServicePrincipal(ServicePrincipalPermissions sp, string type, GraphServiceClient graphClient)
+        private static Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
             try
