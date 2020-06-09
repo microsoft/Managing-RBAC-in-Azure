@@ -14,9 +14,30 @@ namespace RBAC
         /// <param name="args">None</param>
         static void Main(string[] args)
         {
+            if (args[0].Substring(args[0].Length - 4) != "json")
+            {
+                throw new Exception("The 1st argument is not a json file");
+
+            }
+
+            if (args[1].Substring(args[1].Length - 3) != "yml")
+            {
+                throw new Exception("The 2nd argument is not a yml file");
+            }
+
             Console.WriteLine("Reading input file...");
-            string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\MasterConfig.json");
-            JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
+            JsonInput vaultList = null;
+            try
+            {
+                string masterConfig = System.IO.File.ReadAllText(args[0]);
+                vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nError: {e.Message}");
+                System.Environment.Exit(1);
+            }
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nGrabbing secrets...");
@@ -40,7 +61,7 @@ namespace RBAC
                     Console.WriteLine("Success!");
 
                     Console.WriteLine("\nReading yaml file...");
-                    List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml();
+                    List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml(args[1]);
                     Console.WriteLine("Success!");
 
                     Console.WriteLine("\nUpdating key vaults...");

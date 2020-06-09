@@ -38,12 +38,6 @@ namespace RBAC
                 throw new Exception("The 2nd argument is not a yml file");
             }
 
-            // Console.WriteLine("Reading input file...");
-            // string masterConfig = System.IO.File.ReadAllText(args[0]);
-            // JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-            // Console.WriteLine("Success!");
-
-
             Console.WriteLine("Reading input file...");
             JsonInput vaultList = null;
             try
@@ -54,10 +48,12 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"\nError: {e.Message}");
                 System.Environment.Exit(1);
             }
-          
+            Console.WriteLine("Success!");
+
+
             Console.WriteLine("\nGrabbing secrets...");
             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
 

@@ -241,7 +241,7 @@ namespace RBAC
         /// This method serializes the list of Vault objects and outputs the YAML.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
-        /// <param name="yamlDirectory">Outputs the yaml file </param>
+        /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
 
