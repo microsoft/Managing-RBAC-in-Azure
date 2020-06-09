@@ -144,22 +144,21 @@ namespace RBAC
             else
             {
                 var spp = (ServicePrincipalPermissions)rhs;
-                if ((spp.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && spp.PermissionsToKeys != null))
+
+                string type = this.Type.Trim().ToLower();
+                string rhsType = spp.Type.Trim().ToLower();
+                bool aliasIsSame = false;
+                if (rhsType == "user" || rhsType == "group")
                 {
-                    return false;
-                }
-                if ((spp.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && spp.PermissionsToSecrets != null))
+                    aliasIsSame = (this.Alias == spp.Alias);
+                } else if (rhsType == "application" || rhsType == "service principal")
                 {
-                    return false;
+                    aliasIsSame = true;
                 }
-                if ((spp.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && spp.PermissionsToCertificates != null))
-                {
-                    return false;
-                }
-                return (this.ObjectId == spp.ObjectId) 
-                    && (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) 
-                    && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) 
-                    && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
+
+                return (this.ObjectId == spp.ObjectId) && (this.DisplayName.Trim().ToLower() == spp.DisplayName.Trim().ToLower()) && aliasIsSame 
+                    && (this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) && (this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) 
+                    && (this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
             }
         }
 
