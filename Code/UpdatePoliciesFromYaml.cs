@@ -121,17 +121,34 @@ namespace RBAC
                     throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {name}.");
                 }
             }
-            if (sp.PermissionsToCertificates.Contains("all"))
+
+            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
             {
                 sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
             }
-            if (sp.PermissionsToSecrets.Contains("all"))
+            else if(sp.PermissionsToCertificates.Contains("all"))
+            {
+                throw new Exception($"'all' permission removes need for other certificate permissions for {sp.DisplayName} in {name}.");
+            }
+
+
+            if (sp.PermissionsToSecrets.Contains("all") && sp.PermissionsToSecrets.Length == 1)
             {
                 sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
             }
-            if (sp.PermissionsToKeys.Contains("all"))
+            else if(sp.PermissionsToSecrets.Contains("all"))
+            {
+                throw new Exception($"'all' permission removes need for other secret permissions for {sp.DisplayName} in {name}.");
+            }
+
+
+            if (sp.PermissionsToKeys.Contains("all") && sp.PermissionsToKeys.Length == 1)
             {
                 sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
+            }
+            else if (sp.PermissionsToKeys.Contains("all"))
+            {
+                throw new Exception($"'all' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
             }
         }
 
