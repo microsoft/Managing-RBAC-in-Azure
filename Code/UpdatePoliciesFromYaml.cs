@@ -74,9 +74,9 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that each ServicePrincipal has the necessary fields and valid permissions.
+        /// This method verifies that the PrincipalPermissions object has the necessary fields.
         /// </summary>
-        /// <param name="name">The Key Vault name</param>
+        /// <param name="name">The KeyVault name</param>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
         private static void checkSPInvalidFields(string name, PrincipalPermissions sp)
         {
@@ -100,173 +100,19 @@ namespace RBAC
             {
                 throw new Exception($"\nMissing PermissionsToCertificates for {name}");
             }
-            sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
-            foreach (string kp in sp.PermissionsToKeys)
-            {
-                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()))
-                {
-                    throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {name}.");
-                }
-            }
-            sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
-            foreach (string s in sp.PermissionsToSecrets)
-            {
-                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()))
-                {
-                    throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {name}.");
-                }
-            }
-            sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
-            foreach (string cp in sp.PermissionsToCertificates)
-            {
-                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()))
-                {
-                    throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {name}.");
-                }
-            }
-
-            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
-            {
-                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
-            }
-            else if(sp.PermissionsToCertificates.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {name}.");
-            }
-
-
-            if (sp.PermissionsToSecrets.Contains("all") && sp.PermissionsToSecrets.Length == 1)
-            {
-                sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
-            }
-            else if(sp.PermissionsToSecrets.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {name}.");
-            }
-
-
-            if (sp.PermissionsToKeys.Contains("all") && sp.PermissionsToKeys.Length == 1)
-            {
-                sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
-            }
-            else if (sp.PermissionsToKeys.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
-            }
-
-            if (sp.PermissionsToSecrets.Contains("read"))
-            {
-                if (sp.PermissionsToSecrets.Length == 1)
-                {
-                    sp.PermissionsToSecrets = PrincipalPermissions.readPermissions;
-                }
-                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions).Count() == 0)
-                {
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "read" }).ToArray();
-                }
-                else
-                {
-                    throw new Exception($"'Read' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
-                }
-            }
-
-            if (sp.PermissionsToSecrets.Contains("write"))
-            {
-                if (sp.PermissionsToSecrets.Length == 1)
-                {
-                    sp.PermissionsToSecrets = PrincipalPermissions.writeSecretPermissions;
-                }
-                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions).Count() == 0)
-                {
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "write" }).ToArray();
-                }
-                else
-                {
-                    throw new Exception($"'Write' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
-                }
-            }
-
-            if (sp.PermissionsToSecrets.Contains("storage"))
-            {
-                if (sp.PermissionsToSecrets.Length == 1)
-                {
-                    sp.PermissionsToSecrets = PrincipalPermissions.storageSecretPermissions;
-                }
-                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.storageSecretPermissions).Count() == 0)
-                {
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "storage" }).ToArray();
-                }
-                else
-                {
-                    throw new Exception($"'Storage' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
-                }
-            }
-            checkKeyPermissions(sp, name);
-            
         }
 
-        private static void checkKeyPermissions(PrincipalPermissions sp, string name)
-        {
-            if (sp.PermissionsToKeys.Contains("read"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
-                if(common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'get' and 'list' permissions are already included in 'read' permission.");
-                }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
-            }
-            if (sp.PermissionsToKeys.Contains("write"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
-                if (common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'delete', 'create' and 'update' permissions are already included in 'write' permission.");
-                }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
-            }
-            if (sp.PermissionsToKeys.Contains("crypto"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
-                if (common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in 'crypto' permission.");
-                }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
-            }
-            if (sp.PermissionsToKeys.Contains("storage"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
-                if (common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'import', 'recover', 'backup', and 'restore' permissions are already included in 'storage' permission.");
-                }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
-            }
-
-        }
-
-
-
-        /// <summary>
-        /// This method updates the access policies for each KeyVault in the yamlVaults list.
-        /// </summary>
-        /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
-        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
-        /// <param name="kvmClient">The KeyManagementClient</param>
-        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
-        /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
-            GraphServiceClient graphClient)
-        {
-            foreach(KeyVaultProperties kv in yamlVaults)
+         /// <summary>
+         /// This method updates the access policies for each KeyVault in the yamlVaults list.
+         /// </summary>
+         /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
+         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+         /// <param name="kvmClient">The KeyManagementClient</param>
+         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
+         public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, GraphServiceClient graphClient)
+         {
+            foreach (KeyVaultProperties kv in yamlVaults)
             {
                 try
                 {
@@ -277,31 +123,21 @@ namespace RBAC
                     Console.WriteLine(e.Message);
                     System.Environment.Exit(1);
                 }
-                
-                /*if (kv.usersContained() < 2)
-                {
-                    Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
-                }
-                else if (!vaultsRetrieved.Contains(kv))
-                {
-                    Console.WriteLine("\nUpdating " + kv.VaultName + "...");
-                    updateVault(kv, kvmClient, secrets, graphClient);
-                }*/
 
                 if (!vaultsRetrieved.Contains(kv))
                 {
-                    Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                     if (kv.usersContained() < 2)
                     {
                         Console.WriteLine($"Error: {kv.VaultName} does not contain at least two users. Vault skipped.");
                     }
                     else
                     {
+                        Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                         updateVault(kv, kvmClient, secrets, graphClient);
                     }
                 }
             }
-        }
+         }
 
         /// <summary>
         /// This method throws an error if any of the fields for a KeyVault have been changed in the Yaml, other than the AccessPolicies.
@@ -374,6 +210,7 @@ namespace RBAC
 
                             try
                             {
+                                translatePermissions(sp, kv.VaultName);
                                 properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
                                         new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
                             }
@@ -469,5 +306,174 @@ namespace RBAC
             return data;
         }
 
+        /// <summary>
+        /// This method translates all of the short-hand notations for Keys, Secrets, and Certificates to their respective permissions.
+        /// </summary>
+        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="vaultName">The name of the KeyVault you are updating</param>
+        private static void translatePermissions(PrincipalPermissions sp, string vaultName)
+        {
+            // Convert all permissions to lowercase
+            sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
+            sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
+            sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
+
+            checkValidPermissions(sp, vaultName);
+            translateKeys(sp, vaultName);
+            translateSecrets(sp, vaultName);
+
+            //put this in the checking certificates!
+            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
+            {
+                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
+            }
+            else if (sp.PermissionsToCertificates.Contains("all"))
+            {
+                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that the PrincipalPermissions object has valid permissions.
+        /// </summary>
+        /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
+        /// <param name="vaultName">The name of the KeyVault you are updating</param>
+        private static void checkValidPermissions(PrincipalPermissions sp, string vaultName)
+        {
+            foreach (string kp in sp.PermissionsToKeys)
+            {
+                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()))
+                {
+                    throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {vaultName}.");
+                }
+            }
+
+            foreach (string s in sp.PermissionsToSecrets)
+            {
+                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()))
+                {
+                    throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {vaultName}.");
+                }
+            }
+
+            foreach (string cp in sp.PermissionsToCertificates)
+            {
+                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()))
+                {
+                    throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {vaultName}.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method translates the short-hand notations for Keys to their respective permissions.
+        /// </summary>
+        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="vaultName">The name of the KeyVault you are updating</param>
+        private static void translateKeys(PrincipalPermissions sp, string vaultName)
+        {
+            if (sp.PermissionsToKeys.Contains("all") && sp.PermissionsToKeys.Length == 1)
+            {
+                sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
+            }
+            else if (sp.PermissionsToKeys.Contains("all"))
+            {
+                throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {vaultName}.");
+            }
+
+            if (sp.PermissionsToKeys.Contains("read"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Key 'read' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
+            }
+
+            if (sp.PermissionsToKeys.Contains("write"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Key 'write' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
+            }
+
+            if (sp.PermissionsToKeys.Contains("crypto"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in Key 'crypto' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
+            }
+
+            if (sp.PermissionsToKeys.Contains("storage"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Key 'storage' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
+            }
+        }
+
+        /// <summary>
+        /// This method translates the short-hand notations for Secrets to their respective permissions.
+        /// </summary>
+        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="vaultName">The name of the KeyVault you are updating</param>
+        private static void translateSecrets(PrincipalPermissions sp, string vaultName)
+        {
+            if (sp.PermissionsToSecrets.Contains("all") && sp.PermissionsToSecrets.Length == 1)
+            {
+                sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
+            }
+            else if (sp.PermissionsToSecrets.Contains("all"))
+            {
+                throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {vaultName}.");
+            }
+
+            if (sp.PermissionsToSecrets.Contains("read"))
+            {
+                var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Secret 'read' permission.");
+                }
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "read").ToArray();
+            }
+
+            if (sp.PermissionsToSecrets.Contains("write"))
+            {
+                var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' permissions are already included in Secret 'write' permission.");
+                }
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "write").ToArray();
+            }
+
+            if (sp.PermissionsToSecrets.Contains("storage"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageSecretPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' permissions are already included in Secret 'storage' permission.");
+                }
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
+                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
+            }
+        }
     }
 }
