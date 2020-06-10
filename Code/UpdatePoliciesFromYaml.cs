@@ -100,7 +100,7 @@ namespace RBAC
             {
                 throw new Exception($"\nMissing PermissionsToCertificates for {name}");
             }
-
+            sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
             foreach (string kp in sp.PermissionsToKeys)
             {
                 if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()))
@@ -108,6 +108,7 @@ namespace RBAC
                     throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {name}.");
                 }
             }
+            sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
             foreach (string s in sp.PermissionsToSecrets)
             {
                 if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()))
@@ -115,6 +116,7 @@ namespace RBAC
                     throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {name}.");
                 }
             }
+            sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
             foreach (string cp in sp.PermissionsToCertificates)
             {
                 if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()))
@@ -202,6 +204,53 @@ namespace RBAC
                     throw new Exception($"'Storage' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
                 }
             }
+            checkKeyPermissions(sp, name);
+            
+        }
+
+        private static void checkKeyPermissions(PrincipalPermissions sp, string name)
+        {
+            if (sp.PermissionsToKeys.Contains("read"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
+                if(common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'get' and 'list' permissions are already included in 'read' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
+            }
+            if (sp.PermissionsToKeys.Contains("write"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'delete', 'create' and 'update' permissions are already included in 'write' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
+            }
+            if (sp.PermissionsToKeys.Contains("crypto"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in 'crypto' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
+            }
+            if (sp.PermissionsToKeys.Contains("storage"))
+            {
+                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'import', 'recover', 'backup', and 'restore' permissions are already included in 'storage' permission.");
+                }
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
+            }
+
         }
 
 
