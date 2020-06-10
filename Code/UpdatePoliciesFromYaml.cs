@@ -236,12 +236,12 @@ namespace RBAC
             }
             if (sp.PermissionsToCertificates.Contains("manage"))
             {
-                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.manageCertificatePermissions);
                 if (common.Count() != 0)
                 {
                     throw new Exception($"Error for {sp.DisplayName} in {name}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in 'manage' in certificate permission.");
                 }
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.manageCertificatePermissions).ToArray();
                 sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
             }
 
