@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
+﻿using Microsoft.Azure.Management.Cdn.Fluent.Models;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
@@ -334,7 +335,7 @@ namespace RBAC
         {
             foreach (string kp in sp.PermissionsToKeys)
             {
-                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()))
+                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -342,7 +343,7 @@ namespace RBAC
 
             foreach (string s in sp.PermissionsToSecrets)
             {
-                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()))
+                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -350,7 +351,7 @@ namespace RBAC
 
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()))
+                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -364,57 +365,91 @@ namespace RBAC
         /// <param name="vaultName">The name of the KeyVault you are updating</param>
         private static void translateKeys(PrincipalPermissions sp, string vaultName)
         {
-            if (sp.PermissionsToKeys.Contains("all") && sp.PermissionsToKeys.Length == 1)
+            if (sp.PermissionsToKeys.Contains("all"))
             {
-                sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
-            }
-            else if (sp.PermissionsToKeys.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {vaultName}.");
-            }
-
-            if (sp.PermissionsToKeys.Contains("read"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
-                if (common.Count() != 0)
+                if (sp.PermissionsToKeys.Length == 1)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Key 'read' permission.");
+                    sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
                 }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
-            }
-
-            if (sp.PermissionsToKeys.Contains("write"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
-                if (common.Count() != 0)
+                else
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Key 'write' permission.");
+                    throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {vaultName}.");
                 }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
             }
-
-            if (sp.PermissionsToKeys.Contains("crypto"))
+            else
             {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
-                if (common.Count() != 0)
+                var allKeyword = sp.PermissionsToKeys.ToLookup(p => p.Trim().StartsWith("all"));
+                if (allKeyword.Count > 0)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in Key 'crypto' permission.");
-                }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
-            }
+                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
+                    if (allMinusInstances.Length == 1)
+                    {
+                        string inst = allMinusInstances[0];
+                        const string minusLabel = "-";
+                        int minusLabelStart = inst.IndexOf(minusLabel);
+                        int start = minusLabelStart + minusLabel.Length;
 
-            if (sp.PermissionsToKeys.Contains("storage"))
-            {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
-                if (common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Key 'storage' permission.");
+                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
+                     
+                        // Verifies that each permission is valid
+                        foreach (string p in valuesToRemove)
+                        {
+                            if (!PrincipalPermissions.validKeyPermissions.Contains(p.ToLower()))
+                            {
+                                throw new Exception($"Invalid 'All - <permission>' {p} for {sp.DisplayName} in {vaultName}.");
+                            }
+                        }
+                        sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions.Except(valuesToRemove).ToArray();
+                    }
+                    else if (allMinusInstances.Length > 1)
+                    {
+                        throw new Exception($"'All - <permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
+                    }
                 }
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
+
+                if (sp.PermissionsToKeys.Contains("read"))
+                {
+                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Key 'read' permission.");
+                    }
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
+                }
+
+                if (sp.PermissionsToKeys.Contains("write"))
+                {
+                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Key 'write' permission.");
+                    }
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
+                }
+
+                if (sp.PermissionsToKeys.Contains("crypto"))
+                {
+                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in Key 'crypto' permission.");
+                    }
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
+                }
+
+                if (sp.PermissionsToKeys.Contains("storage"))
+                {
+                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Key 'storage' permission.");
+                    }
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
+                }
             }
         }
 
