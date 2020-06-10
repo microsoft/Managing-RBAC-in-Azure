@@ -99,6 +99,8 @@ namespace RBAC
             {
                 throw new Exception($"\nMissing PermissionsToCertificates for {name}");
             }
+
+            //Standardize permissions to lower case and check if they are valid
             sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
             foreach (string kp in sp.PermissionsToKeys)
             {
@@ -124,6 +126,7 @@ namespace RBAC
                 }
             }
 
+            //Change any "all" permissions to an array of all permissions. Throw an error if there is an "all" and other permissions exist.
             if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
             {
                 sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
@@ -152,6 +155,7 @@ namespace RBAC
             {
                 throw new Exception($"'all' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
             }
+            //Change short cuts to format that can be pushed to key vault
             checkKeyPermissions(sp, name);
 
             checkCertificatePermissions(sp, name);
@@ -160,6 +164,7 @@ namespace RBAC
 
         private static void checkKeyPermissions(PrincipalPermissions sp, string name)
         {
+            //Check if permissions covered under short hands are present alonside them and throw an error if so.
             if (sp.PermissionsToKeys.Contains("read"))
             {
                 var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
@@ -204,6 +209,7 @@ namespace RBAC
 
         private static void checkCertificatePermissions(PrincipalPermissions sp, string name)
         {
+            //Check if permissions covered under short hands are present alonside them and throw an error if so.
             if (sp.PermissionsToCertificates.Contains("read"))
             {
                 var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
