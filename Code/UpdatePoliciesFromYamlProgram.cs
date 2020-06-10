@@ -30,7 +30,6 @@ namespace RBAC
             {
                 string masterConfig = System.IO.File.ReadAllText(args[0]);
                 vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-
             }
             catch (Exception e)
             {
