@@ -153,6 +153,8 @@ namespace RBAC
                 throw new Exception($"'all' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
             }
             checkKeyPermissions(sp, name);
+
+            checkCertificatePermissions(sp, name);
             
         }
 
@@ -198,9 +200,52 @@ namespace RBAC
                 sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
                 sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
             }
-
         }
 
+        private static void checkCertificatePermissions(PrincipalPermissions sp, string name)
+        {
+            if (sp.PermissionsToCertificates.Contains("read"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'get' and 'list' permissions are already included in 'read' certificate permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.readPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
+            }
+            if (sp.PermissionsToCertificates.Contains("write"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'delete', 'create' and 'update' permissions are already included in 'write' certificate permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
+            }
+            if (sp.PermissionsToCertificates.Contains("storage"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}. 'import', 'recover', 'backup', and 'restore' permissions are already included in 'storage' certificate permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
+            }
+            if (sp.PermissionsToCertificates.Contains("manage"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {name}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in 'manage' in certificate permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
+            }
+
+        }
 
 
         /// <summary>
