@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.KeyVault;
+﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
+using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
 using Microsoft.Graph;
@@ -128,7 +129,7 @@ namespace RBAC
             }
             else if(sp.PermissionsToCertificates.Contains("all"))
             {
-                throw new Exception($"'all' permission removes need for other certificate permissions for {sp.DisplayName} in {name}.");
+                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {name}.");
             }
 
 
@@ -138,7 +139,7 @@ namespace RBAC
             }
             else if(sp.PermissionsToSecrets.Contains("all"))
             {
-                throw new Exception($"'all' permission removes need for other secret permissions for {sp.DisplayName} in {name}.");
+                throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {name}.");
             }
 
 
@@ -148,7 +149,58 @@ namespace RBAC
             }
             else if (sp.PermissionsToKeys.Contains("all"))
             {
-                throw new Exception($"'all' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
+                throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
+            }
+
+            if (sp.PermissionsToSecrets.Contains("read"))
+            {
+                if (sp.PermissionsToSecrets.Length == 1)
+                {
+                    sp.PermissionsToSecrets = PrincipalPermissions.readPermissions;
+                }
+                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions).Count() == 0)
+                {
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "read" }).ToArray();
+                }
+                else
+                {
+                    throw new Exception($"'Read' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
+                }
+            }
+
+            if (sp.PermissionsToSecrets.Contains("write"))
+            {
+                if (sp.PermissionsToSecrets.Length == 1)
+                {
+                    sp.PermissionsToSecrets = PrincipalPermissions.writeSecretPermissions;
+                }
+                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions).Count() == 0)
+                {
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "write" }).ToArray();
+                }
+                else
+                {
+                    throw new Exception($"'Write' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
+                }
+            }
+
+            if (sp.PermissionsToSecrets.Contains("storage"))
+            {
+                if (sp.PermissionsToSecrets.Length == 1)
+                {
+                    sp.PermissionsToSecrets = PrincipalPermissions.storageSecretPermissions;
+                }
+                else if (sp.PermissionsToSecrets.Intersect(PrincipalPermissions.storageSecretPermissions).Count() == 0)
+                {
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Except(new string[] { "storage" }).ToArray();
+                }
+                else
+                {
+                    throw new Exception($"'Storage' permission removes need for other key permissions for {sp.DisplayName} in {name}.");
+                }
             }
         }
 
@@ -177,7 +229,7 @@ namespace RBAC
                     System.Environment.Exit(1);
                 }
                 
-                if (kv.usersContained() < 2)
+                /*if (kv.usersContained() < 2)
                 {
                     Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
                 }
@@ -185,6 +237,19 @@ namespace RBAC
                 {
                     Console.WriteLine("\nUpdating " + kv.VaultName + "...");
                     updateVault(kv, kvmClient, secrets, graphClient);
+                }*/
+
+                if (!vaultsRetrieved.Contains(kv))
+                {
+                    Console.WriteLine("\nUpdating " + kv.VaultName + "...");
+                    if (kv.usersContained() < 2)
+                    {
+                        Console.WriteLine($"Error: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                    }
+                    else
+                    {
+                        updateVault(kv, kvmClient, secrets, graphClient);
+                    }
                 }
             }
         }
@@ -265,14 +330,14 @@ namespace RBAC
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                                 System.Environment.Exit(1);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"\nError: {e.Message}");
+                        Console.WriteLine($"Error: {e.Message}");
                     }
                 }
 
@@ -281,7 +346,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.WriteLine($"Error: {e.Message}");
             }
         }
 
