@@ -230,7 +230,7 @@ namespace RBAC
             "crypto"};
         public static string[] validSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge", "all", "read", "write", "storage" };
         public static string[] validCertificatePermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge", "all", "read", "write", "storage"
+            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge", "all", "read", "write", "storage",
             "allauthorities"};
         public static string[] readPermissions = { "get", "list" };
         public static string[] writeKeyOrCertifPermissions = { "update", "create", "delete" };
