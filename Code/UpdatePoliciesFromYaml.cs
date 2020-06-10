@@ -396,14 +396,14 @@ namespace RBAC
                         {
                             if (!PrincipalPermissions.validKeyPermissions.Contains(p.ToLower()))
                             {
-                                throw new Exception($"Invalid 'All - <permission>' {p} for {sp.DisplayName} in {vaultName}.");
+                                throw new Exception($"Invalid 'All - <key permission>' {p} for {sp.DisplayName} in {vaultName}.");
                             }
                         }
                         sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions.Except(valuesToRemove).ToArray();
                     }
                     else if (allMinusInstances.Length > 1)
                     {
-                        throw new Exception($"'All - <permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
+                        throw new Exception($"'All - <key permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
                     }
                 }
 
@@ -460,46 +460,80 @@ namespace RBAC
         /// <param name="vaultName">The name of the KeyVault you are updating</param>
         private static void translateSecrets(PrincipalPermissions sp, string vaultName)
         {
-            if (sp.PermissionsToSecrets.Contains("all") && sp.PermissionsToSecrets.Length == 1)
+            if (sp.PermissionsToSecrets.Contains("all"))
             {
-                sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
-            }
-            else if (sp.PermissionsToSecrets.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {vaultName}.");
-            }
-
-            if (sp.PermissionsToSecrets.Contains("read"))
-            {
-                var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions);
-                if (common.Count() != 0)
+                if (sp.PermissionsToSecrets.Length == 1)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Secret 'read' permission.");
+                    sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
                 }
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "read").ToArray();
-            }
-
-            if (sp.PermissionsToSecrets.Contains("write"))
-            {
-                var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions);
-                if (common.Count() != 0)
+                else
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' permissions are already included in Secret 'write' permission.");
+                    throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {vaultName}.");
                 }
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "write").ToArray();
             }
-
-            if (sp.PermissionsToSecrets.Contains("storage"))
+            else
             {
-                var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageSecretPermissions);
-                if (common.Count() != 0)
+                var allKeyword = sp.PermissionsToSecrets.ToLookup(p => p.Trim().StartsWith("all"));
+                if (allKeyword.Count > 0)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' permissions are already included in Secret 'storage' permission.");
+                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
+                    if (allMinusInstances.Length == 1)
+                    {
+                        string inst = allMinusInstances[0];
+                        const string minusLabel = "-";
+                        int minusLabelStart = inst.IndexOf(minusLabel);
+                        int start = minusLabelStart + minusLabel.Length;
+
+                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
+
+                        // Verifies that each permission is valid
+                        foreach (string p in valuesToRemove)
+                        {
+                            if (!PrincipalPermissions.validSecretPermissions.Contains(p.ToLower()))
+                            {
+                                throw new Exception($"Invalid 'All - <secret permission>' {p} for {sp.DisplayName} in {vaultName}.");
+                            }
+                        }
+                        sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions.Except(valuesToRemove).ToArray();
+                    }
+                    else if (allMinusInstances.Length > 1)
+                    {
+                        throw new Exception($"'All - <secret permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
+                    }
                 }
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
-                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
+
+                if (sp.PermissionsToSecrets.Contains("read"))
+                {
+                    var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Secret 'read' permission.");
+                    }
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "read").ToArray();
+                }
+
+                if (sp.PermissionsToSecrets.Contains("write"))
+                {
+                    var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' permissions are already included in Secret 'write' permission.");
+                    }
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "write").ToArray();
+                }
+
+                if (sp.PermissionsToSecrets.Contains("storage"))
+                {
+                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageSecretPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' permissions are already included in Secret 'storage' permission.");
+                    }
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
+                }
             }
         }
 
@@ -510,57 +544,91 @@ namespace RBAC
         /// <param name="vaultName">The name of the KeyVault you are updating</param>
         private static void translateCertificates(PrincipalPermissions sp, string vaultName)
         {
-            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
+            if (sp.PermissionsToCertificates.Contains("all"))
             {
-                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
-            }
-            else if (sp.PermissionsToCertificates.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
-            }
-
-            if (sp.PermissionsToCertificates.Contains("read"))
-            {
-                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
-                if (common.Count() != 0)
+                if (sp.PermissionsToCertificates.Length == 1)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Certificate 'read' permission.");
+                    sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
                 }
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.readPermissions).ToArray();
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
-            }
-
-            if (sp.PermissionsToCertificates.Contains("write"))
-            {
-                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
-                if (common.Count() != 0)
+                else
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Certificate 'write' permission.");
+                    throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
                 }
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
             }
-
-            if (sp.PermissionsToCertificates.Contains("storage"))
+            else
             {
-                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
-                if (common.Count() != 0)
+                var allKeyword = sp.PermissionsToCertificates.ToLookup(p => p.Trim().StartsWith("all"));
+                if (allKeyword.Count > 0)
                 {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Certificate 'storage' permission.");
-                }
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
-            }
+                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
+                    if (allMinusInstances.Length == 1)
+                    {
+                        string inst = allMinusInstances[0];
+                        const string minusLabel = "-";
+                        int minusLabelStart = inst.IndexOf(minusLabel);
+                        int start = minusLabelStart + minusLabel.Length;
 
-            if (sp.PermissionsToCertificates.Contains("manage"))
-            {
-                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
-                if (common.Count() != 0)
-                {
-                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in Certificate 'manage' permission.");
+                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
+
+                        // Verifies that each permission is valid
+                        foreach (string p in valuesToRemove)
+                        {
+                            if (!PrincipalPermissions.validCertificatePermissions.Contains(p.ToLower()))
+                            {
+                                throw new Exception($"Invalid 'All - <certificate permission>' {p} for {sp.DisplayName} in {vaultName}.");
+                            }
+                        }
+                        sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions.Except(valuesToRemove).ToArray();
+                    }
+                    else if (allMinusInstances.Length > 1)
+                    {
+                        throw new Exception($"'All - <certificate permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
+                    }
                 }
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
-                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
+
+                if (sp.PermissionsToCertificates.Contains("read"))
+                {
+                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Certificate 'read' permission.");
+                    }
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
+                }
+
+                if (sp.PermissionsToCertificates.Contains("write"))
+                {
+                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Certificate 'write' permission.");
+                    }
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
+                }
+
+                if (sp.PermissionsToCertificates.Contains("storage"))
+                {
+                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Certificate 'storage' permission.");
+                    }
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
+                }
+
+                if (sp.PermissionsToCertificates.Contains("manage"))
+                {
+                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in Certificate 'manage' permission.");
+                    }
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
+                }
             }
         }
     }
