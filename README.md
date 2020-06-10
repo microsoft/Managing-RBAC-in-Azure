@@ -70,7 +70,21 @@ You can do so by editing the YamlOutput.yml directly to...
   - Note that Security Principals of Type **User** must define **Type**, **DisplayName**, **Alias**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates**, while **all other types** require **Type**, **DisplayName**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates** only
   - To add all of the Permissions within **PermissionsToKeys**, **PermissionsToSecrets**, or **PermissionsToCertificates**, simply write **All**
 - Remove an existing Access Policy for a Security Principal
-
+- We have also made shorthands available for each type of Permission
+  #### Keys:
+  - **Read**: Get and List Access
+  - **Write**: Update, Create, and Delete Access
+  - **Crypto**: All cryptographic operations i.e Decrypt, Encrypt, UnwrapKey, WrapKey, Veryfy, and Sign
+  - **Storage**: Import, Recover, Backup, and Restore Access
+  #### Secrets
+  - **Read**: Get and List Access
+  - **Write**: Set and Delete Access
+  - **Storage**: Recover, Backup, and Restore Access
+  #### Certificates
+  - **Read**: Get and List Access
+  - **Write**: Update, Create, and Delete Access
+  - **Storage**: Import, Recover, Backup, and Restore Access
+  - **Manage**: ManageContact and all Certificate Authorities Acesses
 ```
 Note that a KeyVault will NOT update if it does not contain at least 2 Users within its Access Policies.
 ``` 
