@@ -102,17 +102,18 @@ namespace RBAC
             }
         }
 
-         /// <summary>
-         /// This method updates the access policies for each KeyVault in the yamlVaults list.
-         /// </summary>
-         /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
-         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
-         /// <param name="kvmClient">The KeyManagementClient</param>
-         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
-         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-         public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, GraphServiceClient graphClient)
-         {
-            foreach (KeyVaultProperties kv in yamlVaults)
+        /// <summary>
+        /// This method updates the access policies for each KeyVault in the yamlVaults list.
+        /// </summary>
+        /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+        /// <param name="kvmClient">The KeyManagementClient</param>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
+        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
+            GraphServiceClient graphClient)
+        {
+            foreach(KeyVaultProperties kv in yamlVaults)
             {
                 try
                 {
@@ -321,16 +322,7 @@ namespace RBAC
             checkValidPermissions(sp, vaultName);
             translateKeys(sp, vaultName);
             translateSecrets(sp, vaultName);
-
-            //put this in the checking certificates!
-            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
-            {
-                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
-            }
-            else if (sp.PermissionsToCertificates.Contains("all"))
-            {
-                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
-            }
+            translateCertificates(sp, vaultName);
         }
 
         /// <summary>
@@ -473,6 +465,67 @@ namespace RBAC
                 }
                 sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
                 sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
+            }
+        }
+
+        /// <summary>
+        /// This method translates the short-hand notations for Certificates to their respective permissions.
+        /// </summary>
+        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="vaultName">The name of the KeyVault you are updating</param>
+        private static void translateCertificates(PrincipalPermissions sp, string vaultName)
+        {
+            if (sp.PermissionsToCertificates.Contains("all") && sp.PermissionsToCertificates.Length == 1)
+            {
+                sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
+            }
+            else if (sp.PermissionsToCertificates.Contains("all"))
+            {
+                throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
+            }
+
+            if (sp.PermissionsToCertificates.Contains("read"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Certificate 'read' permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.readPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
+            }
+
+            if (sp.PermissionsToCertificates.Contains("write"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Certificate 'write' permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
+            }
+
+            if (sp.PermissionsToCertificates.Contains("storage"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Certificate 'storage' permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
+            }
+
+            if (sp.PermissionsToCertificates.Contains("manage"))
+            {
+                var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                if (common.Count() != 0)
+                {
+                    throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in Certificate 'manage' permission.");
+                }
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
             }
         }
     }
