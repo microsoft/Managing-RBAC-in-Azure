@@ -12,6 +12,7 @@ using Microsoft.Rest.Azure;
 using Microsoft.Graph;
 using System.Management.Automation;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace RBAC
 {
@@ -20,6 +21,22 @@ namespace RBAC
     /// </summary>
     class AccessPoliciesToYaml
     {
+
+        public static JsonInput readJsonFile(string jsonDirectory)
+        {
+            try
+            {
+                string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
+                return (JsonConvert.DeserializeObject<JsonInput>(masterConfig));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nError: {e.Message}");
+                System.Environment.Exit(1);
+                return null;
+            }
+        }
+
         /// <summary>
         /// This method retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets.
         /// </summary>

@@ -37,18 +37,7 @@ namespace RBAC
             }
 
             Console.WriteLine("Reading input file...");
-            JsonInput vaultList = null;
-            try
-            {
-                string masterConfig = System.IO.File.ReadAllText(args[0]);
-                vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-                
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"\nError: {e.Message}");
-                System.Environment.Exit(1);
-            }
+            JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nGrabbing secrets...");
