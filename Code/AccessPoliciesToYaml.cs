@@ -13,6 +13,7 @@ using Microsoft.Graph;
 using System.Management.Automation;
 using System.Linq;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace RBAC
 {
@@ -22,18 +23,116 @@ namespace RBAC
     class AccessPoliciesToYaml
     {
 
+        /// <summary>
+        /// This method verifies that the file arguments are of the correct type.
+        /// </summary>
+        /// <param name="args">The string array of program arguments</param>
+        public static void verifyFileExtensions(string[] args)
+        {
+            try
+            {
+                if (args.Length != 2)
+                {
+                    throw new Exception("Missing input file.");
+                }
+                if (System.IO.Path.GetExtension(args[0]) != ".json")
+                {
+                    throw new Exception("The 1st argument is not a .json file");
+                }
+                if (System.IO.Path.GetExtension(args[1]) != ".yml")
+                {
+                    throw new Exception("The 2nd argument is not a .yml file");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nError: {e.Message}");
+                System.Environment.Exit(1);
+            }
+        }
+
+        /// <summary>
+        /// This method reads in and deserializes the Json input file.
+        /// </summary>
+        /// <param name="jsonDirectory">The Json file path</param>
+        /// <returns>A JsonInput object that stores the Json input data</returns>
         public static JsonInput readJsonFile(string jsonDirectory)
         {
             try
             {
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
-                return (JsonConvert.DeserializeObject<JsonInput>(masterConfig));
+                JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
+
+                checkMissingJsonInputFields(vaultList);
+                foreach (Resource res in vaultList.Resources)
+                {
+                    checkMissingResourceFields(res);
+                }
+                return vaultList;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
                 System.Environment.Exit(1);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that all of the required inputs exist for the Json input file.
+        /// </summary>
+        /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
+        public static void checkMissingJsonInputFields(JsonInput vaultList)
+        {
+            if (vaultList.AadAppKeyDetails == null)
+            {
+                throw new Exception("Missing AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.AadAppKeyDetails.AadAppName == null)
+            {
+                throw new Exception("Missing AadAppName for AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.AadAppKeyDetails.VaultName == null)
+            {
+                throw new Exception("Missing VaultName for AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
+            {
+                throw new Exception("Missing ClientIdSecretName for AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
+            {
+                throw new Exception("Missing ClientKeySecretName for AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
+            {
+                throw new Exception("Missing TenantIdSecretName for AadAppKeyDetails in Json input.");
+            }
+            if (vaultList.Resources == null)
+            {
+                throw new Exception("Missing Resources list in Json input.");
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that all of the required inputs exist for each Resource object.
+        /// </summary>
+        /// <param name="res">The Resouce object for which we want to check</param>
+        public static void checkMissingResourceFields(Resource res)
+        {
+            if (res.SubscriptionId == null)
+            {
+                throw new Exception("Missing SubscriptionId for a Resource.");
+            }
+            if (res.ResourceGroups != null)
+            {
+                foreach(ResourceGroup resGroup in res.ResourceGroups)
+                {
+                    if (resGroup.ResourceGroupName == null)
+                    {
+                        throw new Exception($"Missing ResourceGroupName for Resource with SubscriptionId {res.SubscriptionId}.");
+                    }
+                }
             }
         }
 
@@ -55,12 +154,59 @@ namespace RBAC
             
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
 
-                KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
-                secrets["clientId"] = clientIdSecret.Value;
-                KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
-                secrets["clientKey"] = clientKeySecret.Value;
-                KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
-                secrets["tenantId"] = tenantIdSecret.Value;
+                try
+                {
+                    KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
+                    secrets["clientId"] = clientIdSecret.Value;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("404"))
+                    {
+                        Console.WriteLine($"\nError: clientIdSecret could not be found.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
+                    }
+                    System.Environment.Exit(1);
+                }
+
+                try
+                {
+                    KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
+                    secrets["clientKey"] = clientKeySecret.Value;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("404"))
+                    {
+                        Console.WriteLine($"\nError: clientKeySecret could not be found.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
+                    }
+                    System.Environment.Exit(1);
+                }
+
+                try
+                {
+                    KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
+                    secrets["tenantId"] = tenantIdSecret.Value;
+                }
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("404"))
+                    {
+                        Console.WriteLine($"\nError: tenantIdSecret could not be found.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
+                    }
+                    System.Environment.Exit(1);
+                }
             } 
             catch (Exception e)
             {

@@ -26,17 +26,9 @@ namespace RBAC
         {
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
-
-            if (System.IO.Path.GetExtension(args[0]) != ".json")
-            {
-                throw new Exception("The 1st argument is not a .json file");
-            }
-            if (System.IO.Path.GetExtension(args[1]) != ".yml")
-            {
-                throw new Exception("The 2nd argument is not a .yml file");
-            }
-
+            
             Console.WriteLine("Reading input file...");
+            AccessPoliciesToYaml.verifyFileExtensions(args);
             JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
             Console.WriteLine("Success!");
 
