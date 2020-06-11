@@ -171,7 +171,6 @@ namespace RBAC
                     }
                     System.Environment.Exit(1);
                 }
-
                 try
                 {
                     KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
@@ -189,7 +188,6 @@ namespace RBAC
                     }
                     System.Environment.Exit(1);
                 }
-
                 try
                 {
                     KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);

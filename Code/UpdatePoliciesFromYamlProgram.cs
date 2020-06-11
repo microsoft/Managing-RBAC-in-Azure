@@ -15,58 +15,31 @@ namespace RBAC
         /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
-            if (System.IO.Path.GetExtension(args[0]) != ".json")
-            {
-                throw new Exception("The 1st argument is not a .json file");
-            }
-            if (System.IO.Path.GetExtension(args[1]) != ".yml")
-            {
-                throw new Exception("The 2nd argument is not a .yml file");
-            }
-
             Console.WriteLine("Reading input file...");
-            JsonInput vaultList = null;
-            try
-            {
-                string masterConfig = System.IO.File.ReadAllText(args[0]);
-                vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"\nError: {e.Message}");
-                System.Environment.Exit(1);
-            }
+            AccessPoliciesToYaml.verifyFileExtensions(args);
+            JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nGrabbing secrets...");
             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
+            Console.WriteLine("Success!");
 
-            // If secrets contains all 4 secrets needed, continue
-            if (secrets.Count == 4)
-            {
-                Console.WriteLine("Success!");
-                Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
-                var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-                var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+            var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
+            var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("Success!");
 
-                // If both clients were created successfully, continue
-                if (kvmClient != null && graphClient != null)
-                {
-                    Console.WriteLine("Success!");
+            Console.WriteLine("\nRetrieving key vaults...");
+            List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
+            Console.WriteLine("Success!");
 
-                    Console.WriteLine("\nRetrieving key vaults...");
-                    List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
-                    Console.WriteLine("Success!");
+            Console.WriteLine("\nReading yaml file...");
+            List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml(args[1]);
+            Console.WriteLine("Success!");
 
-                    Console.WriteLine("\nReading yaml file...");
-                    List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml(args[1]);
-                    Console.WriteLine("Success!");
-
-                    Console.WriteLine("\nUpdating key vaults...");
-                    UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
-                    Console.WriteLine("Updates finished!");
-                }
-            }
+            Console.WriteLine("\nUpdating key vaults...");
+            UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
+            Console.WriteLine("Updates finished!");
         }
     }
 }
