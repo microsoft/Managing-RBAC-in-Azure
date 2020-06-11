@@ -219,23 +219,5 @@ namespace RBAC
                 }
             }
         }
-
-        public static string[] allKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge" };
-        public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
-        public static string[] allCertificatePermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge" };
-        public static string[] validKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge", "all", "read", "write", "storage", "crypto" };
-        public static string[] validSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge", "all", "read", "write", "storage" };
-        public static string[] validCertificatePermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge", "all", "read", "write", "storage", "manage" };
-        public static string[] readPermissions = { "get", "list" };
-        public static string[] writeKeyOrCertifPermissions = { "update", "create", "delete" };
-        public static string[] cryptographicKeyPermissions = { "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign" };
-        public static string[] storageKeyOrCertifPermissions = { "import", "recover", "backup", "restore" };
-        public static string[] writeSecretPermissions = { "set", "delete" };
-        public static string[] storageSecretPermissions = { "recover", "backup", "restore" };
-        public static string[] manageCertificatePermissions = { "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" };
     }
 }

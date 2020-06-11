@@ -32,7 +32,7 @@ namespace RBAC
 
             // Creates the SecretClient and grabs secrets
             string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
-            string keyVaultUri = "https://" + keyVaultName + ".vault.azure.net";
+            string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
 
             try
             {
@@ -83,8 +83,8 @@ namespace RBAC
         {
             try
             {
-                string auth = "https://login.microsoftonline.com/" + secrets["tenantId"];
-                string redirectUri = "https://" + secrets["appName"];
+                string auth = Constants.MICROSOFT_LOGIN + secrets["tenantId"];
+                string redirectUri = Constants.HTTP + secrets["appName"];
 
                 IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(secrets["clientId"])
                                                               .WithAuthority(auth)
@@ -94,7 +94,7 @@ namespace RBAC
 
                 List<string> scopes = new List<string>()
                 {
-                    "https://graph.microsoft.com/.default"
+                    Constants.GRAPHCLIENT_URL
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
                 return (new GraphServiceClient(authProvider));
@@ -244,12 +244,10 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
-
             var serializer = new SerializerBuilder().Build();
             string yaml = serializer.Serialize(vaultsRetrieved);
 
             System.IO.File.WriteAllText(yamlDirectory, yaml);
-
         }
     }
 }

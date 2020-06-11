@@ -111,8 +111,8 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
-            GraphServiceClient graphClient)
+        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, 
+            Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             foreach(KeyVaultProperties kv in yamlVaults)
             {
@@ -128,9 +128,9 @@ namespace RBAC
 
                 if (!vaultsRetrieved.Contains(kv))
                 {
-                    if (kv.usersContained() < 2)
+                    if (kv.usersContained() < Constants.MIN_NUM_USERS)
                     {
-                        Console.WriteLine($"Error: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                        Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
                     }
                     else
                     {
@@ -181,7 +181,8 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, GraphServiceClient graphClient)
+        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
+            GraphServiceClient graphClient)
         {
             try
             {
@@ -218,23 +219,23 @@ namespace RBAC
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                                 System.Environment.Exit(1);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {e.Message}");
+                        Console.WriteLine($"\nError: {e.Message}");
                     }
                 }
 
                 Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
-                Console.WriteLine("" + updatedVault.Name + " successfully updated!");
+                Console.WriteLine($"{updatedVault.Name} successfully updated!");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e.Message}");
+                Console.WriteLine($"\nError: {e.Message}");
             }
         }
 
@@ -335,7 +336,7 @@ namespace RBAC
         {
             foreach (string kp in sp.PermissionsToKeys)
             {
-                if (!PrincipalPermissions.validKeyPermissions.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all")))
+                if (!Constants.VALID_KEY_PERMISSIONS.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -343,7 +344,7 @@ namespace RBAC
 
             foreach (string s in sp.PermissionsToSecrets)
             {
-                if (!PrincipalPermissions.validSecretPermissions.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all")))
+                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -351,7 +352,7 @@ namespace RBAC
 
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!PrincipalPermissions.validCertificatePermissions.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all")))
+                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all")))
                 {
                     throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {vaultName}.");
                 }
@@ -369,7 +370,7 @@ namespace RBAC
             {
                 if (sp.PermissionsToKeys.Length == 1)
                 {
-                    sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions;
+                    sp.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS;
                 }
                 else
                 {
@@ -394,12 +395,12 @@ namespace RBAC
                         // Verifies that each permission is valid
                         foreach (string p in valuesToRemove)
                         {
-                            if (!PrincipalPermissions.validKeyPermissions.Contains(p.ToLower()))
+                            if (!Constants.VALID_KEY_PERMISSIONS.Contains(p.ToLower()))
                             {
                                 throw new Exception($"Invalid 'All - <key permission>' {p} for {sp.DisplayName} in {vaultName}.");
                             }
                         }
-                        sp.PermissionsToKeys = PrincipalPermissions.allKeyPermissions.Except(valuesToRemove).ToArray();
+                        sp.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS.Except(valuesToRemove).ToArray();
                     }
                     else if (allMinusInstances.Length > 1)
                     {
@@ -409,45 +410,49 @@ namespace RBAC
 
                 if (sp.PermissionsToKeys.Contains("read"))
                 {
-                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.readPermissions);
+                    var common = sp.PermissionsToKeys.Intersect(Constants.READ_KEY_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Key 'read' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
+                            $"permissions are already included in Key 'read' permission.");
                     }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.READ_KEY_PERMISSIONS).ToArray();
                     sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
                 }
 
                 if (sp.PermissionsToKeys.Contains("write"))
                 {
-                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                    var common = sp.PermissionsToKeys.Intersect(Constants.WRITE_KEY_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Key 'write' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' " +
+                            $"permissions are already included in Key 'write' permission.");
                     }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.WRITE_KEY_PERMISSIONS).ToArray();
                     sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
                 }
 
                 if (sp.PermissionsToKeys.Contains("crypto"))
                 {
-                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.cryptographicKeyPermissions);
+                    var common = sp.PermissionsToKeys.Intersect(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' permissions are already included in Key 'crypto' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' " +
+                            $"permissions are already included in Key 'crypto' permission.");
                     }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.cryptographicKeyPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS).ToArray();
                     sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
                 }
 
                 if (sp.PermissionsToKeys.Contains("storage"))
                 {
-                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    var common = sp.PermissionsToKeys.Intersect(Constants.STORAGE_KEY_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Key 'storage' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' " +
+                            $"permissions are already included in Key 'storage' permission.");
                     }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.STORAGE_KEY_PERMISSIONS).ToArray();
                     sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
                 }
             }
@@ -464,7 +469,7 @@ namespace RBAC
             {
                 if (sp.PermissionsToSecrets.Length == 1)
                 {
-                    sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions;
+                    sp.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS;
                 }
                 else
                 {
@@ -489,12 +494,12 @@ namespace RBAC
                         // Verifies that each permission is valid
                         foreach (string p in valuesToRemove)
                         {
-                            if (!PrincipalPermissions.validSecretPermissions.Contains(p.ToLower()))
+                            if (!Constants.VALID_SECRET_PERMISSIONS.Contains(p.ToLower()))
                             {
                                 throw new Exception($"Invalid 'All - <secret permission>' {p} for {sp.DisplayName} in {vaultName}.");
                             }
                         }
-                        sp.PermissionsToSecrets = PrincipalPermissions.allSecretPermissions.Except(valuesToRemove).ToArray();
+                        sp.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS.Except(valuesToRemove).ToArray();
                     }
                     else if (allMinusInstances.Length > 1)
                     {
@@ -504,34 +509,37 @@ namespace RBAC
 
                 if (sp.PermissionsToSecrets.Contains("read"))
                 {
-                    var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.readPermissions);
+                    var common = sp.PermissionsToSecrets.Intersect(Constants.READ_SECRET_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Secret 'read' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
+                            $"permissions are already included in Secret 'read' permission.");
                     }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.READ_SECRET_PERMISSIONS).ToArray();
                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "read").ToArray();
                 }
 
                 if (sp.PermissionsToSecrets.Contains("write"))
                 {
-                    var common = sp.PermissionsToSecrets.Intersect(PrincipalPermissions.writeSecretPermissions);
+                    var common = sp.PermissionsToSecrets.Intersect(Constants.WRITE_SECRET_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' permissions are already included in Secret 'write' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' " +
+                            $"permissions are already included in Secret 'write' permission.");
                     }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.writeSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.WRITE_SECRET_PERMISSIONS).ToArray();
                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "write").ToArray();
                 }
 
                 if (sp.PermissionsToSecrets.Contains("storage"))
                 {
-                    var common = sp.PermissionsToKeys.Intersect(PrincipalPermissions.storageSecretPermissions);
+                    var common = sp.PermissionsToKeys.Intersect(Constants.STORAGE_SECRET_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' permissions are already included in Secret 'storage' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' " +
+                            $"permissions are already included in Secret 'storage' permission.");
                     }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(PrincipalPermissions.storageSecretPermissions).ToArray();
+                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.STORAGE_SECRET_PERMISSIONS).ToArray();
                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
                 }
             }
@@ -548,7 +556,7 @@ namespace RBAC
             {
                 if (sp.PermissionsToCertificates.Length == 1)
                 {
-                    sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions;
+                    sp.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS;
                 }
                 else
                 {
@@ -573,12 +581,12 @@ namespace RBAC
                         // Verifies that each permission is valid
                         foreach (string p in valuesToRemove)
                         {
-                            if (!PrincipalPermissions.validCertificatePermissions.Contains(p.ToLower()))
+                            if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(p.ToLower()))
                             {
                                 throw new Exception($"Invalid 'All - <certificate permission>' {p} for {sp.DisplayName} in {vaultName}.");
                             }
                         }
-                        sp.PermissionsToCertificates = PrincipalPermissions.allCertificatePermissions.Except(valuesToRemove).ToArray();
+                        sp.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS.Except(valuesToRemove).ToArray();
                     }
                     else if (allMinusInstances.Length > 1)
                     {
@@ -588,45 +596,49 @@ namespace RBAC
 
                 if (sp.PermissionsToCertificates.Contains("read"))
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.readPermissions);
+                    var common = sp.PermissionsToCertificates.Intersect(Constants.READ_CERTIFICATE_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' permissions are already included in Certificate 'read' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
+                            $"permissions are already included in Certificate 'read' permission.");
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.readPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.READ_CERTIFICATE_PERMISSIONS).ToArray();
                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
                 }
 
                 if (sp.PermissionsToCertificates.Contains("write"))
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.writeKeyOrCertifPermissions);
+                    var common = sp.PermissionsToCertificates.Intersect(Constants.WRITE_CERTIFICATE_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' permissions are already included in Certificate 'write' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' " +
+                            $"permissions are already included in Certificate 'write' permission.");
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.writeKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.WRITE_CERTIFICATE_PERMISSIONS).ToArray();
                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
                 }
 
                 if (sp.PermissionsToCertificates.Contains("storage"))
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    var common = sp.PermissionsToCertificates.Intersect(Constants.STORAGE_CERTIFICATE_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' permissions are already included in Certificate 'storage' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' " +
+                            $"permissions are already included in Certificate 'storage' permission.");
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.STORAGE_CERTIFICATE_PERMISSIONS).ToArray();
                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
                 }
 
                 if (sp.PermissionsToCertificates.Contains("manage"))
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(PrincipalPermissions.storageKeyOrCertifPermissions);
+                    var common = sp.PermissionsToCertificates.Intersect(Constants.MANAGE_CERTIFICATE_PERMISSIONS);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' permissions are already included in Certificate 'manage' permission.");
+                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' " +
+                            $"permissions are already included in Certificate 'manage' permission.");
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(PrincipalPermissions.storageKeyOrCertifPermissions).ToArray();
+                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.MANAGE_CERTIFICATE_PERMISSIONS).ToArray();
                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
                 }
             }
