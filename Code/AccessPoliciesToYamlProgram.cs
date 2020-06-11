@@ -53,25 +53,20 @@ namespace RBAC
 
             Console.WriteLine("\nGrabbing secrets...");
             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
+            Console.WriteLine("Success!");
 
-            // If secrets contains all 4 secrets needed, continue
-            if (secrets.Count == 4)
-            {
-                Console.WriteLine("Success!");
-                Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
-                var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-                var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+            var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
+            var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("Success!");
 
-                Console.WriteLine("Success!");
+            Console.WriteLine("\nRetrieving key vaults...");
+            List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
+            Console.WriteLine("Success!");
 
-                Console.WriteLine("\nRetrieving key vaults...");
-                List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
-                Console.WriteLine("Success!");
-
-                Console.WriteLine("\nGenerating YAML output...");
-                AccessPoliciesToYaml.convertToYaml(vaultsRetrieved, args[1]);
-                Console.WriteLine("Success!");
-            }
+            Console.WriteLine("\nGenerating YAML output...");
+            AccessPoliciesToYaml.convertToYaml(vaultsRetrieved, args[1]);
+            Console.WriteLine("Success!");
         }
     }
 }

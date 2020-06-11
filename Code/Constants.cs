@@ -15,7 +15,6 @@ namespace RBAC
 
         public const int MIN_NUM_USERS = 2;
 
-
         // All permissions offered by Azure per permission block
         public static readonly string[] ALL_KEY_PERMISSIONS = { "get", "list", "update", "create", "import", "delete", "recover",
             "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge" };

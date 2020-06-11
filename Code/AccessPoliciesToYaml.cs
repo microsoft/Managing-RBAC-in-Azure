@@ -28,14 +28,14 @@ namespace RBAC
         public static Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
-            secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
-
-            // Creates the SecretClient and grabs secrets
-            string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
-            string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
-
             try
             {
+                secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
+
+                // Creates the SecretClient and grabs secrets
+                string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
+                string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
+            
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
 
                 KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
@@ -48,8 +48,8 @@ namespace RBAC
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
+                System.Environment.Exit(1);
             }
-         
             return secrets;
         }
 
@@ -244,10 +244,17 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
-            var serializer = new SerializerBuilder().Build();
-            string yaml = serializer.Serialize(vaultsRetrieved);
+            try
+            {
+                var serializer = new SerializerBuilder().Build();
+                string yaml = serializer.Serialize(vaultsRetrieved);
 
-            System.IO.File.WriteAllText(yamlDirectory, yaml);
+                System.IO.File.WriteAllText(yamlDirectory, yaml);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"\nError: {e.Message}");
+            }
         }
     }
 }
