@@ -48,6 +48,45 @@ namespace RBAC
             }
         }
 
+        internal static void checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        {
+            int changes = 0;
+            foreach(KeyVaultProperties kv in yamlVaults)
+            {
+                if (!vaultsRetrieved.Contains(kv))
+                {
+                    var old = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName];
+                    var oldVault = old.First();
+                    foreach(PrincipalPermissions p in kv.AccessPolicies)
+                    {
+                        if (!oldVault.AccessPolicies.Contains(p))
+                        {
+                            changes++;
+                        }
+                    }
+                    for(int i = 0; i < oldVault.AccessPolicies.Count; i++)
+                    {
+                        var oldPol = oldVault.AccessPolicies[i];
+                        var name = oldPol.DisplayName;
+                        var curr = kv.AccessPolicies.ToLookup(p => p.DisplayName)[name];
+                        if (oldPol.Type.ToLower() == "user")
+                        {
+                            curr = kv.AccessPolicies.ToLookup(p => p.Alias)[oldPol.Alias];
+                        }
+                        if(curr.Count() == 0)
+                        {
+                            changes++;
+                        }
+                    }
+                }
+            }
+            if(changes > Constants.MAX_NUM_CHANGES)
+            {
+                Console.WriteLine($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
+                System.Environment.Exit(1);
+            }
+        }
+
         /// <summary>
         /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
         /// </summary>
