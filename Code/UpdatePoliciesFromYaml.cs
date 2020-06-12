@@ -428,6 +428,16 @@ namespace RBAC
                 Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
         }
 
+        /// <summary>
+        /// This method translates the specified shorthand to its respective permissions.
+        /// </summary>
+        /// <param name="shorthand">The shorthand keyword to analyze</param>
+        /// <param name="permissionType">The type of permission block</param>
+        /// <param name="permissions">The permission block array</param>
+        /// <param name="shorthandPermissions">The shorthand permissions array</param>
+        /// <param name="validPermissions">The array of all valid permissions</param>
+        /// <param name="shorthandWords">The valid shorthand keywords array</param>
+        /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
         private static string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
         {
             var shorthandInstances = permissions.Where(val => val.Trim().StartsWith(shorthand)).ToArray();
@@ -495,7 +505,7 @@ namespace RBAC
         /// </summary>
         /// <param name="shorthand">The shorthand keyword to analyze</param>
         /// <param name="permissionType">The type of permission block</param>
-        /// <returns></returns>
+        /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
         private static string[] getShorthandPermissions(string shorthand, string permissionType)
         {
             if (shorthand == "all")
