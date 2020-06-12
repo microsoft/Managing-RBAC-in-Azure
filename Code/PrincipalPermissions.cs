@@ -148,10 +148,10 @@ namespace RBAC
                 string type = this.Type.Trim().ToLower();
                 string rhsType = spp.Type.Trim().ToLower();
                 bool aliasIsSame = false;
-                if (rhsType == "user" || rhsType == "group")
+                if (rhsType == "user")
                 {
                     aliasIsSame = (this.Alias == spp.Alias);
-                } else if (rhsType == "application" || rhsType == "service principal")
+                } else if (rhsType == "group" || rhsType == "application" || rhsType == "service principal")
                 {
                     aliasIsSame = true;
                 }
