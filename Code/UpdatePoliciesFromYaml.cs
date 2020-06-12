@@ -60,7 +60,6 @@ namespace RBAC
                         if (!oldVault.AccessPolicies.Contains(p))
                         {
                             changes++;
-                            Console.WriteLine($"{p.DisplayName} in {kv.VaultName}");
                         }
                     }
                     for(int i = 0; i < oldVault.AccessPolicies.Count; i++)
@@ -74,7 +73,6 @@ namespace RBAC
                         }
                         if(curr.Count() == 0)
                         {
-                            Console.WriteLine($"{oldPol.DisplayName} in {oldVault.VaultName}");
                             changes++;
                         }
                     }
