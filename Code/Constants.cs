@@ -14,6 +14,7 @@ namespace RBAC
         public const string GRAPHCLIENT_URL = "https://graph.microsoft.com/.default";
 
         public const int MIN_NUM_USERS = 2;
+        public const int MAX_NUM_CHANGES = 5;
 
         // All permissions offered by Azure per permission block
         public static readonly string[] ALL_KEY_PERMISSIONS = { "get", "list", "update", "create", "import", "delete", "recover",

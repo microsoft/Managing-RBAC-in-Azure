@@ -151,7 +151,7 @@ namespace RBAC
                 if (rhsType == "user" || rhsType == "group")
                 {
                     aliasIsSame = (this.Alias == spp.Alias);
-                } else if (rhsType == "application" || rhsType == "service principal")
+                } else if (rhsType == "application" || rhsType == "service principal" || rhsType == "unknown")
                 {
                     aliasIsSame = true;
                 }
