@@ -357,7 +357,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the PrincipalPermissions object has valid permissions.
+        /// This method verifies that the PrincipalPermissions object has valid permissions and does not contain duplicate permissions.
         /// </summary>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
         private static void checkValidPermissions(PrincipalPermissions sp)
@@ -367,7 +367,7 @@ namespace RBAC
                 if (!Constants.VALID_KEY_PERMISSIONS.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all -")) && (!kp.ToLower().StartsWith("read -"))
                     && (!kp.ToLower().StartsWith("write -")) && (!kp.ToLower().StartsWith("storage -")) && (kp.ToLower().StartsWith("crypto - ")))
                 {
-                    throw new Exception($"Invalid key permission {kp}");
+                    throw new Exception($"Invalid key permission '{kp}'");
                 }
             }
 
@@ -376,18 +376,55 @@ namespace RBAC
                 if (!Constants.VALID_SECRET_PERMISSIONS.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all -")) && (!s.ToLower().StartsWith("read -"))
                     && (!s.ToLower().StartsWith("write -")) && (!s.ToLower().StartsWith("storage -")))
                 {
-                    throw new Exception($"Invalid secret permission {s}");
+                    throw new Exception($"Invalid secret permission '{s}'");
                 }
             }
 
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all -")) && (!cp.ToLower().StartsWith("read -")) 
+                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all -")) && (!cp.ToLower().StartsWith("read -"))
                     && (!cp.ToLower().StartsWith("write -")) && (!cp.ToLower().StartsWith("storage -")) && (!cp.ToLower().StartsWith("management -")))
                 {
-                    throw new Exception($"Invalid certificate permission {cp}");
+                    throw new Exception($"Invalid certificate permission '{cp}'");
                 }
             }
+
+            if (sp.PermissionsToKeys.Distinct().Count() != sp.PermissionsToKeys.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToKeys);
+                throw new Exception($"Key permission(s) '{string.Join(", ", duplicates)}' repeated");
+            }
+            if (sp.PermissionsToSecrets.Distinct().Count() != sp.PermissionsToSecrets.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToSecrets);
+                throw new Exception($"Secret permission(s) '{string.Join(", ", duplicates)}' repeated");
+            }
+            if (sp.PermissionsToCertificates.Distinct().Count() != sp.PermissionsToCertificates.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToCertificates);
+                throw new Exception($"Certificate permission(s) '{string.Join(", ", duplicates)}' repeated");
+            }
+        }
+
+        /// <summary>
+        /// This method finds and returns the duplicate values in a permission block.
+        /// </summary>
+        /// <param name="permissions">The permission block for which we want to find the duplicate values</param>
+        /// <returns>A list of the duplicated values</returns>
+        private static List<string> findDuplicates(string[] permissions)
+        {
+            List<string> duplicates = new List<string>();
+            for (int i = 0; i < permissions.Length; ++i)
+            {
+                for (int j = i + 1; j < permissions.Length; ++j)
+                {
+                    if (permissions[i] == permissions[j])
+                    {
+                        duplicates.Add(permissions[i]);
+                    }
+                }
+            }
+            return duplicates;
         }
 
         /// <summary>
