@@ -69,9 +69,10 @@ You can do so by editing the YamlOutput.yml directly to...
 - Remove an existing Access Policy for a Security Principal
 - Add a new Access Policy for a Security Principal
   - Note that Security Principals of Type **User** must define **Type**, **DisplayName**, **Alias**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates**, while **all other types** require **Type**, **DisplayName**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates** only
-  - We have also made shorthands available for each type of Permission:
   
-	#### Keys:
+## Use of Shorthands
+- We have also made shorthands available for each type of Permission:
+#### Keys:
   - **All**: all Key permissions
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
@@ -88,11 +89,11 @@ You can do so by editing the YamlOutput.yml directly to...
   - **Write**: Update, Create, and Delete Access
   - **Storage**: Import, Recover, Backup, and Restore Access
   - **Management**: ManageContact and all Certificate Authorities Accesses
-  
-	- **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
-		- Ensure you add a space after the shorthand!
-	- The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-	- All of the shorthands are defined in the Constants.cs file and can be edited
+
+- **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
+   - Ensure you add a space after the shorthand!
+- The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
+- All of the shorthands are defined in the Constants.cs file and can be edited
 
 ```
 Note that a KeyVault will NOT update if it does not contain at least 2 Users within its Access Policies.
