@@ -302,7 +302,7 @@ namespace RBAC
                 {
                     if (sp.Alias == null || sp.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}.");
+                        throw new Exception($"Alias is required for {sp.DisplayName}. User skipped");
                     }
 
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
@@ -311,7 +311,7 @@ namespace RBAC
                     
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. Service principal skipped.");
+                        throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. User skipped.");
                     }
                     data["ObjectId"] = user.Id;
                 }
@@ -346,7 +346,7 @@ namespace RBAC
                 }
                 else
                 {
-                    throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Service principal skipped.");
+                    throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Security Principal skipped.");
                 }
             }
             catch (Exception e)
