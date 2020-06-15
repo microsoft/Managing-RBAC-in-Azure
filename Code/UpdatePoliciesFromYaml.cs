@@ -6,6 +6,7 @@ using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Graph;
+using Microsoft.Rest.Azure;
 using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
@@ -51,20 +52,20 @@ namespace RBAC
         internal static void checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
-            foreach(KeyVaultProperties kv in yamlVaults)
+            foreach (KeyVaultProperties kv in yamlVaults)
             {
                 if (!vaultsRetrieved.Contains(kv))
                 {
                     var old = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName];
                     var oldVault = old.First();
-                    foreach(PrincipalPermissions p in kv.AccessPolicies)
+                    foreach (PrincipalPermissions p in kv.AccessPolicies)
                     {
                         if (!oldVault.AccessPolicies.Contains(p))
                         {
                             changes++;
                         }
                     }
-                    for(int i = 0; i < oldVault.AccessPolicies.Count; i++)
+                    for (int i = 0; i < oldVault.AccessPolicies.Count; i++)
                     {
                         var oldPol = oldVault.AccessPolicies[i];
                         var name = oldPol.DisplayName;
@@ -73,14 +74,14 @@ namespace RBAC
                         {
                             curr = kv.AccessPolicies.ToLookup(p => p.Alias)[oldPol.Alias];
                         }
-                        if(curr.Count() == 0)
+                        if (curr.Count() == 0)
                         {
                             changes++;
                         }
                     }
                 }
             }
-            if(changes > Constants.MAX_NUM_CHANGES)
+            if (changes > Constants.MAX_NUM_CHANGES)
             {
                 Console.WriteLine($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
                 System.Environment.Exit(1);
@@ -152,10 +153,10 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient, 
+        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
-            foreach(KeyVaultProperties kv in yamlVaults)
+            foreach (KeyVaultProperties kv in yamlVaults)
             {
                 try
                 {
@@ -180,7 +181,7 @@ namespace RBAC
                     }
                 }
             }
-         }
+        }
 
         /// <summary>
         /// This method throws an error if any of the fields for a KeyVault have been changed in the Yaml, other than the AccessPolicies.
@@ -222,7 +223,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets, 
+        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
             GraphServiceClient graphClient)
         {
             try
@@ -296,9 +297,10 @@ namespace RBAC
         private static Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            try
+
+            if (type == "user")
             {
-                if (type == "user")
+                try
                 {
                     if (sp.Alias == null || sp.Alias.Trim().Length == 0)
                     {
@@ -306,36 +308,64 @@ namespace RBAC
                     }
 
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
-                        .Request()
-                        .GetAsync().Result;
-                    
+                    .Request()
+                    .GetAsync().Result;
+
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
                         throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. Service principal skipped.");
                     }
                     data["ObjectId"] = user.Id;
                 }
-                else if (type == "group")
+                catch (Exception e)
+                {
+                    if (e.Message.Contains("ResourceNotFound"))
+                    {
+                        Console.WriteLine($"\nError: Could not find User with Alias {sp.Alias}. User skipped.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\nError: {e.Message}");
+                    }
+                }
+            }
+            else if (type == "group")
+            {
+                try
                 {
                     Group group = graphClient.Groups
-                        .Request()
-                        .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
-                        .GetAsync().Result[0];
+                    .Request()
+                    .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
+                    .GetAsync().Result[0];
 
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
                 }
-                else if (type == "application")
+                catch (Exception e)
+                {
+                    Console.WriteLine($"\nError: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
+                }
+            }
+            else if (type == "application")
+            {
+                try
                 {
                     Application app = graphClient.Applications
-                        .Request()
-                        .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
-                        .GetAsync().Result[0];
+                    .Request()
+                    .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
+                    .GetAsync().Result[0];
 
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
                 }
-                else if (type == "service principal")
+                catch (Exception e)
+                {
+                    Console.WriteLine($"\nError: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
+                }
+            }
+            else if (type == "service principal")
+            {
+                try
                 {
                     ServicePrincipal principal = graphClient.ServicePrincipals
                         .Request()
@@ -344,15 +374,17 @@ namespace RBAC
 
                     data["ObjectId"] = principal.Id;
                 }
-                else
+                catch (Exception e)
                 {
-                    throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Service principal skipped.");
+                    Console.WriteLine($"\nError: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
                 }
+
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Skipped");
             }
+
             return data;
         }
 
@@ -433,24 +465,24 @@ namespace RBAC
         /// <param name="sp">The current PrincipalPermissions object</param>
         private static void translateShorthands(PrincipalPermissions sp)
         {
-            sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS, 
+            sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("read", "Key", sp.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS, 
+            sp.PermissionsToKeys = translateShorthand("read", "Key", sp.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("write", "Key", sp.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS, 
+            sp.PermissionsToKeys = translateShorthand("write", "Key", sp.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
             sp.PermissionsToKeys = translateShorthand("storage", "Key", sp.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("crypto", "Key", sp.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS, 
+            sp.PermissionsToKeys = translateShorthand("crypto", "Key", sp.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
 
-            sp.PermissionsToSecrets = translateShorthand("all", "secret", sp.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS, 
+            sp.PermissionsToSecrets = translateShorthand("all", "secret", sp.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
             sp.PermissionsToSecrets = translateShorthand("read", "secret", sp.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            sp.PermissionsToSecrets = translateShorthand("write", "secret", sp.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS, 
+            sp.PermissionsToSecrets = translateShorthand("write", "secret", sp.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            sp.PermissionsToSecrets = translateShorthand("storage", "secret", sp.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS, 
+            sp.PermissionsToSecrets = translateShorthand("storage", "secret", sp.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
 
             sp.PermissionsToCertificates = translateShorthand("all", "certificate", sp.PermissionsToCertificates, Constants.ALL_CERTIFICATE_PERMISSIONS,
@@ -500,7 +532,7 @@ namespace RBAC
                         throw new Exception($"{string.Join(", ", shorthandPermissions)} permissions are already included in {permissionType} '{shorthand}' permission");
                     }
                     return permissions.Concat(shorthandPermissions).Where(val => val != shorthand).ToArray();
-                } 
+                }
                 // 'Shorthand -'
                 else
                 {
@@ -517,7 +549,7 @@ namespace RBAC
                         }
 
                         // The remove value is a shorthand, then replace the shorthand with its permissions
-                        if (shorthandWords.Contains(p)) 
+                        if (shorthandWords.Contains(p))
                         {
                             string[] valuesToReplace = getShorthandPermissions(p, permissionType);
                             valuesToRemove = valuesToRemove.Concat(valuesToReplace).Where(val => val != p).ToArray();
