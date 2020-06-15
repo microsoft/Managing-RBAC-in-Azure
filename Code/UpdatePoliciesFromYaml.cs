@@ -325,7 +325,7 @@ namespace RBAC
                 {
                     if (sp.Alias == null || sp.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}. User skipped");
+                        throw new Exception($"Alias is required for {sp.DisplayName}. User skipped.");
                     }
 
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
@@ -334,7 +334,7 @@ namespace RBAC
 
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"{sp.DisplayName} is misspelled and cannot be recognized. User skipped.");
+                        throw new Exception($"The DisplayName '{sp.DisplayName}' is misspelled and cannot be recognized. User skipped.");
                     }
                     data["ObjectId"] = user.Id;
                 }
@@ -342,7 +342,7 @@ namespace RBAC
                 {
                     if (e.Message.Contains("ResourceNotFound"))
                     {
-                        Console.WriteLine($"\nError: Could not find User with Alias {sp.Alias}. User skipped.");
+                        Console.WriteLine($"\nError: Could not find User with Alias '{sp.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -359,12 +359,23 @@ namespace RBAC
                     .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                     .GetAsync().Result[0];
 
+                    if (sp.Alias != null && sp.Alias.Trim().Length != 0 && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
+                    {
+                        throw new Exception($"The Alias '{sp.Alias}' is misspelled for {sp.DisplayName} and cannot be recognized. Group skipped.");
+                    }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"\nError: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
+                    if (e.Message.Contains("out of range"))
+                    {
+                        Console.WriteLine($"\nError: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\nError: {e.Message}");
+                    }
                 }
             }
             else if (type == "application")
@@ -379,7 +390,7 @@ namespace RBAC
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
                 }
-                catch (Exception e)
+                catch
                 {
                     Console.WriteLine($"\nError: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
                 }
@@ -395,16 +406,15 @@ namespace RBAC
 
                     data["ObjectId"] = principal.Id;
                 }
-                catch (Exception e)
+                catch
                 {
                     Console.WriteLine($"\nError: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
                 }
             }
             else
             {
-                throw new Exception($"{sp.DisplayName} was deleted and no longer exists. Skipped");
+                throw new Exception($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'. Skipped.");
             }
-
             return data;
         }
 
