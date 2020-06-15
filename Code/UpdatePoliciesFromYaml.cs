@@ -93,6 +93,15 @@ namespace RBAC
                 if(yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
                     Console.WriteLine($"Key Vault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
+                    System.Environment.Exit(1);
+                }
+            }
+            foreach (KeyVaultProperties kv in yamlVaults)
+            {
+                if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                {
+                    Console.WriteLine($"Key Vault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
+                    System.Environment.Exit(1);
                 }
             }
         }
