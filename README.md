@@ -66,25 +66,35 @@ In order to add, update, or remove access policies for a Security Principal, the
 The generated YamlOutput.yml file will be used to propagate any changes to the KeyVault access policies. 
 You can do so by editing the YamlOutput.yml directly to...
 - Add or remove specific permissions for a Security Principal with an existing Access Policy
+- Remove an existing Access Policy for a Security Principal
 - Add a new Access Policy for a Security Principal
   - Note that Security Principals of Type **User** must define **Type**, **DisplayName**, **Alias**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates**, while **all other types** require **Type**, **DisplayName**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates** only
-  - To add all of the Permissions within **PermissionsToKeys**, **PermissionsToSecrets**, or **PermissionsToCertificates**, simply write **All**
-- Remove an existing Access Policy for a Security Principal
-- We have also made shorthands available for each type of Permission
-  #### Keys:
+  
+## Use of Shorthands
+- We have also made shorthands available for each type of Permission:
+#### Keys:
+  - **All**: all Key permissions
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
-  - **Crypto**: All cryptographic operations i.e Decrypt, Encrypt, UnwrapKey, WrapKey, Veryfy, and Sign
   - **Storage**: Import, Recover, Backup, and Restore Access
+  - **Crypto**: All cryptographic operations i.e. Decrypt, Encrypt, UnwrapKey, WrapKey, Veryfy, and Sign
   #### Secrets
+  - **All**: all Secret permissions
   - **Read**: Get and List Access
   - **Write**: Set and Delete Access
   - **Storage**: Recover, Backup, and Restore Access
   #### Certificates
+  - **All**: all Certificate permissions
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
   - **Storage**: Import, Recover, Backup, and Restore Access
-  - **Manage**: ManageContact and all Certificate Authorities Acesses
+  - **Management**: ManageContact and all Certificate Authorities Accesses
+
+- **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
+   - Ensure you add a space after the shorthand!
+- The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
+- All of the shorthands are defined in the Constants.cs file and can be edited
+
 ```
 Note that a KeyVault will NOT update if it does not contain at least 2 Users within its Access Policies.
 ``` 

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Azure.Management.Cdn.Fluent.Models;
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Graph;
 using Namotion.Reflection;
 using System;
@@ -260,7 +262,13 @@ namespace RBAC
 
                             try
                             {
-                                translatePermissions(sp, kv.VaultName);
+                                sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
+                                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
+                                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
+
+                                checkValidPermissions(sp);
+                                translateShorthands(sp);
+
                                 properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
                                         new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
                             }
@@ -357,338 +365,255 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method translates all of the short-hand notations for Keys, Secrets, and Certificates to their respective permissions.
-        /// </summary>
-        /// <param name="sp">The current PrincipalPermissions object</param>
-        /// <param name="vaultName">The name of the KeyVault you are updating</param>
-        private static void translatePermissions(PrincipalPermissions sp, string vaultName)
-        {
-            // Convert all permissions to lowercase
-            sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
-            sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
-            sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
-
-            checkValidPermissions(sp, vaultName);
-            translateKeys(sp, vaultName);
-            translateSecrets(sp, vaultName);
-            translateCertificates(sp, vaultName);
-        }
-
-        /// <summary>
-        /// This method verifies that the PrincipalPermissions object has valid permissions.
+        /// This method verifies that the PrincipalPermissions object has valid permissions and does not contain duplicate permissions.
         /// </summary>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        /// <param name="vaultName">The name of the KeyVault you are updating</param>
-        private static void checkValidPermissions(PrincipalPermissions sp, string vaultName)
+        private static void checkValidPermissions(PrincipalPermissions sp)
         {
             foreach (string kp in sp.PermissionsToKeys)
             {
-                if (!Constants.VALID_KEY_PERMISSIONS.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all")))
+                if (!Constants.VALID_KEY_PERMISSIONS.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all -")) && (!kp.ToLower().StartsWith("read -"))
+                    && (!kp.ToLower().StartsWith("write -")) && (!kp.ToLower().StartsWith("storage -")) && (kp.ToLower().StartsWith("crypto - ")))
                 {
-                    throw new Exception($"Invalid key permission {kp} for {sp.DisplayName} in {vaultName}.");
+                    throw new Exception($"Invalid key permission '{kp}'");
                 }
             }
 
             foreach (string s in sp.PermissionsToSecrets)
             {
-                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all")))
+                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all -")) && (!s.ToLower().StartsWith("read -"))
+                    && (!s.ToLower().StartsWith("write -")) && (!s.ToLower().StartsWith("storage -")))
                 {
-                    throw new Exception($"Invalid secret permission {s} for {sp.DisplayName} in {vaultName}.");
+                    throw new Exception($"Invalid secret permission '{s}'");
                 }
             }
 
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all")))
+                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all -")) && (!cp.ToLower().StartsWith("read -"))
+                    && (!cp.ToLower().StartsWith("write -")) && (!cp.ToLower().StartsWith("storage -")) && (!cp.ToLower().StartsWith("management -")))
                 {
-                    throw new Exception($"Invalid certificate permission {cp} for {sp.DisplayName} in {vaultName}.");
+                    throw new Exception($"Invalid certificate permission '{cp}'");
                 }
+            }
+
+            if (sp.PermissionsToKeys.Distinct().Count() != sp.PermissionsToKeys.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToKeys);
+                throw new Exception($"Key permission(s) '{string.Join(", ", duplicates)}' repeated");
+            }
+            if (sp.PermissionsToSecrets.Distinct().Count() != sp.PermissionsToSecrets.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToSecrets);
+                throw new Exception($"Secret permission(s) '{string.Join(", ", duplicates)}' repeated");
+            }
+            if (sp.PermissionsToCertificates.Distinct().Count() != sp.PermissionsToCertificates.Count())
+            {
+                List<string> duplicates = findDuplicates(sp.PermissionsToCertificates);
+                throw new Exception($"Certificate permission(s) '{string.Join(", ", duplicates)}' repeated");
             }
         }
 
         /// <summary>
-        /// This method translates the short-hand notations for Keys to their respective permissions.
+        /// This method finds and returns the duplicate values in a permission block.
         /// </summary>
-        /// <param name="sp">The current PrincipalPermissions object</param>
-        /// <param name="vaultName">The name of the KeyVault you are updating</param>
-        private static void translateKeys(PrincipalPermissions sp, string vaultName)
+        /// <param name="permissions">The permission block for which we want to find the duplicate values</param>
+        /// <returns>A list of the duplicated values</returns>
+        private static List<string> findDuplicates(string[] permissions)
         {
-            if (sp.PermissionsToKeys.Contains("all"))
+            List<string> duplicates = new List<string>();
+            for (int i = 0; i < permissions.Length; ++i)
             {
-                if (sp.PermissionsToKeys.Length == 1)
+                for (int j = i + 1; j < permissions.Length; ++j)
                 {
-                    sp.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS;
-                }
-                else
-                {
-                    throw new Exception($"'All' permission removes need for other key permissions for {sp.DisplayName} in {vaultName}.");
+                    if (permissions[i] == permissions[j])
+                    {
+                        duplicates.Add(permissions[i]);
+                    }
                 }
             }
-            else
-            {
-                var allKeyword = sp.PermissionsToKeys.ToLookup(p => p.Trim().StartsWith("all"));
-                if (allKeyword.Count > 0)
-                {
-                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
-                    if (allMinusInstances.Length == 1)
-                    {
-                        string inst = allMinusInstances[0];
-                        const string minusLabel = "-";
-                        int minusLabelStart = inst.IndexOf(minusLabel);
-                        int start = minusLabelStart + minusLabel.Length;
-
-                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
-                     
-                        // Verifies that each permission is valid
-                        foreach (string p in valuesToRemove)
-                        {
-                            if (!Constants.VALID_KEY_PERMISSIONS.Contains(p.ToLower()))
-                            {
-                                throw new Exception($"Invalid 'All - <key permission>' {p} for {sp.DisplayName} in {vaultName}.");
-                            }
-                        }
-                        sp.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS.Except(valuesToRemove).ToArray();
-                    }
-                    else if (allMinusInstances.Length > 1)
-                    {
-                        throw new Exception($"'All - <key permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
-                    }
-                }
-
-                if (sp.PermissionsToKeys.Contains("read"))
-                {
-                    var common = sp.PermissionsToKeys.Intersect(Constants.READ_KEY_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
-                            $"permissions are already included in Key 'read' permission.");
-                    }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.READ_KEY_PERMISSIONS).ToArray();
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "read").ToArray();
-                }
-
-                if (sp.PermissionsToKeys.Contains("write"))
-                {
-                    var common = sp.PermissionsToKeys.Intersect(Constants.WRITE_KEY_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' " +
-                            $"permissions are already included in Key 'write' permission.");
-                    }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.WRITE_KEY_PERMISSIONS).ToArray();
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "write").ToArray();
-                }
-
-                if (sp.PermissionsToKeys.Contains("crypto"))
-                {
-                    var common = sp.PermissionsToKeys.Intersect(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'decrypt', 'encrypt', 'unwrapkey', 'wrapkey', 'verify', 'sign' " +
-                            $"permissions are already included in Key 'crypto' permission.");
-                    }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS).ToArray();
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "crypto").ToArray();
-                }
-
-                if (sp.PermissionsToKeys.Contains("storage"))
-                {
-                    var common = sp.PermissionsToKeys.Intersect(Constants.STORAGE_KEY_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' " +
-                            $"permissions are already included in Key 'storage' permission.");
-                    }
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Concat(Constants.STORAGE_KEY_PERMISSIONS).ToArray();
-                    sp.PermissionsToKeys = sp.PermissionsToKeys.Where(val => val != "storage").ToArray();
-                }
-            }
+            return duplicates;
         }
 
         /// <summary>
-        /// This method translates the short-hand notations for Secrets to their respective permissions.
+        /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
         /// </summary>
         /// <param name="sp">The current PrincipalPermissions object</param>
-        /// <param name="vaultName">The name of the KeyVault you are updating</param>
-        private static void translateSecrets(PrincipalPermissions sp, string vaultName)
+        private static void translateShorthands(PrincipalPermissions sp)
         {
-            if (sp.PermissionsToSecrets.Contains("all"))
-            {
-                if (sp.PermissionsToSecrets.Length == 1)
-                {
-                    sp.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS;
-                }
-                else
-                {
-                    throw new Exception($"'All' permission removes need for other secret permissions for {sp.DisplayName} in {vaultName}.");
-                }
-            }
-            else
-            {
-                var allKeyword = sp.PermissionsToSecrets.ToLookup(p => p.Trim().StartsWith("all"));
-                if (allKeyword.Count > 0)
-                {
-                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
-                    if (allMinusInstances.Length == 1)
-                    {
-                        string inst = allMinusInstances[0];
-                        const string minusLabel = "-";
-                        int minusLabelStart = inst.IndexOf(minusLabel);
-                        int start = minusLabelStart + minusLabel.Length;
+            sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS, 
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            sp.PermissionsToKeys = translateShorthand("read", "Key", sp.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS, 
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            sp.PermissionsToKeys = translateShorthand("write", "Key", sp.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS, 
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            sp.PermissionsToKeys = translateShorthand("storage", "Key", sp.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            sp.PermissionsToKeys = translateShorthand("crypto", "Key", sp.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS, 
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
 
-                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
+            sp.PermissionsToSecrets = translateShorthand("all", "secret", sp.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS, 
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            sp.PermissionsToSecrets = translateShorthand("read", "secret", sp.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            sp.PermissionsToSecrets = translateShorthand("write", "secret", sp.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS, 
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            sp.PermissionsToSecrets = translateShorthand("storage", "secret", sp.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS, 
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
 
-                        // Verifies that each permission is valid
-                        foreach (string p in valuesToRemove)
-                        {
-                            if (!Constants.VALID_SECRET_PERMISSIONS.Contains(p.ToLower()))
-                            {
-                                throw new Exception($"Invalid 'All - <secret permission>' {p} for {sp.DisplayName} in {vaultName}.");
-                            }
-                        }
-                        sp.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS.Except(valuesToRemove).ToArray();
-                    }
-                    else if (allMinusInstances.Length > 1)
-                    {
-                        throw new Exception($"'All - <secret permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
-                    }
-                }
-
-                if (sp.PermissionsToSecrets.Contains("read"))
-                {
-                    var common = sp.PermissionsToSecrets.Intersect(Constants.READ_SECRET_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
-                            $"permissions are already included in Secret 'read' permission.");
-                    }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.READ_SECRET_PERMISSIONS).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "read").ToArray();
-                }
-
-                if (sp.PermissionsToSecrets.Contains("write"))
-                {
-                    var common = sp.PermissionsToSecrets.Intersect(Constants.WRITE_SECRET_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'set' and 'delete' " +
-                            $"permissions are already included in Secret 'write' permission.");
-                    }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.WRITE_SECRET_PERMISSIONS).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "write").ToArray();
-                }
-
-                if (sp.PermissionsToSecrets.Contains("storage"))
-                {
-                    var common = sp.PermissionsToKeys.Intersect(Constants.STORAGE_SECRET_PERMISSIONS);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'recover', 'backup', and 'restore' " +
-                            $"permissions are already included in Secret 'storage' permission.");
-                    }
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Concat(Constants.STORAGE_SECRET_PERMISSIONS).ToArray();
-                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Where(val => val != "storage").ToArray();
-                }
-            }
+            sp.PermissionsToCertificates = translateShorthand("all", "certificate", sp.PermissionsToCertificates, Constants.ALL_CERTIFICATE_PERMISSIONS,
+                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            sp.PermissionsToCertificates = translateShorthand("read", "certificate", sp.PermissionsToCertificates, Constants.READ_CERTIFICATE_PERMISSIONS,
+                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            sp.PermissionsToCertificates = translateShorthand("write", "certificate", sp.PermissionsToCertificates, Constants.WRITE_CERTIFICATE_PERMISSIONS,
+                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            sp.PermissionsToCertificates = translateShorthand("storage", "certificate", sp.PermissionsToCertificates, Constants.STORAGE_CERTIFICATE_PERMISSIONS,
+                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            sp.PermissionsToCertificates = translateShorthand("management", "certificate", sp.PermissionsToCertificates, Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS,
+                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
         }
 
         /// <summary>
-        /// This method translates the short-hand notations for Certificates to their respective permissions.
+        /// This method translates the specified shorthand to its respective permissions.
         /// </summary>
-        /// <param name="sp">The current PrincipalPermissions object</param>
-        /// <param name="vaultName">The name of the KeyVault you are updating</param>
-        private static void translateCertificates(PrincipalPermissions sp, string vaultName)
+        /// <param name="shorthand">The shorthand keyword to analyze</param>
+        /// <param name="permissionType">The type of permission block</param>
+        /// <param name="permissions">The permission block array</param>
+        /// <param name="shorthandPermissions">The shorthand permissions array</param>
+        /// <param name="validPermissions">The array of all valid permissions</param>
+        /// <param name="shorthandWords">The valid shorthand keywords array</param>
+        /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
+        private static string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
         {
-            if (sp.PermissionsToCertificates.Contains("all"))
+            var shorthandInstances = permissions.Where(val => val.Trim().StartsWith(shorthand)).ToArray();
+            if (shorthandInstances.Length > 1)
             {
-                if (sp.PermissionsToCertificates.Length == 1)
+                throw new Exception($"{permissionType} '{shorthand}' permission is duplicated");
+            }
+            // Either contains 'shorthand' or 'shorthand -'
+            else if (shorthandInstances.Length == 1)
+            {
+                string inst = shorthandInstances[0].Trim().ToLower();
+                if (inst == shorthand)
                 {
-                    sp.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS;
-                }
+                    if (shorthand == "all" && permissions.Length != 1)
+                    {
+                        throw new Exception($"'All' permission removes need for other certificate permissions");
+                    }
+
+                    // Check for duplicates
+                    var common = permissions.Intersect(shorthandPermissions);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"{string.Join(", ", shorthandPermissions)} permissions are already included in {permissionType} '{shorthand}' permission");
+                    }
+                    return permissions.Concat(shorthandPermissions).Where(val => val != shorthand).ToArray();
+                } 
+                // 'Shorthand -'
                 else
                 {
-                    throw new Exception($"'All' permission removes need for other certificate permissions for {sp.DisplayName} in {vaultName}.");
+                    const string minusLabel = "-";
+                    int minusLabelStart = inst.IndexOf(minusLabel);
+                    int start = minusLabelStart + minusLabel.Length;
+
+                    string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim().ToLower()).ToArray();
+                    foreach (string p in valuesToRemove)
+                    {
+                        if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && shorthandWords.Contains(p)))
+                        {
+                            throw new Exception($"Invalid {permissionType} '{shorthand} - <{p}>' permission");
+                        }
+
+                        // The remove value is a shorthand, then replace the shorthand with its permissions
+                        if (shorthandWords.Contains(p)) 
+                        {
+                            string[] valuesToReplace = getShorthandPermissions(p, permissionType);
+                            valuesToRemove = valuesToRemove.Concat(valuesToReplace).Where(val => val != p).ToArray();
+                        }
+                    }
+                    var permissionsToGrant = shorthandPermissions.Except(valuesToRemove);
+
+                    // Check for duplicates
+                    var common = permissions.Intersect(permissionsToGrant);
+                    if (common.Count() != 0)
+                    {
+                        throw new Exception($"{string.Join(", ", valuesToRemove)} permissions are already included in {permissionType} '{shorthand}' permission");
+                    }
+                    return (permissions.Concat(permissionsToGrant).Where(val => val != inst).ToArray());
                 }
+            }
+            return permissions;
+        }
+
+        /// <summary>
+        /// This method returns the shorthand permissions that correspond to the shorthand keyword.
+        /// </summary>
+        /// <param name="shorthand">The shorthand keyword to analyze</param>
+        /// <param name="permissionType">The type of permission block</param>
+        /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
+        private static string[] getShorthandPermissions(string shorthand, string permissionType)
+        {
+            if (shorthand == "all")
+            {
+                throw new Exception("Cannot remove 'all' from a permission");
             }
             else
             {
-                var allKeyword = sp.PermissionsToCertificates.ToLookup(p => p.Trim().StartsWith("all"));
-                if (allKeyword.Count > 0)
+                if (permissionType == "key")
                 {
-                    string[] allMinusInstances = allKeyword[true].Where(val => val.Trim() != "all").ToArray();
-                    if (allMinusInstances.Length == 1)
+                    if (shorthand == "read")
                     {
-                        string inst = allMinusInstances[0];
-                        const string minusLabel = "-";
-                        int minusLabelStart = inst.IndexOf(minusLabel);
-                        int start = minusLabelStart + minusLabel.Length;
-
-                        string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim()).ToArray();
-
-                        // Verifies that each permission is valid
-                        foreach (string p in valuesToRemove)
-                        {
-                            if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(p.ToLower()))
-                            {
-                                throw new Exception($"Invalid 'All - <certificate permission>' {p} for {sp.DisplayName} in {vaultName}.");
-                            }
-                        }
-                        sp.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS.Except(valuesToRemove).ToArray();
+                        return Constants.READ_KEY_PERMISSIONS;
                     }
-                    else if (allMinusInstances.Length > 1)
+                    else if (shorthand == "write")
                     {
-                        throw new Exception($"'All - <certificate permission>' is duplicated for {sp.DisplayName} in {vaultName}.");
+                        return Constants.WRITE_KEY_PERMISSIONS;
+                    }
+                    else if (shorthand == "storage")
+                    {
+                        return Constants.STORAGE_KEY_PERMISSIONS;
+                    }
+                    else if (shorthand == "crypto")
+                    {
+                        return Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS;
                     }
                 }
-
-                if (sp.PermissionsToCertificates.Contains("read"))
+                else if (permissionType == "secret")
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(Constants.READ_CERTIFICATE_PERMISSIONS);
-                    if (common.Count() != 0)
+                    if (shorthand == "read")
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'get' and 'list' " +
-                            $"permissions are already included in Certificate 'read' permission.");
+                        return Constants.READ_SECRET_PERMISSIONS;
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.READ_CERTIFICATE_PERMISSIONS).ToArray();
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "read").ToArray();
+                    else if (shorthand == "write")
+                    {
+                        return Constants.WRITE_SECRET_PERMISSIONS;
+                    }
+                    else if (shorthand == "storage")
+                    {
+                        return Constants.STORAGE_SECRET_PERMISSIONS;
+                    }
                 }
-
-                if (sp.PermissionsToCertificates.Contains("write"))
+                else //certificate
                 {
-                    var common = sp.PermissionsToCertificates.Intersect(Constants.WRITE_CERTIFICATE_PERMISSIONS);
-                    if (common.Count() != 0)
+                    if (shorthand == "read")
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'delete', 'create' and 'update' " +
-                            $"permissions are already included in Certificate 'write' permission.");
+                        return Constants.READ_CERTIFICATE_PERMISSIONS;
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.WRITE_CERTIFICATE_PERMISSIONS).ToArray();
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "write").ToArray();
-                }
-
-                if (sp.PermissionsToCertificates.Contains("storage"))
-                {
-                    var common = sp.PermissionsToCertificates.Intersect(Constants.STORAGE_CERTIFICATE_PERMISSIONS);
-                    if (common.Count() != 0)
+                    else if (shorthand == "write")
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}. 'import', 'recover', 'backup', and 'restore' " +
-                            $"permissions are already included in Certificate 'storage' permission.");
+                        return Constants.WRITE_CERTIFICATE_PERMISSIONS;
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.STORAGE_CERTIFICATE_PERMISSIONS).ToArray();
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "storage").ToArray();
-                }
-
-                if (sp.PermissionsToCertificates.Contains("manage"))
-                {
-                    var common = sp.PermissionsToCertificates.Intersect(Constants.MANAGE_CERTIFICATE_PERMISSIONS);
-                    if (common.Count() != 0)
+                    else if (shorthand == "storage")
                     {
-                        throw new Exception($"Error for {sp.DisplayName} in {vaultName}.'managecontacts', 'manageissuers', 'getissuers', 'listissuers', 'setissuers', 'deleteissuers' " +
-                            $"permissions are already included in Certificate 'manage' permission.");
+                        return Constants.STORAGE_CERTIFICATE_PERMISSIONS;
                     }
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Concat(Constants.MANAGE_CERTIFICATE_PERMISSIONS).ToArray();
-                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Where(val => val != "manage").ToArray();
+                    else if (shorthand == "management")
+                    {
+                        return Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS;
+                    }
                 }
             }
+            return null;
         }
     }
 }
