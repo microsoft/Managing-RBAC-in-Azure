@@ -49,7 +49,7 @@ namespace RBAC
             }
         }
 
-        internal static void checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        internal static int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
@@ -109,6 +109,7 @@ namespace RBAC
                     System.Environment.Exit(1);
                 }
             }
+            return changes;
         }
 
         /// <summary>

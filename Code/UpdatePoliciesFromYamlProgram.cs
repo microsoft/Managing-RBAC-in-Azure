@@ -35,11 +35,18 @@ namespace RBAC
 
             Console.WriteLine("\nReading yaml file...");
             List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml(args[1]);
-            UpdatePoliciesFromYaml.checkChanges(yamlVaults, vaultsRetrieved);
+            int changes = UpdatePoliciesFromYaml.checkChanges(yamlVaults, vaultsRetrieved);
             Console.WriteLine("Success!");
-            Console.WriteLine("\nUpdating key vaults...");
-            UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
-            Console.WriteLine("Updates finished!");
+            if(changes != 0)
+            {
+                Console.WriteLine("\nUpdating key vaults...");
+                UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
+                Console.WriteLine("Updates finished!");
+            }
+            else
+            {
+                Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made");
+            }
         }
     }
 }
