@@ -54,34 +54,44 @@ namespace RBAC
                 if (!vaultsRetrieved.Contains(kv))
                 {
                     var old = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName];
-                    var oldVault = old.First();
-                    foreach(PrincipalPermissions p in kv.AccessPolicies)
+                    if(old.Count() != 0)
                     {
-                        if (!oldVault.AccessPolicies.Contains(p))
+                        var oldVault = old.First();
+                        foreach (PrincipalPermissions p in kv.AccessPolicies)
                         {
-                            changes++;
+                            if (!oldVault.AccessPolicies.Contains(p))
+                            {
+                                changes++;
+                            }
                         }
-                    }
-                    for(int i = 0; i < oldVault.AccessPolicies.Count; i++)
-                    {
-                        var oldPol = oldVault.AccessPolicies[i];
-                        var name = oldPol.DisplayName;
-                        var curr = kv.AccessPolicies.ToLookup(p => p.DisplayName)[name];
-                        if (oldPol.Type.ToLower() == "user")
+                        for (int i = 0; i < oldVault.AccessPolicies.Count; i++)
                         {
-                            curr = kv.AccessPolicies.ToLookup(p => p.Alias)[oldPol.Alias];
+                            var oldPol = oldVault.AccessPolicies[i];
+                            var name = oldPol.DisplayName;
+                            var curr = kv.AccessPolicies.ToLookup(p => p.DisplayName)[name];
+                            if (oldPol.Type.ToLower() == "user")
+                            {
+                                curr = kv.AccessPolicies.ToLookup(p => p.Alias)[oldPol.Alias];
+                            }
+                            if (curr.Count() == 0)
+                            {
+                                changes++;
+                            }
                         }
-                        if(curr.Count() == 0)
-                        {
-                            changes++;
-                        }
-                    }
+                    }  
                 }
             }
             if(changes > Constants.MAX_NUM_CHANGES)
             {
                 Console.WriteLine($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
                 System.Environment.Exit(1);
+            }
+            foreach(KeyVaultProperties kv in vaultsRetrieved)
+            {
+                if(yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                {
+                    Console.WriteLine($"Key Vault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
+                }
             }
         }
 
@@ -158,24 +168,22 @@ namespace RBAC
                 try
                 {
                     checkVaultChanges(vaultsRetrieved, kv);
+                    if (!vaultsRetrieved.Contains(kv))
+                    {
+                        if (kv.usersContained() < Constants.MIN_NUM_USERS)
+                        {
+                            Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("\nUpdating " + kv.VaultName + "...");
+                            updateVault(kv, kvmClient, secrets, graphClient);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
-                    System.Environment.Exit(1);
-                }
-
-                if (!vaultsRetrieved.Contains(kv))
-                {
-                    if (kv.usersContained() < Constants.MIN_NUM_USERS)
-                    {
-                        Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nUpdating " + kv.VaultName + "...");
-                        updateVault(kv, kvmClient, secrets, graphClient);
-                    }
+                    Console.WriteLine(e.Message + " Vault Skipped.");
                 }
             }
          }
@@ -343,7 +351,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.WriteLine($"\nError: {e.InnerException.Message}");
             }
             return data;
         }
