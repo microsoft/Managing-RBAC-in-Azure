@@ -260,7 +260,7 @@ namespace RBAC
                     try
                     {
                         int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
-                        if(total != 0)
+                        if (total != 0)
                         {
                             string type = sp.Type.ToLower().Trim();
                             Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
@@ -280,6 +280,12 @@ namespace RBAC
 
                                 try
                                 {
+                                    if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
+                                    type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
+                                    {
+                                        throw new Exception($"\nAn access policy has already been defined");
+                                    }
+
                                     sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
@@ -299,7 +305,7 @@ namespace RBAC
                         }
                         else
                         {
-                            Console.WriteLine($"Skipped {sp.Type}, {sp.DisplayName}, does not have any permissions specified.");
+                            Console.WriteLine($"Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
                         }
                     }
                     catch (Exception e)
