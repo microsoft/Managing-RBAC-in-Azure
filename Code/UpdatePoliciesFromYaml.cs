@@ -258,39 +258,47 @@ namespace RBAC
                 {
                     try
                     {
-                        string type = sp.Type.ToLower().Trim();
-                        Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
-
-                        if (data.ContainsKey("ObjectId"))
+                        int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
+                        if(total != 0)
                         {
-                            // Set ServicePrincipal data
-                            sp.ObjectId = data["ObjectId"];
-                            if (type == "group")
-                            {
-                                sp.Alias = data["Alias"];
-                            }
-                            else if (type == "application")
-                            {
-                                sp.ApplicationId = data["ApplicationId"];
-                            }
+                            string type = sp.Type.ToLower().Trim();
+                            Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
 
-                            try
+                            if (data.ContainsKey("ObjectId"))
                             {
-                                sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
-                                sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
-                                sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
+                                // Set ServicePrincipal data
+                                sp.ObjectId = data["ObjectId"];
+                                if (type == "group")
+                                {
+                                    sp.Alias = data["Alias"];
+                                }
+                                else if (type == "application")
+                                {
+                                    sp.ApplicationId = data["ApplicationId"];
+                                }
 
-                                checkValidPermissions(sp);
-                                translateShorthands(sp);
+                                try
+                                {
+                                    sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
+                                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
+                                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
 
-                                properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
-                                        new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                                    checkValidPermissions(sp);
+                                    translateShorthands(sp);
+
+                                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
+                                            new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                    System.Environment.Exit(1);
+                                }
                             }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
-                                System.Environment.Exit(1);
-                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Skipped {sp.Type}, {sp.DisplayName}, does not have any permissions specified.");
                         }
                     }
                     catch (Exception e)
