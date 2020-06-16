@@ -49,6 +49,11 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
+        /// </summary>
+        /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         internal static void checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
@@ -82,7 +87,7 @@ namespace RBAC
                                 changes++;
                             }
                         }
-                    }  
+                    }
                 }
             }
 
@@ -92,9 +97,9 @@ namespace RBAC
                 System.Environment.Exit(1);
             }
 
-            foreach(KeyVaultProperties kv in vaultsRetrieved)
+            foreach (KeyVaultProperties kv in vaultsRetrieved)
             {
-                if(yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
                     Console.WriteLine($"Key Vault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
                     System.Environment.Exit(1);
@@ -117,23 +122,23 @@ namespace RBAC
         /// <param name="kv">The current KeyVaultProperties object</param>
         private static void checkVaultInvalidFields(KeyVaultProperties kv)
         {
-            if (kv.VaultName == null)
+            if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
                 throw new Exception($"\nMissing VaultName for {kv.VaultName}");
             }
-            if (kv.ResourceGroupName == null)
+            if (kv.ResourceGroupName == null || kv.ResourceGroupName.Trim() == "")
             {
                 throw new Exception($"\nMissing ResourceGroupName for {kv.VaultName}");
             }
-            if (kv.SubscriptionId == null)
+            if (kv.SubscriptionId == null || kv.SubscriptionId.Trim() == "")
             {
                 throw new Exception($"\nMissing SubscriptionId for {kv.VaultName}");
             }
-            if (kv.Location == null)
+            if (kv.Location == null || kv.Location.Trim() == "")
             {
                 throw new Exception($"\nMissing Location for {kv.VaultName}");
             }
-            if (kv.TenantId == null)
+            if (kv.TenantId == null || kv.TenantId.Trim() == "")
             {
                 throw new Exception($"\nMissing TenantId for {kv.VaultName}");
             }
@@ -146,11 +151,11 @@ namespace RBAC
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
         private static void checkSPInvalidFields(string name, PrincipalPermissions sp)
         {
-            if (sp.Type == null)
+            if (sp.Type == null || sp.Type.Trim() == "")
             {
                 throw new Exception($"\nMissing Type for {name}");
             }
-            if (sp.DisplayName == null)
+            if (sp.DisplayName == null || sp.DisplayName.Trim() == "")
             {
                 throw new Exception($"\nMissing DisplayName for {name}");
             }
@@ -171,7 +176,7 @@ namespace RBAC
         /// <summary>
         /// This method updates the access policies for each KeyVault in the yamlVaults list.
         /// </summary>
-        /// <param name="yamlVaults">he list of KeyVaultProperties obtained from the Yaml file</param>
+        /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>

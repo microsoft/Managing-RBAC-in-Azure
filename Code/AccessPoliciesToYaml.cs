@@ -14,6 +14,9 @@ using System.Management.Automation;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Namotion.Reflection;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace RBAC
 {
@@ -62,13 +65,13 @@ namespace RBAC
             {
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
                 JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
+                
+                JObject configVaults = JObject.Parse(masterConfig);
+                checkJsonFields(vaultList, configVaults);
+                checkMissingAadFields(vaultList, configVaults);
+                checkMissingResourceFields(vaultList, configVaults);
 
-                checkMissingJsonInputFields(vaultList);
-                foreach (Resource res in vaultList.Resources)
-                {
-                    checkMissingResourceFields(res);
-                }
-                return vaultList;
+                return vaultList; 
             }
             catch (Exception e)
             {
@@ -79,60 +82,142 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that all of the required inputs exist for the Json input file.
+        /// This method verifies that all of the required inputs exist within the Json file.
         /// </summary>
-        /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
-        public static void checkMissingJsonInputFields(JsonInput vaultList)
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkJsonFields(JsonInput vaultList, JObject configVaults)
         {
+            List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails == null)
             {
-                throw new Exception("Missing AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.AadAppName == null)
-            {
-                throw new Exception("Missing AadAppName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.VaultName == null)
-            {
-                throw new Exception("Missing VaultName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
-            {
-                throw new Exception("Missing ClientIdSecretName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
-            {
-                throw new Exception("Missing ClientKeySecretName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
-            {
-                throw new Exception("Missing TenantIdSecretName for AadAppKeyDetails in Json input.");
+                missingInputs.Add("AadAppKeyDetails");
             }
             if (vaultList.Resources == null)
             {
-                throw new Exception("Missing Resources list in Json input.");
+                missingInputs.Add("Resources");
+            }
+
+            int numMissing = missingInputs.Count();
+            int numValid = 2 - numMissing;
+
+            if (missingInputs.Count() == 0 && configVaults.Children().Count() != 2)
+            {
+                throw new Exception($"Invalid fields in Json were defined. Valid fields are 'AadAppKeyDetails' and 'Resources'.");
+            }
+            else if (missingInputs.Count() != 0 && configVaults.Children().Count() != numValid)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} in Json. Invalid fields were defined; " +
+                    $"valid fields are 'AadAppKeyDetails' and 'Resources'.");
+            }
+            else if (missingInputs.Count() > 0)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} in Json.");
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that all of the required inputs exist for the AadAppKeyDetails object.
+        /// </summary>
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
+        {
+            List<string> missingInputs = new List<string>();
+            if (vaultList.AadAppKeyDetails.AadAppName == null)
+            {
+                missingInputs.Add("AadAppName");
+            }
+            if (vaultList.AadAppKeyDetails.VaultName == null)
+            {
+                missingInputs.Add("VaultName");
+            }
+            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
+            {
+                missingInputs.Add("ClientIdSecretName");
+            }
+            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
+            {
+                missingInputs.Add("ClientKeySecretName");
+            }
+            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
+            {
+                missingInputs.Add("TenantIdSecretName");
+            }
+
+            int numMissing = missingInputs.Count();
+            JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
+            int numValid = 5 - numMissing;
+
+            if (numMissing == 0 && (aadDetails.Children().Count() != 5))
+            {
+                throw new Exception($"Invalid fields for AadAppKeyDetails were defined. " +
+                    $"Valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
+            }
+            else if (numMissing != 0 && aadDetails.Children().Count() != numValid)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails. Invalid fields were defined; " +
+                    $"valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
+            }
+            else if (numMissing > 0)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails.");
             }
         }
 
         /// <summary>
         /// This method verifies that all of the required inputs exist for each Resource object.
         /// </summary>
-        /// <param name="res">The Resouce object for which we want to check</param>
-        public static void checkMissingResourceFields(Resource res)
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
         {
-            if (res.SubscriptionId == null)
+            JEnumerable<JToken> resourceList = configVaults.SelectToken($".Resources").Children();
+                
+            int i = 0;
+            foreach (Resource res in vaultList.Resources)
             {
-                throw new Exception("Missing SubscriptionId for a Resource.");
-            }
-            if (res.ResourceGroups != null)
-            {
-                foreach(ResourceGroup resGroup in res.ResourceGroups)
+                JToken jres = resourceList.ElementAt(i);
+
+                if (res.SubscriptionId != null && res.ResourceGroups == null && jres.Children().Count() > 1)
                 {
-                    if (resGroup.ResourceGroupName == null)
+                    throw new Exception($"Invalid fields for Resource with SubscriptionId '{res.SubscriptionId}' were defined. Valid fields are 'SubscriptionId' and 'ResourceGroups'.");
+                }
+                else if (res.SubscriptionId == null && jres.Children().Count() > 0)
+                {
+                    throw new Exception($"Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.");
+                }
+                else if (res.SubscriptionId != null && res.ResourceGroups != null)
+                {
+                    if (jres.Children().Count() > 2)
                     {
-                        throw new Exception($"Missing ResourceGroupName for Resource with SubscriptionId {res.SubscriptionId}.");
+                        throw new Exception($"Invalid fields other than 'SubscriptionId' and 'ResourceGroups' were defined for Resource with SubscriptionId '{res.SubscriptionId}'.");
+                    }
+
+                    int j = 0;
+                    foreach (ResourceGroup resGroup in res.ResourceGroups)
+                    {
+                        JEnumerable<JToken> groupList = jres.SelectToken($".ResourceGroups").Children();
+                        JToken jresGroup = groupList.ElementAt(j);
+
+                        if (resGroup.ResourceGroupName != null && resGroup.KeyVaults == null && jresGroup.Children().Count() > 1)
+                        {
+                            throw new Exception($"Invalid fields for ResourceGroup with ResourceGroupName '{resGroup.ResourceGroupName}' were defined. " +
+                                $"Valid fields are 'ResourceGroupName' and 'KeyVaults'.");
+                        }
+                        else if (resGroup.ResourceGroupName == null && jresGroup.Children().Count() > 0)
+                        {
+                            throw new Exception("Missing 'ResourceGroupName' for ResourceGroup. Invalid fields were defined; valid fields are 'ResourceGroupName' and 'KeyVaults'.");
+                        }
+                        else if (resGroup.ResourceGroupName != null && resGroup.KeyVaults != null && jresGroup.Children().Count() > 2)
+                        {
+                            throw new Exception($"Invalid fields other than 'ResourceGroupName' and 'KeyVaults' were defined for ResourceGroup " +
+                                $"with ResourceGroupName '{resGroup.ResourceGroupName}'.");
+                        }
+                        ++j;
                     }
                 }
+                ++i;
             }
         }
 
