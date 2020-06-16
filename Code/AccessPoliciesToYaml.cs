@@ -176,7 +176,7 @@ namespace RBAC
             {
                 JToken jres = resourceList.ElementAt(i);
 
-                if (res.SubscriptionId != null && res.ResourceGroups == null && jres.Children().Count() > 1)
+                if (res.SubscriptionId != null && res.ResourceGroups.Count() == 0 && jres.Children().Count() > 1)
                 {
                     throw new Exception($"Invalid fields for Resource with SubscriptionId '{res.SubscriptionId}' were defined. Valid fields are 'SubscriptionId' and 'ResourceGroups'.");
                 }
@@ -184,7 +184,7 @@ namespace RBAC
                 {
                     throw new Exception($"Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.");
                 }
-                else if (res.SubscriptionId != null && res.ResourceGroups != null)
+                else if (res.SubscriptionId != null && res.ResourceGroups.Count() != 0)
                 {
                     if (jres.Children().Count() > 2)
                     {
@@ -197,7 +197,7 @@ namespace RBAC
                         JEnumerable<JToken> groupList = jres.SelectToken($".ResourceGroups").Children();
                         JToken jresGroup = groupList.ElementAt(j);
 
-                        if (resGroup.ResourceGroupName != null && resGroup.KeyVaults == null && jresGroup.Children().Count() > 1)
+                        if (resGroup.ResourceGroupName != null && resGroup.KeyVaults.Count() == 0 && jresGroup.Children().Count() > 1)
                         {
                             throw new Exception($"Invalid fields for ResourceGroup with ResourceGroupName '{resGroup.ResourceGroupName}' were defined. " +
                                 $"Valid fields are 'ResourceGroupName' and 'KeyVaults'.");
@@ -206,7 +206,7 @@ namespace RBAC
                         {
                             throw new Exception("Missing 'ResourceGroupName' for ResourceGroup. Invalid fields were defined; valid fields are 'ResourceGroupName' and 'KeyVaults'.");
                         }
-                        else if (resGroup.ResourceGroupName != null && resGroup.KeyVaults != null && jresGroup.Children().Count() > 2)
+                        else if (resGroup.ResourceGroupName != null && resGroup.KeyVaults.Count() != 0 && jresGroup.Children().Count() > 2)
                         {
                             throw new Exception($"Invalid fields other than 'ResourceGroupName' and 'KeyVaults' were defined for ResourceGroup " +
                                 $"with ResourceGroupName '{resGroup.ResourceGroupName}'.");
@@ -309,9 +309,9 @@ namespace RBAC
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
-                log.Flush();
-                log.Close();
+                //log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
+                //log.Flush();
+                //log.Close();
                 System.Environment.Exit(1);
             }
             return secrets;
