@@ -54,7 +54,8 @@ namespace RBAC
         /// </summary>
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
-        internal static void checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        /// <returns>The number of changes made</returns>
+        internal static int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
@@ -114,6 +115,7 @@ namespace RBAC
                     System.Environment.Exit(1);
                 }
             }
+            return changes;
         }
 
         /// <summary>

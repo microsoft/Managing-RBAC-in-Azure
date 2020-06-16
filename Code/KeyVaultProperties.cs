@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
@@ -13,14 +14,14 @@ namespace RBAC
     class KeyVaultProperties
     {
         public KeyVaultProperties() { }
-        public KeyVaultProperties(Vault vault, GraphServiceClient graphClient)
+        public KeyVaultProperties(Vault vault, GraphServiceClient graphClient, StreamWriter log)
         {
             this.VaultName = vault.Name;
             this.ResourceGroupName = getResourceGroup(vault.Id);
             this.SubscriptionId = getSubscription(vault.Id);
             this.Location = vault.Location;
             this.TenantId = vault.Properties.TenantId.ToString();
-            this.AccessPolicies = getAccessPolicies(vault.Properties.AccessPolicies, graphClient);
+            this.AccessPolicies = getAccessPolicies(vault.Properties.AccessPolicies, graphClient, log);
         }
 
         /// <summary>
@@ -79,14 +80,14 @@ namespace RBAC
         /// <param name="accessPolicies">The list of AccessPolicyEntrys</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>The list of ServicePrincipal objects</returns>
-        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
+        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient, StreamWriter log)
         {
             List<PrincipalPermissions> policies = new List<PrincipalPermissions>();
 
             var policiesEnum = accessPolicies.GetEnumerator();
             while (policiesEnum.MoveNext())
             {
-                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient));
+                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient, log));
             }
             return policies;
         }
