@@ -309,9 +309,9 @@ namespace RBAC
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
-                //log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
-                //log.Flush();
-                //log.Close();
+                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
+                log.Flush();
+                log.Close();
                 System.Environment.Exit(1);
             }
             return secrets;
