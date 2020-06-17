@@ -43,7 +43,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
                 System.Environment.Exit(1);
                 return null;
             }
@@ -102,7 +104,7 @@ namespace RBAC
             {
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"Key Vault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
+                    Console.WriteLine($"KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
                     System.Environment.Exit(1);
                 }
             }
@@ -111,7 +113,7 @@ namespace RBAC
             {
                 if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"Key Vault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
+                    Console.WriteLine($"KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
                     System.Environment.Exit(1);
                 }
             }
@@ -126,23 +128,23 @@ namespace RBAC
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
-                throw new Exception($"\nMissing VaultName for {kv.VaultName}");
+                throw new Exception($"Missing VaultName for {kv.VaultName}");
             }
             if (kv.ResourceGroupName == null || kv.ResourceGroupName.Trim() == "")
             {
-                throw new Exception($"\nMissing ResourceGroupName for {kv.VaultName}");
+                throw new Exception($"Missing ResourceGroupName for {kv.VaultName}");
             }
             if (kv.SubscriptionId == null || kv.SubscriptionId.Trim() == "")
             {
-                throw new Exception($"\nMissing SubscriptionId for {kv.VaultName}");
+                throw new Exception($"Missing SubscriptionId for {kv.VaultName}");
             }
             if (kv.Location == null || kv.Location.Trim() == "")
             {
-                throw new Exception($"\nMissing Location for {kv.VaultName}");
+                throw new Exception($"Missing Location for {kv.VaultName}");
             }
             if (kv.TenantId == null || kv.TenantId.Trim() == "")
             {
-                throw new Exception($"\nMissing TenantId for {kv.VaultName}");
+                throw new Exception($"Missing TenantId for {kv.VaultName}");
             }
         }
 
@@ -155,23 +157,23 @@ namespace RBAC
         {
             if (sp.Type == null || sp.Type.Trim() == "")
             {
-                throw new Exception($"\nMissing Type for {name}");
+                throw new Exception($"Missing Type for {name}");
             }
             if (sp.DisplayName == null || sp.DisplayName.Trim() == "")
             {
-                throw new Exception($"\nMissing DisplayName for {name}");
+                throw new Exception($"Missing DisplayName for {name}");
             }
             if (sp.PermissionsToKeys == null)
             {
-                throw new Exception($"\nMissing PermissionsToKeys for {name}");
+                throw new Exception($"Missing PermissionsToKeys for {name}");
             }
             if (sp.PermissionsToSecrets == null)
             {
-                throw new Exception($"\nMissing PermissionsToSecrets for {name}");
+                throw new Exception($"Missing PermissionsToSecrets for {name}");
             }
             if (sp.PermissionsToCertificates == null)
             {
-                throw new Exception($"\nMissing PermissionsToCertificates for {name}");
+                throw new Exception($"Missing PermissionsToCertificates for {name}");
             }
         }
 
@@ -195,18 +197,22 @@ namespace RBAC
                     {
                         if (kv.usersContained() < Constants.MIN_NUM_USERS)
                         {
-                            Console.WriteLine($"\nError: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Error: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                            Console.ResetColor();
                         }
                         else
                         {
-                            Console.WriteLine("\nUpdating " + kv.VaultName + "...");
+                            Console.WriteLine("Updating " + kv.VaultName + "...");
                             updateVault(kv, kvmClient, secrets, graphClient);
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message + " Vault Skipped.");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: {e.Message} Vault Skipped.");
+                    Console.ResetColor();
                 }
             }
         }
@@ -221,26 +227,26 @@ namespace RBAC
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
             {
-                throw new Exception($"\nError: VaultName {kv.VaultName} was changed or added.");
+                throw new Exception($"VaultName {kv.VaultName} was changed or added.");
             }
 
             // If Key Vault name was correct, then check the other fields
             KeyVaultProperties originalKV = lookupName[kv.VaultName].ToList()[0];
             if (originalKV.ResourceGroupName != kv.ResourceGroupName.Trim())
             {
-                throw new Exception($"\nError: ResourceGroupName for {kv.VaultName} was changed.");
+                throw new Exception($"ResourceGroupName for {kv.VaultName} was changed.");
             }
             if (originalKV.SubscriptionId != kv.SubscriptionId.Trim())
             {
-                throw new Exception($"\nError: SubscriptionId for {kv.VaultName} was changed.");
+                throw new Exception($"SubscriptionId for {kv.VaultName} was changed.");
             }
             if (originalKV.Location != kv.Location.Trim())
             {
-                throw new Exception($"\nError: Location for {kv.VaultName} was changed.");
+                throw new Exception($"Location for {kv.VaultName} was changed.");
             }
             if (originalKV.TenantId != kv.TenantId.Trim())
             {
-                throw new Exception($"\nError: TenantId for {kv.VaultName} was changed.");
+                throw new Exception($"TenantId for {kv.VaultName} was changed.");
             }
         }
 
@@ -289,7 +295,7 @@ namespace RBAC
                                     if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
                                     type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
                                     {
-                                        throw new Exception($"\nAn access policy has already been defined");
+                                        throw new Exception($"An access policy has already been defined");
                                     }
 
                                     sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
@@ -304,19 +310,25 @@ namespace RBAC
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine($"\nError: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                    Console.ResetColor();
                                     System.Environment.Exit(1);
                                 }
                             }
                         }
                         else
                         {
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
+                            Console.ResetColor();
                         }
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"\nError: {e.Message}");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Error: {e.Message}");
+                        Console.ResetColor();
                     }
                 }
 
@@ -325,7 +337,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
             }
         }
 
@@ -361,14 +375,16 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("ResourceNotFound"))
                     {
-                        Console.WriteLine($"\nError: Could not find User with Alias '{sp.Alias}'. User skipped.");
+                        Console.WriteLine($"Error: Could not find User with Alias '{sp.Alias}'. User skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"\nError: {e.Message}");
+                        Console.WriteLine($"Error: {e.Message}");
                     }
+                    Console.ResetColor();
                 }
             }
             else if (type == "group")
@@ -380,23 +396,25 @@ namespace RBAC
                     .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                     .GetAsync().Result[0];
 
-                    if (sp.Alias != null && sp.Alias.Trim().Length != 0 && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
+                    if (sp.Alias != null && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' is misspelled for {sp.DisplayName} and cannot be recognized. Group skipped.");
+                        throw new Exception($"The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. Group skipped.");
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
-                        Console.WriteLine($"\nError: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
+                        Console.WriteLine($"Error: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"\nError: {e.Message}");
+                        Console.WriteLine($"Error: {e.Message}");
                     }
+                    Console.ResetColor();
                 }
             }
             else if (type == "application")
@@ -408,12 +426,25 @@ namespace RBAC
                     .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                     .GetAsync().Result[0];
 
+                    if (sp.Alias != null || sp.Alias.Trim().Length != 0)
+                    {
+                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. Application skipped.");
+                    }
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
                 }
-                catch
+                catch (Exception e)
                 {
-                    Console.WriteLine($"\nError: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    if (e.Message.Contains("out of range"))
+                    {
+                        Console.WriteLine($"Error: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: {e.Message}");
+                    }
+                    Console.ResetColor();
                 }
             }
             else if (type == "service principal")
@@ -425,11 +456,24 @@ namespace RBAC
                         .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                         .GetAsync().Result[0];
 
+                    if (sp.Alias != null || sp.Alias.Trim().Length != 0)
+                    {
+                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. ServicePrincipal skipped.");
+                    }
                     data["ObjectId"] = principal.Id;
                 }
-                catch
+                catch (Exception e)
                 {
-                    Console.WriteLine($"\nError: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    if (e.Message.Contains("out of range"))
+                    {
+                        Console.WriteLine($"Error: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: {e.Message}");
+                    }
+                    Console.ResetColor();
                 }
             }
             else
