@@ -13,7 +13,7 @@ namespace RBAC
     /// <summary>
     /// This class stores the AccessPolicies of a Service Principal.
     /// </summary>
-    class PrincipalPermissions
+    public class PrincipalPermissions
     {
         public PrincipalPermissions() 
         {

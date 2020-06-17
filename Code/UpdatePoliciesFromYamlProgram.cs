@@ -7,7 +7,7 @@ using YamlDotNet.Serialization;
 
 namespace RBAC
 {
-    class UpdatePoliciesFromYamlProgram
+    public class UpdatePoliciesFromYamlProgram
     {
         /// <summary>
         /// This method reads in the Yaml file with access policy changes and updates these policies in Azure.
@@ -15,22 +15,23 @@ namespace RBAC
         /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
             Console.WriteLine("Reading input file...");
-            AccessPoliciesToYaml.verifyFileExtensions(args);
-            JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
+            ap.verifyFileExtensions(args);
+            JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nGrabbing secrets...");
-            var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
+            var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
-            var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-            var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            var kvmClient = ap.createKVMClient(secrets);
+            var graphClient = ap.createGraphClient(secrets);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nRetrieving key vaults...");
-            List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
+            List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Success!");
 
             Console.WriteLine("\nReading yaml file...");

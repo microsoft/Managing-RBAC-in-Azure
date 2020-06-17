@@ -22,34 +22,29 @@ namespace RBAC
     /// <summary>
     /// "Phase 1" Code that serializes a list of Key Vaults into Yaml.
     /// </summary>
-    class AccessPoliciesToYaml
+    public class AccessPoliciesToYaml
     {
-
+        public AccessPoliciesToYaml(bool testing)
+        {
+            Testing = testing;
+        }
         /// <summary>
         /// This method verifies that the file arguments are of the correct type.
         /// </summary>
         /// <param name="args">The string array of program arguments</param>
-        public static void verifyFileExtensions(string[] args)
+        public void verifyFileExtensions(string[] args)
         {
-            try
+            if (args.Length != 2)
             {
-                if (args.Length != 2)
-                {
-                    throw new Exception("Missing input file.");
-                }
-                if (System.IO.Path.GetExtension(args[0]) != ".json")
-                {
-                    throw new Exception("The 1st argument is not a .json file");
-                }
-                if (System.IO.Path.GetExtension(args[1]) != ".yml")
-                {
-                    throw new Exception("The 2nd argument is not a .yml file");
-                }
+                throw new Exception("\nError: Missing input file.");
             }
-            catch (Exception e)
+            if (System.IO.Path.GetExtension(args[0]) != ".json")
             {
-                Console.WriteLine($"\nError: {e.Message}");
-                System.Environment.Exit(1);
+                throw new Exception("\nError: The 1st argument is not a .json file");
+            }
+            if (System.IO.Path.GetExtension(args[1]) != ".yml")
+            {
+                throw new Exception("\nError: The 2nd argument is not a .yml file");
             }
         }
 
@@ -58,7 +53,7 @@ namespace RBAC
         /// </summary>
         /// <param name="jsonDirectory">The Json file path</param>
         /// <returns>A JsonInput object that stores the Json input data</returns>
-        public static JsonInput readJsonFile(string jsonDirectory)
+        public JsonInput readJsonFile(string jsonDirectory)
         {
             try
             {
@@ -75,7 +70,7 @@ namespace RBAC
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
-                System.Environment.Exit(1);
+                Exit();
                 return null;
             }
         }
@@ -84,7 +79,7 @@ namespace RBAC
         /// This method verifies that all of the required inputs exist for the Json input file.
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
-        public static void checkMissingJsonInputFields(JsonInput vaultList)
+        public void checkMissingJsonInputFields(JsonInput vaultList)
         {
             if (vaultList.AadAppKeyDetails == null)
             {
@@ -120,7 +115,7 @@ namespace RBAC
         /// This method verifies that all of the required inputs exist for each Resource object.
         /// </summary>
         /// <param name="res">The Resouce object for which we want to check</param>
-        public static void checkMissingResourceFields(Resource res)
+        public void checkMissingResourceFields(Resource res)
         {
             if (res.SubscriptionId == null)
             {
@@ -143,7 +138,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
         /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
-        public static Dictionary<string, string> getSecrets(JsonInput vaultList)
+        public Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             try
@@ -175,9 +170,7 @@ namespace RBAC
                         log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
-                    System.Environment.Exit(1);
+                    Exit();
                 }
                 try
                 {
@@ -198,9 +191,7 @@ namespace RBAC
                         log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
-                    System.Environment.Exit(1);
+                    Exit();
                 }
                 try
                 {
@@ -221,18 +212,14 @@ namespace RBAC
                         log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
-                    System.Environment.Exit(1);
+                    Exit();
                 }
             } 
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
                 log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
-                log.Flush();
-                log.Close();
-                System.Environment.Exit(1);
+                Exit();
             }
             return secrets;
         }
@@ -242,7 +229,7 @@ namespace RBAC
         /// </summary>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
-        public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
+        public Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
             try
             {
@@ -257,9 +244,7 @@ namespace RBAC
             {
                 log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
                 Console.WriteLine($"\nError: {e.Message}");
-                log.Flush();
-                log.Close();
-                System.Environment.Exit(1);
+                Exit();
                 return null;
             }
         }
@@ -269,7 +254,7 @@ namespace RBAC
         /// </summary>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <returns>The GraphServiceClient created using the secret information</returns>
-        public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
+        public GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
             try
             {
@@ -296,9 +281,7 @@ namespace RBAC
             {
                 Console.WriteLine($"\nError: {e.Message}");
                 log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
-                log.Flush();
-                log.Close();
-                System.Environment.Exit(1);
+                Exit();
                 return null;
             }
         }
@@ -310,7 +293,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
         /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
-        public static List<KeyVaultProperties> getVaults(JsonInput vaultList, 
+        public List<KeyVaultProperties> getVaults(JsonInput vaultList, 
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
@@ -385,7 +368,7 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
-        public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
+        public List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
             List<Vault> vaultsRetrieved, string resourceGroup = "")
         {
             IPage<Vault> vaultsCurPg = null;
@@ -445,7 +428,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
-        public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
+        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
             try
             {
@@ -464,6 +447,20 @@ namespace RBAC
             log.Flush();
             log.Close();
         }
-        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.OpenOrCreate, FileAccess.Write));
+        public void Exit()
+        {
+            if (!Testing)
+            {
+                log.Flush();
+                log.Close();
+                Environment.Exit(1);
+            }
+            else
+            {
+                throw new Exception("Exit with error code 1");
+            }
+        }
+        public bool Testing { get; set; }
+        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.Create, FileAccess.Write));
     }
 }
