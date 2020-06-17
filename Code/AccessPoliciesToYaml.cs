@@ -51,7 +51,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
                 System.Environment.Exit(1);
             }
             Constants.getLog().Flush();
@@ -79,7 +81,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
                 System.Environment.Exit(1);
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": ERROR: {e.Message}");
                 Constants.getLog().Flush();
@@ -254,8 +258,10 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
+
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientIdSecret could not be found.");
                     }
@@ -264,8 +270,10 @@ namespace RBAC
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
                     }
+                    Console.ResetColor();
                     Constants.getLog().Flush();
                     // log.Close();
+
                     System.Environment.Exit(1);
                 }
                 try
@@ -277,6 +285,7 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
@@ -287,9 +296,8 @@ namespace RBAC
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
                     }
+                    Console.ResetColor();
                     Constants.getLog().Flush();
-                    // log.Close();
-                    System.Environment.Exit(1);
                 }
                 try
                 {
@@ -300,6 +308,7 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
@@ -310,17 +319,18 @@ namespace RBAC
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
                     }
+                    Console.ResetColor();
                     Constants.getLog().Flush();
-                    // log.Close();
                     System.Environment.Exit(1);
                 }
             } 
             catch (Exception e)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"\nError: {e.Message}");
+                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
                 Constants.getLog().Flush();
-                // log.Close();
                 System.Environment.Exit(1);
             }
             return secrets;
@@ -344,10 +354,11 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"\nError: {e.Message}");
+                Console.ResetColor();
                 Constants.getLog().Flush();
-                Constants.getLog().Close();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
                 System.Environment.Exit(1);
                 return null;
             }
@@ -383,10 +394,11 @@ namespace RBAC
             }
             catch (Exception e)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"\nError: {e.Message}");
+                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
-                Constants.getLog().Flush();
-                Constants.getLog().Close();
+                Constants.getLog().Flush();         
                 System.Environment.Exit(1);
                 return null;
             }
@@ -441,9 +453,10 @@ namespace RBAC
                                 } 
                                 catch (CloudException e)
                                 {
-                                    Console.WriteLine($"\nError: {e.Message}");
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Error: {e.Message}");
+                                    Console.ResetColor();
                                     Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Unable to retrieve Key Vault, {vaultName} from client\n" + e.ToString());
-                                    // If the Subscription is not found, then do not continue looking for vaults in this subscription
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
                                         notFound = true;
@@ -487,8 +500,11 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: {e.Message}");
+                    Console.ResetColor();
                     Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
-                    Console.WriteLine($"\nError: {e.Message}");
+                    
                 }
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
@@ -500,8 +516,11 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: {e.Message}");
+                    Console.ResetColor();
                     Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
-                    Console.WriteLine($"\nError: {e.Message}");
+                    
                 }
             }
             
@@ -548,12 +567,13 @@ namespace RBAC
             }
             catch (Exception e)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error serializing data\n" + e.ToString());
-                Console.WriteLine($"\nError: {e.Message}");
             }
             Constants.getLog().Flush();
-            Constants.getLog().Close();
         }
-        // public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.OpenOrCreate, FileAccess.Write));
+
     }
 }
