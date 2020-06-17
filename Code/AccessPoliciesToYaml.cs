@@ -238,7 +238,7 @@ namespace RBAC
         /// <summary>
         /// This method serializes the list of Vault objects and outputs the YAML.
         /// </summary>
-        /// <param name="vaultsRetrieved">The list of KeyVault Properties to serialize</param>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
         public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved)
         {
             var serializer = new SerializerBuilder().Build();
