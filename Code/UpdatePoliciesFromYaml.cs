@@ -13,11 +13,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using YamlDotNet.Serialization;
+using System.Text;
+using System.IO;
 
 namespace RBAC
 {
     class UpdatePoliciesFromYaml
     {
+
+        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH2, FileMode.OpenOrCreate, FileAccess.Write));
+
         /// <summary>
         /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
         /// </summary>
@@ -25,12 +30,15 @@ namespace RBAC
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         public static List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
         {
+            
             try
             {
+                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserializing Code");
                 string yaml = System.IO.File.ReadAllText(yamlDirectory);
                 var deserializer = new DeserializerBuilder().Build();
                 List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
 
+                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking valid fields");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
@@ -39,6 +47,7 @@ namespace RBAC
                         checkSPInvalidFields(kv.VaultName, sp);
                     }
                 }
+                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Finished Deserializing Code");
                 return yamlVaults;
             }
             catch (Exception e)
@@ -46,9 +55,13 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
+                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
+                log.Flush();
+                log.Close();
                 System.Environment.Exit(1);
                 return null;
             }
+
         }
 
         /// <summary>
@@ -128,22 +141,27 @@ namespace RBAC
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing VaultName for {kv.VaultName}");
                 throw new Exception($"Missing VaultName for {kv.VaultName}");
             }
             if (kv.ResourceGroupName == null || kv.ResourceGroupName.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing ResourceGroupName for {kv.VaultName}");
                 throw new Exception($"Missing ResourceGroupName for {kv.VaultName}");
             }
             if (kv.SubscriptionId == null || kv.SubscriptionId.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing SubscriptionId for {kv.VaultName}");
                 throw new Exception($"Missing SubscriptionId for {kv.VaultName}");
             }
             if (kv.Location == null || kv.Location.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing Location for {kv.VaultName}");
                 throw new Exception($"Missing Location for {kv.VaultName}");
             }
             if (kv.TenantId == null || kv.TenantId.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing TenantId for {kv.VaultName}");
                 throw new Exception($"Missing TenantId for {kv.VaultName}");
             }
         }
@@ -157,22 +175,27 @@ namespace RBAC
         {
             if (sp.Type == null || sp.Type.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing Type for {name}");
                 throw new Exception($"Missing Type for {name}");
             }
             if (sp.DisplayName == null || sp.DisplayName.Trim() == "")
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing DisplayName for {name}");
                 throw new Exception($"Missing DisplayName for {name}");
             }
             if (sp.PermissionsToKeys == null)
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionsToKeys for {name}");
                 throw new Exception($"Missing PermissionsToKeys for {name}");
             }
             if (sp.PermissionsToSecrets == null)
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionToSecrets for {name}");
                 throw new Exception($"Missing PermissionsToSecrets for {name}");
             }
             if (sp.PermissionsToCertificates == null)
             {
+                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionToCertificates for {name}");
                 throw new Exception($"Missing PermissionsToCertificates for {name}");
             }
         }
