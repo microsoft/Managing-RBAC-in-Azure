@@ -22,13 +22,17 @@ namespace RBAC
     /// </summary>
     class AccessPoliciesToYaml
     {
-
+        // public static StreamWriter log = Constants.getLog();
         /// <summary>
         /// This method verifies that the file arguments are of the correct type.
         /// </summary>
         /// <param name="args">The string array of program arguments</param>
         public static void verifyFileExtensions(string[] args)
         {
+
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging starting...");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Verifying file extensions");
+
             try
             {
                 if (args.Length != 2)
@@ -43,12 +47,14 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file");
                 }
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": File extension verified");
             }
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
                 System.Environment.Exit(1);
             }
+            Constants.getLog().Flush();
         }
 
         /// <summary>
@@ -60,6 +66,7 @@ namespace RBAC
         {
             try
             {
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Reading json file & checking for invalid entries");
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
                 JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
                 
@@ -67,13 +74,15 @@ namespace RBAC
                 checkJsonFields(vaultList, configVaults);
                 checkMissingAadFields(vaultList, configVaults);
                 checkMissingResourceFields(vaultList, configVaults);
-
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": json files succesfully checked");
                 return vaultList; 
             }
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
                 System.Environment.Exit(1);
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": ERROR: {e.Message}");
+                Constants.getLog().Flush();
                 return null;
             }
         }
@@ -233,85 +242,85 @@ namespace RBAC
                 // Creates the SecretClient and grabs secrets
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
                 string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating secret client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating secret client");
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Secret client created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Secret client created");
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client id secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client id secret");
                     KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
                     secrets["clientId"] = clientIdSecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client id retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client id retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientIdSecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
+                    Constants.getLog().Flush();
+                    // log.Close();
                     System.Environment.Exit(1);
                 }
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client key secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client key secret");
                     KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
                     secrets["clientKey"] = clientKeySecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client key retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client key retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientKeySecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
                         Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
+                    Constants.getLog().Flush();
+                    // log.Close();
                     System.Environment.Exit(1);
                 }
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting tenant id secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting tenant id secret");
                     KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
                     secrets["tenantId"] = tenantIdSecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Tenant id retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Tenant id retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: tenantIdSecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
                         Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
                     }
-                    log.Flush();
-                    log.Close();
+                    Constants.getLog().Flush();
+                    // log.Close();
                     System.Environment.Exit(1);
                 }
             } 
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
-                log.Flush();
-                log.Close();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
+                Constants.getLog().Flush();
+                // log.Close();
                 System.Environment.Exit(1);
             }
             return secrets;
@@ -328,17 +337,17 @@ namespace RBAC
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating Key Vault Management Client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating Key Vault Management Client");
                 var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Key Vault Management Client Created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Key Vault Management Client Created");
                 return ret;
             } 
             catch (Exception e)
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
                 Console.WriteLine($"\nError: {e.Message}");
-                log.Flush();
-                log.Close();
+                Constants.getLog().Flush();
+                Constants.getLog().Close();
                 System.Environment.Exit(1);
                 return null;
             }
@@ -353,7 +362,7 @@ namespace RBAC
         {
             try
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating graph client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating graph client");
                 string auth = Constants.MICROSOFT_LOGIN + secrets["tenantId"];
                 string redirectUri = Constants.HTTP + secrets["appName"];
 
@@ -369,15 +378,15 @@ namespace RBAC
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
                 var ret = new GraphServiceClient(authProvider);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client created");
                 return ret;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"\nError: {e.Message}");
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
-                log.Flush();
-                log.Close();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
+                Constants.getLog().Flush();
+                Constants.getLog().Close();
                 System.Environment.Exit(1);
                 return null;
             }
@@ -394,7 +403,7 @@ namespace RBAC
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving Key Vaults from client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving Key Vaults from client");
             foreach (Resource res in vaultList.Resources)
             {
                 // Associates the client with the subscription
@@ -433,7 +442,7 @@ namespace RBAC
                                 catch (CloudException e)
                                 {
                                     Console.WriteLine($"\nError: {e.Message}");
-                                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Unable to retrieve Key Vault, {vaultName} from client\n" + e.ToString());
+                                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Unable to retrieve Key Vault, {vaultName} from client\n" + e.ToString());
                                     // If the Subscription is not found, then do not continue looking for vaults in this subscription
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
@@ -446,15 +455,15 @@ namespace RBAC
                     }
                 }
             }
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Available Key Vaults retrieved from client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Available Key Vaults retrieved from client");
             
             List<KeyVaultProperties> keyVaultsRetrieved = new List<KeyVaultProperties>();
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving data from graph client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving data from graph client");
             foreach (Vault curVault in vaultsRetrieved) 
             {
-                keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient, log));
+                keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient, Constants.getLog()));
             }
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client data retrieved");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client data retrieved");
             return keyVaultsRetrieved;
         }
 
@@ -478,7 +487,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
                     Console.WriteLine($"\nError: {e.Message}");
                 }
             }
@@ -491,7 +500,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
                     Console.WriteLine($"\nError: {e.Message}");
                 }
             }
@@ -529,21 +538,22 @@ namespace RBAC
         {
             try
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Serializing data");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Serializing data");
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Data serialized");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Data serialized");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging complete...");
             }
             catch (Exception e)
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error serializing data\n" + e.ToString());
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error serializing data\n" + e.ToString());
                 Console.WriteLine($"\nError: {e.Message}");
             }
-            log.Flush();
-            log.Close();
+            Constants.getLog().Flush();
+            Constants.getLog().Close();
         }
-        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.OpenOrCreate, FileAccess.Write));
+        // public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.OpenOrCreate, FileAccess.Write));
     }
 }

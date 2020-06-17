@@ -15,6 +15,8 @@ namespace RBAC
         /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
+            Constants.toggle = "phase2";
+
             Console.WriteLine("Reading input file...");
             AccessPoliciesToYaml.verifyFileExtensions(args);
             JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
