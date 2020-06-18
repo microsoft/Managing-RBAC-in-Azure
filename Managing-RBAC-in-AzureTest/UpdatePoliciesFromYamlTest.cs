@@ -1,3 +1,5 @@
+
+﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
 ﻿using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
@@ -11,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
+using System.Runtime.ExceptionServices;
 using YamlDotNet.Serialization;
 
 namespace RBAC
@@ -26,6 +29,101 @@ namespace RBAC
 
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
             Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
+        }
+        [TestMethod]
+        public void TestCheckVaultChanges()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            var validVaults = createExpectedYamlVaults();
+            try
+            {
+                up.checkVaultChanges(validVaults, validVaults[0]);
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+            var badName = new KeyVaultProperties { VaultName = "NotExist" };
+            try
+            {
+                up.checkVaultChanges(validVaults, badName);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("VaultName NotExist was changed or added.", e.Message);
+            }
+
+            var badRGName = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBACKeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badRGName);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("ResourceGroupName for RG1Test1 was changed.", e.Message);
+            }
+
+            var badSubId = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "bleep-bloop",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badSubId);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("SubscriptionId for RG1Test1 was changed.", e.Message);
+            }
+
+            var badLoc = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "nigeria",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badLoc);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
+            }
+            var badTen = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "eastus",
+                TenantId = "Landlord"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badTen);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("TenantId for RG1Test1 was changed.", e.Message);
+            }
         }
 
         [TestMethod]
@@ -125,6 +223,15 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
+            PrincipalPermissions sp1 = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
             string name = "vaultName";
 
             try
@@ -136,17 +243,17 @@ namespace RBAC
                 Assert.Fail();
             }
 
-            PrincipalPermissions incomplete = sp;
+            PrincipalPermissions incomplete = sp1;
 
             incomplete.Type = null;
             try
             {
-                up.checkSPInvalidFields(name, sp);
+                up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing Type for {name}", e.Message);
+                Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
             incomplete.Type = "  ";
@@ -157,7 +264,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing Type for {name}", e.Message);
+                Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
             incomplete.Type = sp.Type;
@@ -169,7 +276,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing DisplayName for {name}", e.Message);
+                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
             incomplete.DisplayName = " ";
@@ -180,7 +287,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing DisplayName for {name}", e.Message);
+                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
 
@@ -189,23 +296,20 @@ namespace RBAC
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
+            }
+            catch(Exception e)
+            {
                 Assert.Fail();
             }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Error: Missing PermissionsToKeys for {name}", e.Message);
-            }
-
             incomplete.PermissionsToKeys = sp.PermissionsToKeys;
             incomplete.PermissionsToSecrets = null;
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
-                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing PermissionsToSecrets for {name}", e.Message);
+                Assert.Fail();
             }
 
             incomplete.PermissionsToSecrets = sp.PermissionsToSecrets;
@@ -213,11 +317,10 @@ namespace RBAC
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
-                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Missing PermissionsToCertificates for {name}", e.Message);
+                Assert.Fail();
             }
         }
 
@@ -533,6 +636,137 @@ namespace RBAC
             });
 
             return exp;
+        }
+
+        [TestMethod]
+        public void TestCheckVaultInvalidFields()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+
+            // Vault Name null
+            KeyVaultProperties kv = new KeyVaultProperties();
+            kv.VaultName = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Vault Name empty
+            kv.VaultName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource Group name null
+            kv.VaultName = "Vault Name";
+            kv.ResourceGroupName = null;
+            try
+            {    
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource group name empty
+            kv.ResourceGroupName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id null
+            kv.ResourceGroupName = "Resource Group Name";
+            kv.SubscriptionId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id empty
+            kv.SubscriptionId = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Location null 
+            kv.SubscriptionId = "SubscriptionId";
+            kv.Location = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Location empty
+            kv.Location = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id null
+            kv.Location = "Location";
+            kv.TenantId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id empty
+            kv.TenantId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
         }
 
     }

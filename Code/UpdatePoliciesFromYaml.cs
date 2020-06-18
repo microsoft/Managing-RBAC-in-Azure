@@ -138,7 +138,7 @@ namespace RBAC
         /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
         /// </summary>
         /// <param name="kv">The current KeyVaultProperties object</param>
-        private void checkVaultInvalidFields(KeyVaultProperties kv)
+        public void checkVaultInvalidFields(KeyVaultProperties kv)
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
@@ -249,7 +249,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kv">The current KeyVault</param>
-        private void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
+        public void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
         {
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
