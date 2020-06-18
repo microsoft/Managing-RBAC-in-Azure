@@ -16,6 +16,7 @@ namespace RBAC
         static void Main(string[] args)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
+            Constants.toggle = "phase2";
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);
@@ -34,13 +35,13 @@ namespace RBAC
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("\nReading yaml file...");
+            Console.WriteLine("Reading yaml file...");
             List<KeyVaultProperties> yamlVaults = UpdatePoliciesFromYaml.deserializeYaml(args[1]);
             int changes = UpdatePoliciesFromYaml.checkChanges(yamlVaults, vaultsRetrieved);
             Console.WriteLine("Success!");
-            if(changes != 0)
+            if (changes != 0)
             {
-                Console.WriteLine("\nUpdating key vaults...");
+                Console.WriteLine("Updating key vaults...");
                 UpdatePoliciesFromYaml.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
                 Console.WriteLine("Updates finished!");
             }

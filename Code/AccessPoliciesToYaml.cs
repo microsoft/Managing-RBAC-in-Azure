@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
@@ -10,11 +10,9 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Rest.Azure;
 using Microsoft.Graph;
-using System.Management.Automation;
 using System.Linq;
 using Newtonsoft.Json;
-using System.Diagnostics;
-using System.Text;
+using Newtonsoft.Json.Linq;
 using System.IO;
 
 namespace RBAC
@@ -34,18 +32,29 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
-            if (args.Length != 2)
-            {
-                throw new Exception("\nError: Missing input file.");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging starting...");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Verifying file extensions");
+            try {
+                if (args.Length != 2)
+                {
+                    throw new Exception("\nError: Missing input file.");
+
+                }
+                if (System.IO.Path.GetExtension(args[0]) != ".json")
+                {
+                    throw new Exception("\nError: The 1st argument is not a .json file");
+                }
+                if (System.IO.Path.GetExtension(args[1]) != ".yml")
+                {
+                    throw new Exception("\nError: The 2nd argument is not a .yml file");
+                }
             }
-            if (System.IO.Path.GetExtension(args[0]) != ".json")
+            catch(Exception e)
             {
-                throw new Exception("\nError: The 1st argument is not a .json file");
+                Exit($"Error: {e.Message}");
             }
-            if (System.IO.Path.GetExtension(args[1]) != ".yml")
-            {
-                throw new Exception("\nError: The 2nd argument is not a .yml file");
-            }
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": File extension verified");
+            Constants.getLog().Flush();
         }
 
         /// <summary>
@@ -57,79 +66,164 @@ namespace RBAC
         {
             try
             {
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Reading json file & checking for invalid entries");
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
                 JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-
-                checkMissingJsonInputFields(vaultList);
-                foreach (Resource res in vaultList.Resources)
-                {
-                    checkMissingResourceFields(res);
-                }
-                return vaultList;
+                
+                JObject configVaults = JObject.Parse(masterConfig);
+                checkJsonFields(vaultList, configVaults);
+                checkMissingAadFields(vaultList, configVaults);
+                checkMissingResourceFields(vaultList, configVaults);
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": json files succesfully checked");
+                return vaultList; 
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
-                Exit();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": ERROR: {e.Message}");
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// This method verifies that all of the required inputs exist for the Json input file.
+        /// This method verifies that all of the required inputs exist within the Json file.
         /// </summary>
-        /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
-        public void checkMissingJsonInputFields(JsonInput vaultList)
+
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkJsonFields(JsonInput vaultList, JObject configVaults)
         {
+            List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails == null)
             {
-                throw new Exception("Missing AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.AadAppName == null)
-            {
-                throw new Exception("Missing AadAppName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.VaultName == null)
-            {
-                throw new Exception("Missing VaultName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
-            {
-                throw new Exception("Missing ClientIdSecretName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
-            {
-                throw new Exception("Missing ClientKeySecretName for AadAppKeyDetails in Json input.");
-            }
-            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
-            {
-                throw new Exception("Missing TenantIdSecretName for AadAppKeyDetails in Json input.");
+                missingInputs.Add("AadAppKeyDetails");
             }
             if (vaultList.Resources == null)
             {
-                throw new Exception("Missing Resources list in Json input.");
+                missingInputs.Add("Resources");
+            }
+
+            int numMissing = missingInputs.Count();
+            int numValid = 2 - numMissing;
+
+            if (missingInputs.Count() == 0 && configVaults.Children().Count() != 2)
+            {
+                throw new Exception($"Invalid fields in Json were defined. Valid fields are 'AadAppKeyDetails' and 'Resources'.");
+            }
+            else if (missingInputs.Count() != 0 && configVaults.Children().Count() != numValid)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} in Json. Invalid fields were defined; " +
+                    $"valid fields are 'AadAppKeyDetails' and 'Resources'.");
+            }
+            else if (missingInputs.Count() > 0)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} in Json.");
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that all of the required inputs exist for the AadAppKeyDetails object.
+        /// </summary>
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
+        {
+            List<string> missingInputs = new List<string>();
+            if (vaultList.AadAppKeyDetails.AadAppName == null)
+            {
+                missingInputs.Add("AadAppName");
+            }
+            if (vaultList.AadAppKeyDetails.VaultName == null)
+            {
+                missingInputs.Add("VaultName");
+            }
+            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
+            {
+                missingInputs.Add("ClientIdSecretName");
+            }
+            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
+            {
+                missingInputs.Add("ClientKeySecretName");
+            }
+            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
+            {
+                missingInputs.Add("TenantIdSecretName");
+            }
+
+            int numMissing = missingInputs.Count();
+            JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
+            int numValid = 5 - numMissing;
+
+            if (numMissing == 0 && (aadDetails.Children().Count() != 5))
+            {
+                throw new Exception($"Invalid fields for AadAppKeyDetails were defined. " +
+                    $"Valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
+            }
+            else if (numMissing != 0 && aadDetails.Children().Count() != numValid)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails. Invalid fields were defined; " +
+                    $"valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
+            }
+            else if (numMissing > 0)
+            {
+                throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails.");
             }
         }
 
         /// <summary>
         /// This method verifies that all of the required inputs exist for each Resource object.
         /// </summary>
-        /// <param name="res">The Resouce object for which we want to check</param>
-        public void checkMissingResourceFields(Resource res)
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
+        private static void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
         {
-            if (res.SubscriptionId == null)
+            JEnumerable<JToken> resourceList = configVaults.SelectToken($".Resources").Children();
+                
+            int i = 0;
+            foreach (Resource res in vaultList.Resources)
             {
-                throw new Exception("Missing SubscriptionId for a Resource.");
-            }
-            if (res.ResourceGroups != null)
-            {
-                foreach(ResourceGroup resGroup in res.ResourceGroups)
+                JToken jres = resourceList.ElementAt(i);
+
+                if (res.SubscriptionId != null && res.ResourceGroups.Count() == 0 && jres.Children().Count() > 1)
                 {
-                    if (resGroup.ResourceGroupName == null)
+                    throw new Exception($"Invalid fields for Resource with SubscriptionId '{res.SubscriptionId}' were defined. Valid fields are 'SubscriptionId' and 'ResourceGroups'.");
+                }
+                else if (res.SubscriptionId == null && jres.Children().Count() > 0)
+                {
+                    throw new Exception($"Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.");
+                }
+                else if (res.SubscriptionId != null && res.ResourceGroups.Count() != 0)
+                {
+                    if (jres.Children().Count() > 2)
                     {
-                        throw new Exception($"Missing ResourceGroupName for Resource with SubscriptionId {res.SubscriptionId}.");
+                        throw new Exception($"Invalid fields other than 'SubscriptionId' and 'ResourceGroups' were defined for Resource with SubscriptionId '{res.SubscriptionId}'.");
+                    }
+
+                    int j = 0;
+                    foreach (ResourceGroup resGroup in res.ResourceGroups)
+                    {
+                        JEnumerable<JToken> groupList = jres.SelectToken($".ResourceGroups").Children();
+                        JToken jresGroup = groupList.ElementAt(j);
+
+                        if (resGroup.ResourceGroupName != null && resGroup.KeyVaults.Count() == 0 && jresGroup.Children().Count() > 1)
+                        {
+                            throw new Exception($"Invalid fields for ResourceGroup with ResourceGroupName '{resGroup.ResourceGroupName}' were defined. " +
+                                $"Valid fields are 'ResourceGroupName' and 'KeyVaults'.");
+                        }
+                        else if (resGroup.ResourceGroupName == null && jresGroup.Children().Count() > 0)
+                        {
+                            throw new Exception("Missing 'ResourceGroupName' for ResourceGroup. Invalid fields were defined; valid fields are 'ResourceGroupName' and 'KeyVaults'.");
+                        }
+                        else if (resGroup.ResourceGroupName != null && resGroup.KeyVaults.Count() != 0 && jresGroup.Children().Count() > 2)
+                        {
+                            throw new Exception($"Invalid fields other than 'ResourceGroupName' and 'KeyVaults' were defined for ResourceGroup " +
+                                $"with ResourceGroupName '{resGroup.ResourceGroupName}'.");
+                        }
+                        ++j;
                     }
                 }
+                ++i;
             }
         }
 
@@ -148,78 +242,82 @@ namespace RBAC
                 // Creates the SecretClient and grabs secrets
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
                 string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating secret client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating secret client");
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Secret client created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Secret client created");
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client id secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client id secret");
                     KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
                     secrets["clientId"] = clientIdSecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client id retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client id retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientIdSecret could not be found.");
+
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientIdSecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientIdSecret {e.Message}.");
                     }
-                    Exit();
                 }
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client key secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting client key secret");
                     KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
                     secrets["clientKey"] = clientKeySecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client key retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Client key retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientKeySecret could not be found.");
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientKeySecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientKeySecret {e.Message}.");
                     }
-                    Exit();
                 }
                 try
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting tenant id secret");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Getting tenant id secret");
                     KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
                     secrets["tenantId"] = tenantIdSecret.Value;
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Tenant id retrieved");
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Tenant id retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: tenantIdSecret could not be found.");
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: tenantIdSecret could not be found.");
                     }
                     else
                     {
-                        log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
+                        Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
+                        Constants.getLog().Flush();
+                        Exit($"\nError: tenantIdSecret {e.Message}.");
                     }
-                    Exit();
                 }
             } 
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
-                Exit();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");
             }
             return secrets;
         }
@@ -235,16 +333,16 @@ namespace RBAC
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating Key Vault Management Client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating Key Vault Management Client");
                 var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Key Vault Management Client Created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Key Vault Management Client Created");
                 return ret;
             } 
             catch (Exception e)
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
-                Console.WriteLine($"\nError: {e.Message}");
-                Exit();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");
                 return null;
             }
         }
@@ -258,7 +356,7 @@ namespace RBAC
         {
             try
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating graph client");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Creating graph client");
                 string auth = Constants.MICROSOFT_LOGIN + secrets["tenantId"];
                 string redirectUri = Constants.HTTP + secrets["appName"];
 
@@ -274,14 +372,14 @@ namespace RBAC
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
                 var ret = new GraphServiceClient(authProvider);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client created");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client created");
                 return ret;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nError: {e.Message}");
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
-                Exit();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");   
                 return null;
             }
         }
@@ -297,7 +395,7 @@ namespace RBAC
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving Key Vaults from client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving Key Vaults from client");
             foreach (Resource res in vaultList.Resources)
             {
                 // Associates the client with the subscription
@@ -335,9 +433,10 @@ namespace RBAC
                                 } 
                                 catch (CloudException e)
                                 {
-                                    Console.WriteLine($"\nError: {e.Message}");
-                                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Unable to retrieve Key Vault, {vaultName} from client\n" + e.ToString());
-                                    // If the Subscription is not found, then do not continue looking for vaults in this subscription
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"Error: {e.Message}");
+                                    Console.ResetColor();
+                                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Unable to retrieve Key Vault, {vaultName} from client\n" + e.ToString());
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
                                         notFound = true;
@@ -349,15 +448,15 @@ namespace RBAC
                     }
                 }
             }
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Available Key Vaults retrieved from client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Available Key Vaults retrieved from client");
             
             List<KeyVaultProperties> keyVaultsRetrieved = new List<KeyVaultProperties>();
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving data from graph client");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Retrieving data from graph client");
             foreach (Vault curVault in vaultsRetrieved) 
             {
-                keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient, log));
+                keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient, Constants.getLog()));
             }
-            log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client data retrieved");
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Graph client data retrieved");
             return keyVaultsRetrieved;
         }
 
@@ -381,8 +480,11 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
-                    Console.WriteLine($"\nError: {e.Message}");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: {e.Message}");
+                    Console.ResetColor();
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
+                    
                 }
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
@@ -394,8 +496,11 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
-                    log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
-                    Console.WriteLine($"\nError: {e.Message}");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: {e.Message}");
+                    Console.ResetColor();
+                    Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to retrieve Key Vaults from client\n" + e.ToString());
+                    
                 }
             }
             
@@ -432,35 +537,39 @@ namespace RBAC
         {
             try
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Serializing data");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Serializing data");
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Data serialized");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Data serialized");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging complete...");
             }
             catch (Exception e)
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error serializing data\n" + e.ToString());
-                Console.WriteLine($"\nError: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error serializing data\n" + e.ToString());
             }
-            log.Flush();
-            log.Close();
+            Constants.getLog().Flush();
         }
-        public void Exit()
+        public void Exit(string message)
         {
             if (!Testing)
             {
-                log.Flush();
-                log.Close();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(message);
+                Console.ResetColor();
+                Constants.getLog().Close();
                 Environment.Exit(1);
             }
             else
             {
-                throw new Exception("Exit with error code 1");
+                throw new Exception($"Exit with error: {message}");
             }
         }
         public bool Testing { get; set; }
-        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH, FileMode.Create, FileAccess.Write));
+
     }
 }

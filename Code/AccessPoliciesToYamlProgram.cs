@@ -13,6 +13,11 @@ using Microsoft.Rest.Azure;
 using Microsoft.Graph;
 using Microsoft.Azure.Management.KeyVault.Fluent.Models;
 using System.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Serilog;
+using Serilog.Context;
 
 namespace RBAC
 {
@@ -27,11 +32,12 @@ namespace RBAC
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
+            Constants.toggle = "phase1";
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Success!");
-
+          
             Console.WriteLine("\nGrabbing secrets...");
             var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Success!");
