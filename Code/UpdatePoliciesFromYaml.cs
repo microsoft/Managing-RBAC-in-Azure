@@ -30,7 +30,7 @@ namespace RBAC
         /// </summary>
         /// <param name="yamlDirectory"> The directory of the YAML file </param>
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
-        public static List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
+        public List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace RBAC
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <returns>The number of changes made</returns>
-        internal static int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        internal int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
@@ -138,7 +138,7 @@ namespace RBAC
         /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
         /// </summary>
         /// <param name="kv">The current KeyVaultProperties object</param>
-        private static void checkVaultInvalidFields(KeyVaultProperties kv)
+        private void checkVaultInvalidFields(KeyVaultProperties kv)
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
@@ -172,7 +172,7 @@ namespace RBAC
         /// </summary>
         /// <param name="name">The KeyVault name</param>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        private static void checkSPInvalidFields(string name, PrincipalPermissions sp)
+        private void checkSPInvalidFields(string name, PrincipalPermissions sp)
         {
             if (sp.Type == null || sp.Type.Trim() == "")
             {
@@ -209,7 +209,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
+        public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking vault changes & updating vault");
@@ -249,7 +249,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kv">The current KeyVault</param>
-        private static void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
+        private void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
         {
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
@@ -284,7 +284,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        private static void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
+        private void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
             GraphServiceClient graphClient)
         {
             try
@@ -377,7 +377,7 @@ namespace RBAC
         /// <param name="type">The PrincipalPermissions type</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
         /// <returns>A dictionary containing the service principal data</returns>
-        private static Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
+        private Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
 
@@ -514,7 +514,7 @@ namespace RBAC
         /// This method verifies that the PrincipalPermissions object has valid permissions and does not contain duplicate permissions.
         /// </summary>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        private static void checkValidPermissions(PrincipalPermissions sp)
+        private void checkValidPermissions(PrincipalPermissions sp)
         {
             foreach (string kp in sp.PermissionsToKeys)
             {
@@ -565,7 +565,7 @@ namespace RBAC
         /// </summary>
         /// <param name="permissions">The permission block for which we want to find the duplicate values</param>
         /// <returns>A list of the duplicated values</returns>
-        private static List<string> findDuplicates(string[] permissions)
+        private List<string> findDuplicates(string[] permissions)
         {
             List<string> duplicates = new List<string>();
             for (int i = 0; i < permissions.Length; ++i)
@@ -585,7 +585,7 @@ namespace RBAC
         /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
         /// </summary>
         /// <param name="sp">The current PrincipalPermissions object</param>
-        private static void translateShorthands(PrincipalPermissions sp)
+        private void translateShorthands(PrincipalPermissions sp)
         {
             sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
@@ -629,7 +629,7 @@ namespace RBAC
         /// <param name="validPermissions">The array of all valid permissions</param>
         /// <param name="shorthandWords">The valid shorthand keywords array</param>
         /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
-        private static string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
+        private string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
         {
             var shorthandInstances = permissions.Where(val => val.Trim().StartsWith(shorthand)).ToArray();
             if (shorthandInstances.Length > 1)
@@ -697,7 +697,7 @@ namespace RBAC
         /// <param name="shorthand">The shorthand keyword to analyze</param>
         /// <param name="permissionType">The type of permission block</param>
         /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
-        private static string[] getShorthandPermissions(string shorthand, string permissionType)
+        private string[] getShorthandPermissions(string shorthand, string permissionType)
         {
             if (shorthand == "all")
             {

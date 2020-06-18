@@ -33,25 +33,26 @@ namespace RBAC
             // ..\..\..\..\Config\YamlOutput.yml
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
             Constants.toggle = "phase1";
+
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Finished!");
           
-            Console.WriteLine("\nGrabbing secrets...");
+            Console.WriteLine("Grabbing secrets...");
             var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+            Console.WriteLine("Creating KeyVaultManagementClient and GraphServiceClient...");
             var kvmClient = ap.createKVMClient(secrets);
             var graphClient = ap.createGraphClient(secrets);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("\nRetrieving key vaults...");
+            Console.WriteLine("Retrieving key vaults...");
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("\nGenerating YAML output...");
+            Console.WriteLine("Generating YAML output...");
             ap.convertToYaml(vaultsRetrieved, args[1]);
             Console.WriteLine("Finished!");
         }
