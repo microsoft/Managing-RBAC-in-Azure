@@ -31,28 +31,28 @@ namespace RBAC
         {
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
             Constants.toggle = "phase1";
-
             Console.WriteLine("Reading input file...");
-            AccessPoliciesToYaml.verifyFileExtensions(args);
-            JsonInput vaultList = AccessPoliciesToYaml.readJsonFile(args[0]);
+            ap.verifyFileExtensions(args);
+            JsonInput vaultList = ap.readJsonFile(args[0]);
+            Console.WriteLine("Success!");
+          
+            Console.WriteLine("\nGrabbing secrets...");
+            var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("Grabbing secrets...");
-            var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
+            Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
+            var kvmClient = ap.createKVMClient(secrets);
+            var graphClient = ap.createGraphClient(secrets);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("Creating KeyVaultManagementClient and GraphServiceClient...");
-            var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-            var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("\nRetrieving key vaults...");
+            List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Success!");
 
-            Console.WriteLine("Retrieving key vaults...");
-            List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
-            Console.WriteLine("Success!");
-
-            Console.WriteLine("Generating YAML output...");
-            AccessPoliciesToYaml.convertToYaml(vaultsRetrieved, args[1]);
+            Console.WriteLine("\nGenerating YAML output...");
+            ap.convertToYaml(vaultsRetrieved, args[1]);
             Console.WriteLine("Success!");
         }
     }

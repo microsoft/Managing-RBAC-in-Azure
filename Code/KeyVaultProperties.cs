@@ -11,7 +11,7 @@ namespace RBAC
     /// <summary>
     /// This class gets and sets the properties of an Azure KeyVault.
     /// </summary>
-    class KeyVaultProperties
+    public class KeyVaultProperties
     {
         public KeyVaultProperties() { }
         public KeyVaultProperties(Vault vault, GraphServiceClient graphClient, StreamWriter log)

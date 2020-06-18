@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
@@ -20,23 +20,25 @@ namespace RBAC
     /// <summary>
     /// "Phase 1" Code that serializes a list of Key Vaults into Yaml.
     /// </summary>
-    class AccessPoliciesToYaml
+    public class AccessPoliciesToYaml
     {
+        public AccessPoliciesToYaml(bool testing)
+        {
+            Testing = testing;
+        }
         /// <summary>
         /// This method verifies that the file arguments are of the correct type.
         /// </summary>
         /// <param name="args">The string array of program arguments</param>
-        public static void verifyFileExtensions(string[] args)
+        public void verifyFileExtensions(string[] args)
         {
-
             Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging starting...");
             Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Verifying file extensions");
-
-            try
-            {
+            try {
                 if (args.Length != 2)
                 {
                     throw new Exception("Missing input file.");
+
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
@@ -46,15 +48,12 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file");
                 }
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": File extension verified");
             }
-            catch (Exception e)
+            catch(Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
-                System.Environment.Exit(1);
+                Exit($"Error: {e.Message}");
             }
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": File extension verified");
             Constants.getLog().Flush();
         }
 
@@ -63,7 +62,7 @@ namespace RBAC
         /// </summary>
         /// <param name="jsonDirectory">The Json file path</param>
         /// <returns>A JsonInput object that stores the Json input data</returns>
-        public static JsonInput readJsonFile(string jsonDirectory)
+        public JsonInput readJsonFile(string jsonDirectory)
         {
             try
             {
@@ -80,12 +79,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
-                System.Environment.Exit(1);
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": ERROR: {e.Message}");
                 Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");
                 return null;
             }
         }
@@ -93,9 +89,10 @@ namespace RBAC
         /// <summary>
         /// This method verifies that all of the required inputs exist within the Json file.
         /// </summary>
+
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkJsonFields(JsonInput vaultList, JObject configVaults)
+        public void checkJsonFields(JsonInput vaultList, JObject configVaults)
         {
             List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails == null)
@@ -130,7 +127,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
+        public void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
         {
             List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails.AadAppName == null)
@@ -179,7 +176,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
+        public void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
         {
             JEnumerable<JToken> resourceList = configVaults.SelectToken($".Resources").Children();
                 
@@ -235,7 +232,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
         /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
-        public static Dictionary<string, string> getSecrets(JsonInput vaultList)
+        public Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             try
@@ -257,23 +254,19 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
 
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientIdSecret could not be found.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientIdSecret could not be found.");
                     }
                     else
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientIdSecret {e.Message}.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientIdSecret {e.Message}.");
                     }
-                    Console.ResetColor();
-                    Constants.getLog().Flush();
-                    // log.Close();
-
-                    System.Environment.Exit(1);
                 }
                 try
                 {
@@ -284,19 +277,18 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client key secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientKeySecret could not be found.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientKeySecret could not be found.");
                     }
                     else
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving client key secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: clientKeySecret {e.Message}.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: clientKeySecret {e.Message}.");
                     }
-                    Console.ResetColor();
-                    Constants.getLog().Flush();
                 }
                 try
                 {
@@ -307,30 +299,25 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("404"))
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find tenant id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: tenantIdSecret could not be found.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: tenantIdSecret could not be found.");
                     }
                     else
                     {
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error retrieving tenant id secret\n" + e.ToString());
-                        Console.WriteLine($"\nError: tenantIdSecret {e.Message}.");
+                        Constants.getLog().Flush();
+                        Exit($"\nError: tenantIdSecret {e.Message}.");
                     }
-                    Console.ResetColor();
-                    Constants.getLog().Flush();
-                    System.Environment.Exit(1);
                 }
             } 
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nError: {e.Message}");
-                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating secret client\n" + e.ToString());
                 Constants.getLog().Flush();
-                System.Environment.Exit(1);
+                Exit($"\nError: {e.Message}");
             }
             return secrets;
         }
@@ -340,7 +327,7 @@ namespace RBAC
         /// </summary>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
-        public static Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
+        public Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
             try
             {
@@ -353,12 +340,9 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nError: {e.Message}");
-                Console.ResetColor();
-                Constants.getLog().Flush();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to create Key Vault Management Client\n" + e.ToString());
-                System.Environment.Exit(1);
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");
                 return null;
             }
         }
@@ -368,7 +352,7 @@ namespace RBAC
         /// </summary>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <returns>The GraphServiceClient created using the secret information</returns>
-        public static GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
+        public GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
             try
             {
@@ -393,12 +377,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nError: {e.Message}");
-                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Error creating graph client\n" + e.ToString());
-                Constants.getLog().Flush();         
-                System.Environment.Exit(1);
+                Constants.getLog().Flush();
+                Exit($"\nError: {e.Message}");   
                 return null;
             }
         }
@@ -410,7 +391,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
         /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
-        public static List<KeyVaultProperties> getVaults(JsonInput vaultList, 
+        public List<KeyVaultProperties> getVaults(JsonInput vaultList, 
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             List<Vault> vaultsRetrieved = new List<Vault>();
@@ -486,7 +467,7 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
-        public static List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
+        public List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
             List<Vault> vaultsRetrieved, string resourceGroup = "")
         {
             IPage<Vault> vaultsCurPg = null;
@@ -552,7 +533,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
-        public static void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
+        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
             try
             {
@@ -573,6 +554,22 @@ namespace RBAC
             }
             Constants.getLog().Flush();
         }
+        public void Exit(string message)
+        {
+            if (!Testing)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(message);
+                Console.ResetColor();
+                Constants.getLog().Close();
+                Environment.Exit(1);
+            }
+            else
+            {
+                throw new Exception($"{message}");
+            }
+        }
+        public bool Testing { get; set; }
 
     }
 }
