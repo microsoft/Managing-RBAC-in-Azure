@@ -1,3 +1,4 @@
+using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -264,9 +265,10 @@ namespace RBAC
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var sec = ap.getSecrets(createExpectedJson());
+            var gc = ap.createGraphClient(sec);
             var kc = ap.createKVMClient(sec);
             Assert.IsNotNull(kc);
-            sec["clientKey"] = "false";
+            sec["clientId"] = "false";
             try
             {
                 kc = ap.createKVMClient(sec);
