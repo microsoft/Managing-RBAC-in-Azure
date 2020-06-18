@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.KeyVault;
+﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
+using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,7 +26,103 @@ namespace RBAC
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
             Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
         }
+        [TestMethod]
+        public void TestCheckVaultChanges()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            var validVaults = createExpectedYamlVaults();
+            try
+            {
+                up.checkVaultChanges(validVaults, validVaults[0]);
+            }
+            catch
+            {
+                Assert.Fail();
+            }
 
+            var badName = new KeyVaultProperties { VaultName = "NotExist" };
+            try
+            {
+                up.checkVaultChanges(validVaults, badName);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("VaultName NotExist was changed or added.", e.Message);
+            }
+
+            var badRGName = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBACKeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badRGName);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("ResourceGroupName for RG1Test1 was changed.", e.Message);
+            }
+
+            var badSubId = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "bleep-bloop",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badSubId);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("SubscriptionId for RG1Test1 was changed.", e.Message);
+            }
+
+            var badLoc = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "nigeria",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badLoc);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
+            }
+
+            var badTen = new KeyVaultProperties
+            {
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
+                Location = "eastus",
+                TenantId = "Landlord"
+            };
+            try
+            {
+                up.checkVaultChanges(validVaults, badTen);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("TenantId for RG1Test1 was changed.", e.Message);
+            }
+        }
         private List<KeyVaultProperties> createExpectedYamlVaults()
         {
             var exp = new List<KeyVaultProperties>();

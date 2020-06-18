@@ -249,7 +249,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kv">The current KeyVault</param>
-        private void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
+        public void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
         {
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
