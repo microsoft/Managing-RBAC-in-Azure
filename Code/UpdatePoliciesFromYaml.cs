@@ -20,6 +20,11 @@ namespace RBAC
 {
     class UpdatePoliciesFromYaml
     {
+        public UpdatePoliciesFromYaml(bool testing)
+        {
+            Testing = testing;
+        }
+
         /// <summary>
         /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
         /// </summary>
@@ -51,7 +56,6 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
-                Console.WriteLine($"\nError: {e.Message}");
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
                 Constants.getLog().Flush();
                 Constants.getLog().Close();
@@ -757,5 +761,22 @@ namespace RBAC
             }
             return null;
         }
+
+        public void Exit(string message)
+        {
+            if (!Testing)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(message);
+                Console.ResetColor();
+                Constants.getLog().Close();
+                Environment.Exit(1);
+            }
+            else
+            {
+                throw new Exception($"{message}");
+            }
+        }
+        public bool Testing { get; set; }
     }
 }
