@@ -21,13 +21,13 @@ using Serilog.Context;
 
 namespace RBAC
 {
-    class AccessPoliciesToYamlProgram
+    public class AccessPoliciesToYamlProgram
     {
         /// <summary>
         /// This method reads in a Json config file and prints out a serialized list of Key Vaults into a Yaml file.
         /// </summary>
         /// <param name="args">Contains the Json directory and Yaml directory</param>
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml

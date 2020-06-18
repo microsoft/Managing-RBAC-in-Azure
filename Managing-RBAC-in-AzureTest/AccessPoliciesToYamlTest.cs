@@ -269,19 +269,8 @@ namespace RBAC
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var sec = ap.getSecrets(createExpectedJson());
-            var gc = ap.createGraphClient(sec);
             var kc = ap.createKVMClient(sec);
             Assert.IsNotNull(kc);
-            sec["clientId"] = "false";
-            try
-            {
-                kc = ap.createKVMClient(sec);
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.AreEqual("Exit with error code 1", e.Message);
-            }
         }
         [TestMethod]
         public void TestCreateGraphClient()
@@ -290,18 +279,14 @@ namespace RBAC
             var sec = ap.getSecrets(createExpectedJson());
             var gc = ap.createGraphClient(sec);
             Assert.IsNotNull(gc);
-            sec["clientKey"] = "false";
-            try
-            {
-                gc = ap.createGraphClient(sec);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("Exit with error code 1", e.Message);
-            }
         }
-
+        [TestMethod]
+        public void TestSuccessfulRun()
+        {
+            string[] args = { "../../../input/TestActualVaults.json", "../../../output/ActualOutput.yml" };
+            AccessPoliciesToYamlProgram.Main(args);
+            Assert.AreEqual(System.IO.File.ReadAllText("../../../output/ActualOutput.yml"), System.IO.File.ReadAllText("../../../expected/ExpectedOutput.yml"));
+        }
         private JsonInput createExpectedJson()
         {
             var exp = new JsonInput();

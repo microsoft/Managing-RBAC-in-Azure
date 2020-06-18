@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Code\Managing-RBAC-in-Azure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="output\" />
+  </ItemGroup>
+
 </Project>

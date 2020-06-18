@@ -1,0 +1,376 @@
+- VaultName: RG1Test1
+  ResourceGroupName: RBAC-KeyVaultUnitTests
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: eastus
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  AccessPolicies:
+  - Type: Group
+    DisplayName: 1ES Site Reliability Engineering
+    Alias: 1essre@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: Katie Helman
+    Alias: t-kahelm@microsoft.com
+    PermissionsToKeys: []
+    PermissionsToSecrets: []
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: Mazin Shaaeldin
+    Alias: t-mashaa@microsoft.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: Opeyemi Olaoluwa
+    Alias: t-opolao@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG1Test2
+  ResourceGroupName: RBAC-KeyVaultUnitTests
+  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  Location: eastus
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  AccessPolicies:
+  - Type: Service Principal
+    DisplayName: RBACAutomationApp
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: Katie Helman
+    Alias: t-kahelm@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: Opeyemi Olaoluwa
+    Alias: t-opolao@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: PremiumRBACTest
+  ResourceGroupName: RBACTest
+  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  Location: eastus
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  AccessPolicies:
+  - Type: Group
+    DisplayName: RBACKeyVault
+    Alias: RBACKeyVault@service.microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: Katie Helman
+    Alias: t-kahelm@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Purge
+    PermissionsToCertificates:
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: Opeyemi Olaoluwa
+    Alias: t-opolao@microsoft.com
+    PermissionsToKeys:
+    - Decrypt
+    - Encrypt
+    - WrapKey
+    - UnwrapKey
+    - Verify
+    - Sign
+    PermissionsToSecrets:
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+- VaultName: RBACTestVault1
+  ResourceGroupName: RBACTest
+  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  Location: eastus
+  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  AccessPolicies:
+  - Type: User
+    DisplayName: Mazin Shaaeldin
+    Alias: t-mashaa@microsoft.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+  - Type: User
+    DisplayName: Katie Helman
+    Alias: t-kahelm@microsoft.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+  - Type: Service Principal
+    DisplayName: RBACAutomationApp
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: Opeyemi Olaoluwa
+    Alias: t-opolao@microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
