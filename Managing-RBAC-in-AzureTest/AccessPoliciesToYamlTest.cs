@@ -2,6 +2,7 @@ using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual(e.Message, "\nError: Missing input file.");
+                Assert.AreEqual(e.Message, "Error: Missing input file.");
             }
 
             string[] invalidJson = { "file.jsn", "file.yml" };
@@ -44,7 +45,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "\nError: The 1st argument is not a .json file");
+                Assert.AreEqual(e.Message, "Error: The 1st argument is not a .json file");
             }
 
             string[] invalidYml = { "file.json", "file.yaml" };
@@ -55,7 +56,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "\nError: The 2nd argument is not a .yml file");
+                Assert.AreEqual(e.Message, "Error: The 2nd argument is not a .yml file");
             }
         }
 
@@ -69,13 +70,15 @@ namespace RBAC
             Assert.IsTrue(exp.Equals(json));
         }
         [TestMethod]
-        public void TestCheckMissingJsonInputFields()
+        public void TestCheckJsonFields()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var complete = createExpectedJson();
+            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            JObject configVaults = JObject.Parse(masterConfig);
             try
             {
-                ap.checkMissingJsonInputFields(complete);
+                ap.checkJsonFields(complete, configVaults);
             }
             catch
             {
@@ -86,84 +89,84 @@ namespace RBAC
             missingAad.AadAppKeyDetails = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingAad);
+                ap.checkJsonFields(missingAad, configVaults);
                 Assert.Fail();
             }
             catch(Exception e)
             {
-                Assert.AreEqual("Missing AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing AadAppKeyDetails in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'.", e.Message);
             }
 
             var missingAadName = createExpectedJson();
             missingAadName.AadAppKeyDetails.AadAppName = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingAadName);
+                ap.checkMissingAadFields(missingAadName, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing AadAppName for AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing AadAppName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.", e.Message);
             }
 
             var missingVaultName = createExpectedJson();
             missingVaultName.AadAppKeyDetails.VaultName = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingVaultName);
+                ap.checkMissingAadFields(missingVaultName, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing VaultName for AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing VaultName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.", e.Message);
             }
 
             var missingAadKey = createExpectedJson();
             missingAadKey.AadAppKeyDetails.ClientKeySecretName = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingAadKey);
+                ap.checkMissingAadFields(missingAadKey, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing ClientKeySecretName for AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing ClientKeySecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.", e.Message);
             }
 
             var missingAadId = createExpectedJson();
             missingAadId.AadAppKeyDetails.ClientIdSecretName = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingAadId);
+                ap.checkMissingAadFields(missingAadId, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing ClientIdSecretName for AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing ClientIdSecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.", e.Message);
             }
 
             var missingAadTenant = createExpectedJson();
             missingAadTenant.AadAppKeyDetails.TenantIdSecretName = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingAadTenant);
+                ap.checkMissingAadFields(missingAadTenant, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing TenantIdSecretName for AadAppKeyDetails in Json input.", e.Message);
+                Assert.AreEqual("Missing TenantIdSecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.", e.Message);
             }
 
             var missingRes = createExpectedJson();
             missingRes.Resources = null;
             try
             {
-                ap.checkMissingJsonInputFields(missingRes);
+                ap.checkJsonFields(missingRes, configVaults);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Missing Resources list in Json input.", e.Message);
+                Assert.AreEqual("Missing Resources in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'.", e.Message);
             }
         }
         [TestMethod]
@@ -171,38 +174,39 @@ namespace RBAC
         {
             var completeJson = createExpectedJson();
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            JObject configVaults = JObject.Parse(masterConfig);
             try
             {
-                ap.checkMissingResourceFields(completeJson.Resources[0]);
-                ap.checkMissingResourceFields(completeJson.Resources[1]);
-                ap.checkMissingResourceFields(completeJson.Resources[2]);
+                ap.checkMissingResourceFields(completeJson, configVaults);
             }
             catch
             {
                 Assert.Fail();
             }
 
-            completeJson.Resources[1].SubscriptionId = null;
+            completeJson = createExpectedJson();
             completeJson.Resources[0].ResourceGroups[0].ResourceGroupName = null;
 
             try
             {
-                ap.checkMissingResourceFields(completeJson.Resources[0]);
+                ap.checkMissingResourceFields(completeJson, configVaults);
                 Assert.Fail();
             }
             catch(Exception e)
             {
-                Assert.AreEqual("Missing ResourceGroupName for Resource with SubscriptionId sample1.", e.Message);
+                Assert.AreEqual("Missing 'ResourceGroupName' for ResourceGroup. Invalid fields were defined; valid fields are 'ResourceGroupName' and 'KeyVaults'.", e.Message);
             }
-
+            completeJson = createExpectedJson();
+            completeJson.Resources[1].SubscriptionId = null;
             try
             {
-                ap.checkMissingResourceFields(completeJson.Resources[1]);
+                ap.checkMissingResourceFields(completeJson, configVaults);
                 Assert.Fail();
             }
             catch(Exception e)
             {
-                Assert.AreEqual("Missing SubscriptionId for a Resource.", e.Message);
+                Assert.AreEqual("Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.", e.Message);
             }
         }
         [TestMethod]
@@ -221,7 +225,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual("Exit with error code 1", e.Message);
+                Assert.IsTrue(e.Message.Contains("No such host is known"));
             }
 
             var badId = createExpectedJson();
@@ -233,7 +237,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Exit with error code 1", e.Message);
+                Assert.IsTrue(e.Message.Contains("clientIdSecret could not be found."));
             }
 
             var badKey = createExpectedJson();
@@ -245,7 +249,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Exit with error code 1", e.Message);
+                Assert.IsTrue(e.Message.Contains("clientKeySecret could not be found."));
             }
 
             var badTenant = createExpectedJson();
@@ -257,7 +261,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Exit with error code 1", e.Message);
+                Assert.IsTrue(e.Message.Contains("tenantIdSecret could not be found."));
             }
         }
         [TestMethod]

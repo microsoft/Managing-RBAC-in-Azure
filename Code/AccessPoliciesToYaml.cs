@@ -37,16 +37,16 @@ namespace RBAC
             try {
                 if (args.Length != 2)
                 {
-                    throw new Exception("\nError: Missing input file.");
+                    throw new Exception("Missing input file.");
 
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
-                    throw new Exception("\nError: The 1st argument is not a .json file");
+                    throw new Exception("The 1st argument is not a .json file");
                 }
                 if (System.IO.Path.GetExtension(args[1]) != ".yml")
                 {
-                    throw new Exception("\nError: The 2nd argument is not a .yml file");
+                    throw new Exception("The 2nd argument is not a .yml file");
                 }
             }
             catch(Exception e)
@@ -92,7 +92,7 @@ namespace RBAC
 
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkJsonFields(JsonInput vaultList, JObject configVaults)
+        public void checkJsonFields(JsonInput vaultList, JObject configVaults)
         {
             List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails == null)
@@ -127,7 +127,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
+        public void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
         {
             List<string> missingInputs = new List<string>();
             if (vaultList.AadAppKeyDetails.AadAppName == null)
@@ -176,7 +176,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
-        private static void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
+        public void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
         {
             JEnumerable<JToken> resourceList = configVaults.SelectToken($".Resources").Children();
                 
@@ -566,7 +566,7 @@ namespace RBAC
             }
             else
             {
-                throw new Exception($"Exit with error: {message}");
+                throw new Exception($"{message}");
             }
         }
         public bool Testing { get; set; }
