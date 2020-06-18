@@ -172,7 +172,7 @@ namespace RBAC
         /// </summary>
         /// <param name="name">The KeyVault name</param>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        private void checkSPInvalidFields(string name, PrincipalPermissions sp)
+        public void checkSPInvalidFields(string name, PrincipalPermissions sp)
         {
             if (sp.Type == null || sp.Type.Trim() == "")
             {
@@ -223,7 +223,7 @@ namespace RBAC
                         if (kv.usersContained() < Constants.MIN_NUM_USERS)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Error: {kv.VaultName} does not contain at least two users. Vault skipped.");
+                            Console.WriteLine($"{kv.VaultName} does not contain at least two users.");
                             Console.ResetColor();
                         }
                         else
