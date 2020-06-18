@@ -259,6 +259,43 @@ namespace RBAC
                 Assert.AreEqual("Exit with error code 1", e.Message);
             }
         }
+        [TestMethod]
+        public void TestCreateKVMClient()
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            var sec = ap.getSecrets(createExpectedJson());
+            var kc = ap.createKVMClient(sec);
+            Assert.IsNotNull(kc);
+            sec["clientKey"] = "false";
+            try
+            {
+                kc = ap.createKVMClient(sec);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("Exit with error code 1", e.Message);
+            }
+        }
+        [TestMethod]
+        public void TestCreateGraphClient()
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            var sec = ap.getSecrets(createExpectedJson());
+            var gc = ap.createGraphClient(sec);
+            Assert.IsNotNull(gc);
+            sec["clientKey"] = "false";
+            try
+            {
+                gc = ap.createGraphClient(sec);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Exit with error code 1", e.Message);
+            }
+        }
+
         private JsonInput createExpectedJson()
         {
             var exp = new JsonInput();
