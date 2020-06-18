@@ -287,6 +287,53 @@ namespace RBAC
                 Assert.AreEqual($"Error: RG1Test2 does not contain at least two users. Vault Skipped.", e.Message);
             }
         }
+        [TestMethod]
+        public void TestTranslateShorthands()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            var pp = new PrincipalPermissions
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "all" },
+                PermissionsToSecrets = new string[] { "all" },
+                PermissionsToCertificates = new string[] { "all" }
+            };
+            up.translateShorthands(pp);
+            Assert.IsTrue(pp.PermissionsToKeys.SequenceEqual(Constants.ALL_KEY_PERMISSIONS));
+            Assert.IsTrue(pp.PermissionsToSecrets.SequenceEqual(Constants.ALL_SECRET_PERMISSIONS));
+            Assert.IsTrue(pp.PermissionsToCertificates.SequenceEqual(Constants.ALL_CERTIFICATE_PERMISSIONS));
+
+            pp = new PrincipalPermissions
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "read", "write", "storage", "crypto", "purge" },
+                PermissionsToSecrets = new string[] { "read", "write", "storage", "purge" },
+                PermissionsToCertificates = new string[] { "read", "write", "storage", "management", "purge" }
+            };
+            up.translateShorthands(pp);
+            Assert.IsTrue(pp.PermissionsToKeys.All(Constants.ALL_KEY_PERMISSIONS.Contains) && pp.PermissionsToKeys.Length == Constants.ALL_KEY_PERMISSIONS.Length);
+            Assert.IsTrue(pp.PermissionsToSecrets.All(Constants.ALL_SECRET_PERMISSIONS.Contains) && pp.PermissionsToSecrets.Length == Constants.ALL_SECRET_PERMISSIONS.Length);
+            Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains) && pp.PermissionsToCertificates.Length == Constants.ALL_CERTIFICATE_PERMISSIONS.Length);
+        }
+        [TestMethod]
+        public void TestTranslateShorthand()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all", "all - read" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
+            }
+        }
         private List<KeyVaultProperties> createExpectedYamlVaults()
         {
             var exp = new List<KeyVaultProperties>();
