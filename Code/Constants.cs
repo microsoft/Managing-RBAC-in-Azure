@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace RBAC
 {
@@ -14,6 +15,22 @@ namespace RBAC
         public const string GRAPHCLIENT_URL = "https://graph.microsoft.com/.default";
         public const string LOG_FILE_PATH = @"..\..\..\..\log\results.log";
         public const string LOG_FILE_PATH2 = @"..\..\..\..\log\results2.log";
+        public static StreamWriter log =  new StreamWriter(new FileStream(LOG_FILE_PATH, FileMode.OpenOrCreate, FileAccess.Write));
+        public static StreamWriter log2 = new StreamWriter(new FileStream(LOG_FILE_PATH2, FileMode.OpenOrCreate, FileAccess.Write));
+
+        public static string toggle = "";
+        public static StreamWriter getLog()
+        {
+            if (toggle == "phase1")
+            {
+                return log;
+            }
+            else 
+            {
+                return log2;
+            }
+           
+        }
 
         public const int MIN_NUM_USERS = 2;
         public const int MAX_NUM_CHANGES = 5;

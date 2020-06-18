@@ -20,8 +20,6 @@ namespace RBAC
 {
     class UpdatePoliciesFromYaml
     {
-        public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH2, FileMode.OpenOrCreate, FileAccess.Write));
-
         /// <summary>
         /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
         /// </summary>
@@ -31,12 +29,12 @@ namespace RBAC
         {
             try
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserializing Code");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserializing Code");
                 string yaml = System.IO.File.ReadAllText(yamlDirectory);
                 var deserializer = new DeserializerBuilder().Build();
                 List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
 
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking valid fields");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking valid fields");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
@@ -45,7 +43,7 @@ namespace RBAC
                         checkSPInvalidFields(kv.VaultName, sp);
                     }
                 }
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Finished Deserializing Code");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Finished Deserializing Code");
                 return yamlVaults;
             }
             catch (Exception e)
@@ -53,9 +51,11 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
-                log.Flush();
-                log.Close();
+                Console.WriteLine($"\nError: {e.Message}");
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
+                Constants.getLog().Flush();
+                Constants.getLog().Close();
+
                 System.Environment.Exit(1);
                 return null;
             }
@@ -208,6 +208,7 @@ namespace RBAC
         public static void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking vault changes & updating vault");
             foreach (KeyVaultProperties kv in yamlVaults)
             {
                 try
@@ -234,6 +235,8 @@ namespace RBAC
                     Console.WriteLine($"Error: {e.Message} Vault Skipped.");
                     Console.ResetColor();
                 }
+                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging finished...");
+                Constants.getLog().Flush();
             }
         }
 

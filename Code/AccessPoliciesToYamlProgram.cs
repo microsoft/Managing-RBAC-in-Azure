@@ -31,6 +31,7 @@ namespace RBAC
         {
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
+            Constants.toggle = "phase1";
 
             Console.WriteLine("Reading input file...");
             AccessPoliciesToYaml.verifyFileExtensions(args);
