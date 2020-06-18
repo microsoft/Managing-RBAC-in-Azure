@@ -585,7 +585,7 @@ namespace RBAC
         /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
         /// </summary>
         /// <param name="sp">The current PrincipalPermissions object</param>
-        private void translateShorthands(PrincipalPermissions sp)
+        public void translateShorthands(PrincipalPermissions sp)
         {
             sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
@@ -629,7 +629,7 @@ namespace RBAC
         /// <param name="validPermissions">The array of all valid permissions</param>
         /// <param name="shorthandWords">The valid shorthand keywords array</param>
         /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
-        private string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
+        public string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
         {
             var shorthandInstances = permissions.Where(val => val.Trim().StartsWith(shorthand)).ToArray();
             if (shorthandInstances.Length > 1)
