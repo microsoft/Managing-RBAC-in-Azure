@@ -127,7 +127,7 @@ namespace RBAC
         }
 
        [TestMethod]
-       public void CheckSPFields()
+       public void TestCheckSPFields()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             PrincipalPermissions sp = new PrincipalPermissions()
@@ -469,7 +469,7 @@ namespace RBAC
         }
 
         [TestMethod]
-        public void testCheckVaultInvalidFields()
+        public void TestCheckVaultInvalidFields()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
 
