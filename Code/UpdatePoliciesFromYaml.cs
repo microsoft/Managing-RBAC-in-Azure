@@ -18,7 +18,7 @@ using System.IO;
 
 namespace RBAC
 {
-    class UpdatePoliciesFromYaml
+    public class UpdatePoliciesFromYaml
     {
         public UpdatePoliciesFromYaml(bool testing)
         {
