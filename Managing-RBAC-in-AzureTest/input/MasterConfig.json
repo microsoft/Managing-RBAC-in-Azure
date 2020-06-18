@@ -1,0 +1,43 @@
+{
+  "AadAppKeyDetails": {
+    "AadAppName": "RBACAutomationApp",
+    "VaultName": "RBAC-KeyVault",
+    "ClientIdSecretName": "RBACClientId",
+    "ClientKeySecretName": "RBACAppKey",
+    "TenantIdSecretName": "RBACTenant"
+  },
+  "Resources": [
+    {
+      "SubscriptionId": "sample1",
+      "ResourceGroups": [
+        {
+          "ResourceGroupName": "group a",
+          "KeyVaults": [
+            "VaultA"
+          ]
+        },
+        {
+          "ResourceGroupName": "group b",
+          "KeyVaults": [
+            "VaultB"
+          ]
+        }
+      ]
+    },
+    {
+      "SubscriptionId": "sample2"
+    },
+    {
+      "SubscriptionId": "sample3",
+      "ResourceGroups": [
+        {
+          "ResourceGroupName": "RBACTest3",
+          "KeyVaults": [
+            "RBACTestVault1",
+            "RBACTestVault2"
+          ]
+        }
+      ]
+    }
+  ]
+}
