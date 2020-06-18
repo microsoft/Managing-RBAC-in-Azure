@@ -279,6 +279,16 @@ namespace RBAC
             var sec = ap.getSecrets(createExpectedJson());
             var gc = ap.createGraphClient(sec);
             Assert.IsNotNull(gc);
+            sec["clientId"] = null;
+            try
+            {
+                gc = ap.createGraphClient(sec);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("\nError: No ClientId was specified.", e.Message);
+            }
         }
         [TestMethod]
         public void TestSuccessfulRun()

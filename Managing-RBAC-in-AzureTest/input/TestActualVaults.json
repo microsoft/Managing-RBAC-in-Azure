@@ -11,11 +11,7 @@
       "SubscriptionId": "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
       "ResourceGroups": [
         {
-          "ResourceGroupName": "RBAC-KeyVaultUnitTests",
-          "KeyVaults": [
-            "RG1Test1",
-            "RG1Test2"
-          ]
+          "ResourceGroupName": "RBAC-KeyVaultUnitTests"
         }
       ]
     },
@@ -26,10 +22,14 @@
           "ResourceGroupName": "RBACTest",
           "KeyVaults": [
             "PremiumRBACTest",
-            "RBACTestVault1"
+            "RBACTestVault1",
+            "ABadVault"
           ]
         }
       ]
+    },
+    {
+      "SubscriptionId": "abadid"
     }
   ]
 }
