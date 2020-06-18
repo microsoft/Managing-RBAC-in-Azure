@@ -8,6 +8,7 @@ using RBAC;
 using System;
 using System.Collections.Generic;
 using System.Management;
+using System.Runtime.ExceptionServices;
 using YamlDotNet.Serialization;
 
 namespace Managing_RBAC_in_AzureTest
@@ -206,6 +207,137 @@ namespace Managing_RBAC_in_AzureTest
             });
 
             return exp;
+        }
+
+        [TestMethod]
+        public void testCheckVaultInvalidFields()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+
+            // Vault Name null
+            KeyVaultProperties kv = new KeyVaultProperties();
+            kv.VaultName = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Vault Name empty
+            kv.VaultName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource Group name null
+            kv.VaultName = "Vault Name";
+            kv.ResourceGroupName = null;
+            try
+            {    
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource group name empty
+            kv.ResourceGroupName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id null
+            kv.ResourceGroupName = "Resource Group Name";
+            kv.SubscriptionId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id empty
+            kv.SubscriptionId = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Location null 
+            kv.SubscriptionId = "SubscriptionId";
+            kv.Location = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Location empty
+            kv.Location = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id null
+            kv.Location = "Location";
+            kv.TenantId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id empty
+            kv.TenantId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
         }
 
     }

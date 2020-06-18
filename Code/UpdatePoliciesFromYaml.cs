@@ -138,7 +138,7 @@ namespace RBAC
         /// This method verifies that each KeyVault has the necessary fields and were not deleted from the Yaml.
         /// </summary>
         /// <param name="kv">The current KeyVaultProperties object</param>
-        private void checkVaultInvalidFields(KeyVaultProperties kv)
+        public void checkVaultInvalidFields(KeyVaultProperties kv)
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
