@@ -1,4 +1,7 @@
+
 ﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
+﻿using Microsoft.Azure.Management.BatchAI.Fluent.Models;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Extensions.Azure;
@@ -39,14 +42,13 @@ namespace RBAC
             {
                 Assert.Fail();
             }
-
             var badName = new KeyVaultProperties { VaultName = "NotExist" };
             try
             {
                 up.checkVaultChanges(validVaults, badName);
                 Assert.Fail();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.AreEqual("VaultName NotExist was changed or added.", e.Message);
             }
@@ -64,7 +66,7 @@ namespace RBAC
                 up.checkVaultChanges(validVaults, badRGName);
                 Assert.Fail();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.AreEqual("ResourceGroupName for RG1Test1 was changed.", e.Message);
             }
@@ -100,11 +102,10 @@ namespace RBAC
                 up.checkVaultChanges(validVaults, badLoc);
                 Assert.Fail();
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
             }
-
             var badTen = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
@@ -121,6 +122,168 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual("TenantId for RG1Test1 was changed.", e.Message);
+            }
+        }
+
+       [TestMethod]
+       public void CheckSPFields()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            PrincipalPermissions sp = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions sp1 = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            string name = "vaultName";
+
+            try
+            {
+                up.checkSPInvalidFields(name, sp);
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
+            PrincipalPermissions incomplete = sp1;
+
+            incomplete.Type = null;
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Type for {name}", e.Message);
+            }
+
+            incomplete.Type = "  ";
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Type for {name}", e.Message);
+            }
+
+            incomplete.Type = sp.Type;
+            incomplete.DisplayName = null;
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
+            }
+
+            incomplete.DisplayName = " ";
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
+            }
+
+
+            incomplete.DisplayName = sp.DisplayName;
+            incomplete.PermissionsToKeys = null;
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+            }
+            catch(Exception e)
+            {
+                Assert.Fail();
+            }
+            incomplete.PermissionsToKeys = sp.PermissionsToKeys;
+            incomplete.PermissionsToSecrets = null;
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+
+            incomplete.PermissionsToSecrets = sp.PermissionsToSecrets;
+            incomplete.PermissionsToCertificates = null;
+            try
+            {
+                up.checkSPInvalidFields(name, incomplete);
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod]
+        public void TestUsersContained()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+
+            KeyVaultProperties kv = new KeyVaultProperties()
+            {
+                VaultName = "RG1Test2",
+                ResourceGroupName = "RBAC",
+                SubscriptionId = "subid",
+                Location = "eastus",
+                TenantId = "tenant",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions
+                    {
+                        Type = "Service Principal",
+                        DisplayName = "RBACAutomationApp",
+                        Alias = "",
+                        PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
+                    },
+                    new PrincipalPermissions
+                    {
+                        Type = "User",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
+                        PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { }
+                    }
+                }
+            };
+
+            try
+            {
+                AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+                JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+                var secrets = ap.getSecrets(json);
+                up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: RG1Test2 does not contain at least two users. Vault Skipped.", e.Message);
             }
         }
         private List<KeyVaultProperties> createExpectedYamlVaults()
