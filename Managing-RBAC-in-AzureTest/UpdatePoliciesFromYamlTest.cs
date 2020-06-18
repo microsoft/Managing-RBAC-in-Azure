@@ -7,10 +7,11 @@ using NSubstitute;
 using RBAC;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
 using YamlDotNet.Serialization;
 
-namespace Managing_RBAC_in_AzureTest
+namespace RBAC
 {
     [TestClass]
     public class UpdatePoliciesFromYamlTest
@@ -24,7 +25,7 @@ namespace Managing_RBAC_in_AzureTest
             List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
 
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
-            Assert.IsTrue(expectedYamlVaults.Equals(yamlVaults));
+            Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
         }
 
         private List<KeyVaultProperties> createExpectedYamlVaults()
