@@ -51,7 +51,6 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
-                Console.WriteLine($"\nError: {e.Message}");
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
                 Constants.getLog().Flush();
                 Constants.getLog().Close();

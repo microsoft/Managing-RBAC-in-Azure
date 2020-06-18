@@ -29,7 +29,6 @@ namespace RBAC
             {
                 return log2;
             }
-           
         }
 
         public const int MIN_NUM_USERS = 2;
