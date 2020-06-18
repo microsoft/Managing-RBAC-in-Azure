@@ -26,6 +26,7 @@ namespace RBAC
         {
             Testing = testing;
         }
+
         /// <summary>
         /// This method verifies that the file arguments are of the correct type.
         /// </summary>
@@ -570,6 +571,5 @@ namespace RBAC
             }
         }
         public bool Testing { get; set; }
-
     }
 }
