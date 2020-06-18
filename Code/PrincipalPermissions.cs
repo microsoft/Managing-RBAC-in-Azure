@@ -158,10 +158,10 @@ namespace RBAC
                 {
                     aliasIsSame = true;
                 }
-
                 return (this.ObjectId == spp.ObjectId) && (this.DisplayName.Trim().ToLower() == spp.DisplayName.Trim().ToLower()) && aliasIsSame 
-                    && (this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) && (this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) 
-                    && (this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
+                    && (this.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).SequenceEqual(spp.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()))) && 
+                    (this.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).SequenceEqual(spp.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()))) 
+                    && (this.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).SequenceEqual(spp.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower())));
             }
         }
 

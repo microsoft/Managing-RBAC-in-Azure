@@ -20,9 +20,7 @@ namespace RBAC
         public void TestYamlDeserialization()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            string yaml = System.IO.File.ReadAllText("../../../expected/ExpectedOutput.yml");
-            var deserializer = new DeserializerBuilder().Build();
-            List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+            List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
 
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
             Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
@@ -151,7 +149,7 @@ namespace RBAC
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",
                         Alias = "t-opolao@microsoft.com",
-                        PermissionsToKeys = new string[] {  "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign" },
+                        PermissionsToKeys = new string[] {  "decrypt", "encrypt", "wrapkey", "unwrapkey", "verify", "sign" },
                         PermissionsToSecrets = new string[] {  "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list" }
                     }
