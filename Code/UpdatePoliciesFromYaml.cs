@@ -20,7 +20,6 @@ namespace RBAC
 {
     class UpdatePoliciesFromYaml
     {
-
         public static StreamWriter log = new StreamWriter(new FileStream(Constants.LOG_FILE_PATH2, FileMode.OpenOrCreate, FileAccess.Write));
 
         /// <summary>
@@ -30,7 +29,6 @@ namespace RBAC
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         public static List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
         {
-            
             try
             {
                 log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserializing Code");
@@ -61,7 +59,6 @@ namespace RBAC
                 System.Environment.Exit(1);
                 return null;
             }
-
         }
 
         /// <summary>

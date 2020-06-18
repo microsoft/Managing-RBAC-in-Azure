@@ -22,7 +22,6 @@ namespace RBAC
     /// </summary>
     class AccessPoliciesToYaml
     {
-
         /// <summary>
         /// This method verifies that the file arguments are of the correct type.
         /// </summary>
