@@ -71,7 +71,7 @@ namespace RBAC
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <returns>The number of changes made</returns>
-        internal int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        public int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
@@ -110,7 +110,7 @@ namespace RBAC
 
             if (changes > Constants.MAX_NUM_CHANGES)
             {
-                Console.WriteLine($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
+                Console.WriteLine($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
                 System.Environment.Exit(1);
             }
 
@@ -118,7 +118,7 @@ namespace RBAC
             {
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
+                    Console.WriteLine($"Error: KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
                     System.Environment.Exit(1);
                 }
             }
@@ -127,7 +127,7 @@ namespace RBAC
             {
                 if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
+                    Console.WriteLine($"Error: KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
                     System.Environment.Exit(1);
                 }
             }
@@ -514,7 +514,7 @@ namespace RBAC
         /// This method verifies that the PrincipalPermissions object has valid permissions and does not contain duplicate permissions.
         /// </summary>
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        private void checkValidPermissions(PrincipalPermissions sp)
+        public void checkValidPermissions(PrincipalPermissions sp)
         {
             foreach (string kp in sp.PermissionsToKeys)
             {
@@ -572,7 +572,7 @@ namespace RBAC
             {
                 for (int j = i + 1; j < permissions.Length; ++j)
                 {
-                    if (permissions[i] == permissions[j])
+                    if (permissions[i].Trim().ToLower() == permissions[j].Trim().ToLower())
                     {
                         duplicates.Add(permissions[i]);
                     }
