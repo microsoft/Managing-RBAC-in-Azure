@@ -374,7 +374,7 @@ namespace RBAC
         /// <param name="type">The PrincipalPermissions type</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
         /// <returns>A dictionary containing the service principal data</returns>
-        private Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
+        public Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
 
@@ -382,7 +382,7 @@ namespace RBAC
             {
                 try
                 {
-                    if (sp.Alias == null || sp.Alias.Trim().Length == 0)
+                    if (sp.Alias.Trim().Length == 0)
                     {
                         throw new Exception($"Alias is required for {sp.DisplayName}. User skipped.");
                     }
@@ -420,7 +420,7 @@ namespace RBAC
                     .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                     .GetAsync().Result[0];
 
-                    if (sp.Alias != null && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
+                    if (sp.Alias.Length != 0 && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
                     {
                         throw new Exception($"The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. Group skipped.");
                     }
@@ -450,7 +450,7 @@ namespace RBAC
                     .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                     .GetAsync().Result[0];
 
-                    if (sp.Alias.Trim().Length != 0)
+                    if (sp.Alias.Length != 0)
                     {
                         throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. Application skipped.");
                     }
@@ -480,7 +480,7 @@ namespace RBAC
                         .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
                         .GetAsync().Result[0];
 
-                    if (sp.Alias.Trim().Length != 0)
+                    if (sp.Alias.Length != 0)
                     {
                         throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. ServicePrincipal skipped.");
                     }

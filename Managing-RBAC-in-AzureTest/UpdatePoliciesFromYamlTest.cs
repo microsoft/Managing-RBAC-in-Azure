@@ -666,6 +666,236 @@ namespace RBAC
         }
 
         [TestMethod]
+        public void TestVerifySP()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var secrets = ap.getSecrets(json);
+
+            PrincipalPermissions user = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check User without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Alias is required for {user.DisplayName}. User skipped.", e.Message);
+            }
+
+            // Check User with defining empty Alias
+            user.Alias = "       ";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Alias is required for {user.DisplayName}. User skipped.", e.Message);
+            }
+
+            // Check User with wrong Alias
+            user.Alias = "katie@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find User with Alias '{user.Alias}'. User skipped.", e.Message);
+            }
+
+            // Check User with wrong DisplayName
+            user.Alias = "t-kahelm@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The DisplayName '{user.DisplayName}' is misspelled and cannot be recognized. User skipped.", e.Message);
+            }
+
+            PrincipalPermissions group = new PrincipalPermissions()
+            {
+                Type = "Group",
+                DisplayName = "RBACAutomationApp",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check Group without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+
+            // Check Group with defining empty Alias
+            group.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{group.Alias}' is incorrect for {group.DisplayName} and cannot be recognized. Group skipped.", e.Message);
+            }
+
+            // Check Group with defining wrong Alias
+            group.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{group.Alias}' is incorrect for {group.DisplayName} and cannot be recognized. Group skipped.", e.Message);
+            }
+
+            // Check Group with wrong DisplayName
+            group.Alias = "";
+            group.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find Group with DisplayName '{group.DisplayName}'. Group skipped.", e.Message);
+            }
+
+            PrincipalPermissions app = new PrincipalPermissions()
+            {
+                Type = "Application",
+                DisplayName = "BingStrategy",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check App without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+
+            // Check App with defining empty Alias
+            app.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{app.Alias}' is incorrect for {app.DisplayName} and cannot be recognized. Application skipped.", e.Message);
+            }
+
+            // Check App with defining wrong Alias
+            app.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{app.Alias}' is incorrect for {app.DisplayName} and cannot be recognized. Application skipped.", e.Message);
+            }
+
+            // Check App with wrong DisplayName
+            app.Alias = "";
+            app.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find Application with DisplayName '{app.DisplayName}'. Application skipped.", e.Message);
+            }
+
+            PrincipalPermissions sp = new PrincipalPermissions()
+            {
+                Type = "Group",
+                DisplayName = "RBACAutomationApp",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check SP without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+
+            // Check SP with defining empty Alias
+            sp.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. ServicePrincipal skipped.", e.Message);
+            }
+
+            // Check SP with defining wrong Alias
+            sp.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. ServicePrincipal skipped.", e.Message);
+            }
+
+            // Check SP with wrong DisplayName
+            sp.Alias = "";
+            sp.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. ServicePrincipal skipped.", e.Message);
+            }
+
+            sp.Type = "unknown";
+            try
+            {
+                up.verifyServicePrincipal(sp, "unknown", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'. Skipped.", e.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestTranslateShorthands()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
