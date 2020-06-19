@@ -706,7 +706,7 @@ namespace RBAC
         /// <param name="shorthand">The shorthand keyword to analyze</param>
         /// <param name="permissionType">The type of permission block</param>
         /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
-        private string[] getShorthandPermissions(string shorthand, string permissionType)
+        public string[] getShorthandPermissions(string shorthand, string permissionType)
         {
             if (shorthand == "all")
             {
@@ -748,7 +748,7 @@ namespace RBAC
                         return Constants.STORAGE_SECRET_PERMISSIONS;
                     }
                 }
-                else //certificate
+                else if (permissionType.ToLower() == "certificate")
                 {
                     if (shorthand == "read")
                     {
