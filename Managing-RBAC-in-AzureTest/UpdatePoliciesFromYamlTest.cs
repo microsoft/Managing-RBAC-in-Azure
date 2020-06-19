@@ -1,6 +1,6 @@
 
-﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
-﻿using Microsoft.Azure.Management.BatchAI.Fluent.Models;
+using Microsoft.Azure.Management.AppService.Fluent.Models;
+using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.Network.Fluent.Models;
@@ -103,7 +103,7 @@ namespace RBAC
                 up.checkVaultChanges(validVaults, badLoc);
                 Assert.Fail();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
             }
@@ -258,7 +258,7 @@ namespace RBAC
 
             incomplete.Type = "  ";
             try
-            { 
+            {
                 up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
@@ -436,7 +436,7 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "Elizabeth Mary",
+                        DisplayName = "Katie Helman",
                         Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
@@ -456,27 +456,33 @@ namespace RBAC
                 Assert.AreEqual($"Error: An access policy has already been defined for Katie Helman in {kv.VaultName}.", e.Message);
             }
 
-            KeyVaultProperties invalid = kv;
-            invalid.AccessPolicies.Add(new PrincipalPermissions()
+            KeyVaultProperties invalid = new KeyVaultProperties()
             {
-                Type = "Service Principal",
-                DisplayName = "RBACAutomationApp",
-                Alias = "",
-                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
-                PermissionsToSecrets = new string[] { },
-                PermissionsToCertificates = new string[] { }
-            });
-            invalid.AccessPolicies.Add(new PrincipalPermissions()
-            {
-                Type = "Service Principal",
-                DisplayName = "RBACAutomationApp",
-                Alias = "",
-                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
-                PermissionsToSecrets = new string[] { },
-                PermissionsToCertificates = new string[] { }
-            });
-            invalid.AccessPolicies.RemoveAt(0);
-            invalid.AccessPolicies.RemoveAt(1);
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions()
+                    {
+                        Type = "Service Principal",
+                        DisplayName = "RBACAutomationApp",
+                        PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                    new PrincipalPermissions()
+                    {
+                        Type = "Service Principal",
+                        DisplayName = "RBACAutomationApp",
+                        PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                }
+            };
 
             //Check access policy already defined for a type that is not a user
             try
@@ -702,7 +708,7 @@ namespace RBAC
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
                 Assert.Fail();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
             }
@@ -923,7 +929,7 @@ namespace RBAC
             kv.VaultName = "Vault Name";
             kv.ResourceGroupName = null;
             try
-            {    
+            {
                 up.checkVaultInvalidFields(kv);
                 Assert.Fail();
             }
