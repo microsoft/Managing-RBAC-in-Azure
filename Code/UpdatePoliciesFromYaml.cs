@@ -20,9 +20,14 @@ namespace RBAC
 {
     public class UpdatePoliciesFromYaml
     {
+        /// <summary>
+        /// Constructor to create an instance of the UpdatePoliciesFromYaml class for use in Unit Testing.
+        /// </summary>
+        /// <param name="testing">True if unit tests are being run. Otherwise, false.</param>
         public UpdatePoliciesFromYaml(bool testing)
         {
             Testing = testing;
+            Changed = new List<KeyVaultProperties>();
         }
 
         /// <summary>
@@ -134,27 +139,22 @@ namespace RBAC
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing VaultName for {kv.VaultName}");
                 throw new Exception($"Missing VaultName for {kv.VaultName}");
             }
             if (kv.ResourceGroupName == null || kv.ResourceGroupName.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing ResourceGroupName for {kv.VaultName}");
                 throw new Exception($"Missing ResourceGroupName for {kv.VaultName}");
             }
             if (kv.SubscriptionId == null || kv.SubscriptionId.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing SubscriptionId for {kv.VaultName}");
                 throw new Exception($"Missing SubscriptionId for {kv.VaultName}");
             }
             if (kv.Location == null || kv.Location.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing Location for {kv.VaultName}");
                 throw new Exception($"Missing Location for {kv.VaultName}");
             }
             if (kv.TenantId == null || kv.TenantId.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing TenantId for {kv.VaultName}");
                 throw new Exception($"Missing TenantId for {kv.VaultName}");
             }
         }
@@ -168,27 +168,22 @@ namespace RBAC
         {
             if (sp.Type == null || sp.Type.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing Type for {name}");
                 throw new Exception($"Missing Type for {name}");
             }
             if (sp.DisplayName == null || sp.DisplayName.Trim() == "")
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing DisplayName for {name}");
                 throw new Exception($"Missing DisplayName for {name}");
             }
             if (sp.PermissionsToKeys == null)
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionsToKeys for {name}");
                 throw new Exception($"Missing PermissionsToKeys for {name}");
             }
             if (sp.PermissionsToSecrets == null)
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionToSecrets for {name}");
                 throw new Exception($"Missing PermissionsToSecrets for {name}");
             }
             if (sp.PermissionsToCertificates == null)
             {
-                // log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $"\nMissing PermissionToCertificates for {name}");
                 throw new Exception($"Missing PermissionsToCertificates for {name}");
             }
         }
@@ -250,7 +245,7 @@ namespace RBAC
                 throw new Exception($"VaultName {kv.VaultName} was changed or added.");
             }
 
-            // If Key Vault name was correct, then check the other fields
+            // If KeyVault name was correct, then check the other fields
             KeyVaultProperties originalKV = lookupName[kv.VaultName].ToList()[0];
             if (originalKV.ResourceGroupName != kv.ResourceGroupName.Trim())
             {
@@ -352,8 +347,14 @@ namespace RBAC
                         Console.ResetColor();
                     }
                 }
-
-                Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                if (!Testing)
+                {
+                    Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                }
+                else
+                {
+                    Changed.Add(kv);
+                }
             }
             catch (Exception e)
             {
@@ -770,7 +771,12 @@ namespace RBAC
             }
             return null;
         }
-
+      
+        /// <summary>
+        /// This method throws an exception instead of exiting the program when Testing is true. 
+        /// Otherwise, if Testing is false, the program exits.
+        /// </summary>
+        /// <param name="message">The error message to print to the console</param>
         public void Exit(string message)
         {
             if (!Testing)
@@ -786,6 +792,9 @@ namespace RBAC
                 throw new Exception($"{message}");
             }
         }
+
+        // This field indicates if unit tests are being run
         public bool Testing { get; set; }
+        public List<KeyVaultProperties> Changed { get; set; }
     }
 }
