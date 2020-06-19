@@ -369,7 +369,6 @@ namespace RBAC
             try
             {
                 up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
-                Assert.Fail();
             }
             catch (Exception e)
             {
@@ -387,14 +386,14 @@ namespace RBAC
 
             KeyVaultProperties noPermiss = new KeyVaultProperties()
             {
-                VaultName = "RG1Test2",
-                ResourceGroupName = "RBAC",
-                SubscriptionId = "subid",
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
                 Location = "eastus",
-                TenantId = "tenant",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",
@@ -410,7 +409,6 @@ namespace RBAC
             try
             {
                 up.updateVault(noPermiss, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
-                Assert.Fail();
             }
             catch (Exception e)
             {
@@ -419,23 +417,14 @@ namespace RBAC
 
             KeyVaultProperties kv = new KeyVaultProperties()
             {
-                VaultName = "RG1Test2",
-                ResourceGroupName = "RBAC",
-                SubscriptionId = "subid",
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
                 Location = "eastus",
-                TenantId = "tenant",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
-                    {
-                        Type = "User",
-                        DisplayName = "Opeyemi Olaoluwa",
-                        Alias = "t-opolao@microsoft.com",
-                        PermissionsToKeys = new string[] { "get", "list" },
-                        PermissionsToSecrets = new string[] { },
-                        PermissionsToCertificates = new string[] { }
-                    },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -444,7 +433,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Elizabeth Mary",
@@ -468,8 +457,7 @@ namespace RBAC
             }
 
             KeyVaultProperties invalid = kv;
-            invalid.AccessPolicies.RemoveAt(2);
-            invalid.AccessPolicies.Add(new PrincipalPermissions
+            invalid.AccessPolicies.Add(new PrincipalPermissions()
             {
                 Type = "Service Principal",
                 DisplayName = "RBACAutomationApp",
@@ -478,7 +466,7 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
             });
-            invalid.AccessPolicies.Add(new PrincipalPermissions
+            invalid.AccessPolicies.Add(new PrincipalPermissions()
             {
                 Type = "Service Principal",
                 DisplayName = "RBACAutomationApp",
@@ -487,6 +475,8 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
             });
+            invalid.AccessPolicies.RemoveAt(0);
+            invalid.AccessPolicies.RemoveAt(1);
 
             //Check access policy already defined for a type that is not a user
             try
@@ -1029,6 +1019,5 @@ namespace RBAC
                 Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
             }
         }
-
     }
 }
