@@ -27,6 +27,7 @@ namespace RBAC
         public UpdatePoliciesFromYaml(bool testing)
         {
             Testing = testing;
+            Changed = new List<KeyVaultProperties>();
         }
 
         /// <summary>
@@ -346,8 +347,14 @@ namespace RBAC
                         Console.ResetColor();
                     }
                 }
-
-                Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                if (!Testing)
+                {
+                    Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                }
+                else
+                {
+                    Changed.Add(kv);
+                }
             }
             catch (Exception e)
             {
@@ -788,5 +795,6 @@ namespace RBAC
 
         // This field indicates if unit tests are being run
         public bool Testing { get; set; }
+        public List<KeyVaultProperties> Changed { get; set; }
     }
 }
