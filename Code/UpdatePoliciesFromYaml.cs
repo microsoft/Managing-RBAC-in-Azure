@@ -53,14 +53,9 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
                 Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
                 Constants.getLog().Flush();
-                Constants.getLog().Close();
-
-                System.Environment.Exit(1);
+                Exit($"Error: {e.Message}");
                 return null;
             }
         }
@@ -110,16 +105,14 @@ namespace RBAC
 
             if (changes > Constants.MAX_NUM_CHANGES)
             {
-                Console.WriteLine($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
-                System.Environment.Exit(1);
+                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
             }
 
             foreach (KeyVaultProperties kv in vaultsRetrieved)
             {
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"Error: KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
-                    System.Environment.Exit(1);
+                    Exit($"Error: KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
                 }
             }
 
@@ -127,8 +120,7 @@ namespace RBAC
             {
                 if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Console.WriteLine($"Error: KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
-                    System.Environment.Exit(1);
+                    Exit($"Error: KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
                 }
             }
             return changes;
@@ -346,10 +338,7 @@ namespace RBAC
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
-                                    Console.ResetColor();
-                                    System.Environment.Exit(1);
+                                    Exit($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                                 }
                             }
                         }
