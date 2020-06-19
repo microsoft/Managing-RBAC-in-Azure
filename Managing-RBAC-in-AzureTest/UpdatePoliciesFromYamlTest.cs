@@ -131,7 +131,8 @@ namespace RBAC
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
-            List<KeyVaultProperties> yamlVaults = vaultsRetrieved;
+            List<KeyVaultProperties> vaultsRetrieved1 = createExpectedYamlVaults();
+            List<KeyVaultProperties> yamlVaults = vaultsRetrieved1;
 
             // Check making 6 changes (first two only count as one change) 
             yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
@@ -152,7 +153,7 @@ namespace RBAC
                 Assert.AreEqual($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
                 //exit
             }
-
+            yamlVaults = createExpectedYamlVaults();
             // Add an entire KV
             yamlVaults.Add(new KeyVaultProperties
             {
@@ -501,7 +502,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Secret permission(s) 'get' repeated", e.Message);
+                Assert.AreEqual($"Certificate permission(s) 'all - purge' repeated", e.Message);
             }
         }
 
