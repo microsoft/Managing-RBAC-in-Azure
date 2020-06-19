@@ -225,7 +225,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.IsTrue(e.Message.Contains("No such host is known"));
+                Assert.IsTrue(e.Message != "Assert.Fail failed");
             }
 
             var badId = createExpectedJson();
