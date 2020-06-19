@@ -294,22 +294,12 @@ namespace RBAC
                         if (total != 0)
                         {
                             string type = sp.Type.ToLower().Trim();
-                            try
-                            {
-                                if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
+                            if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
                                    type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
-                                {
-                                    throw new Exception($"An access policy has already been defined");
-                                }
-                            }
-                            catch (Exception e)
                             {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
-                                Console.ResetColor();
-                                System.Environment.Exit(1);
+                                throw new Exception($"An access policy has already been defined for {sp.DisplayName} in {kv.VaultName}.");
                             }
-                            
+                           
                             Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
                             if (data.ContainsKey("ObjectId"))
                             {
