@@ -7,6 +7,9 @@ using System.IO;
 
 namespace RBAC
 {
+    /// <summary>
+    /// This class stores the global constants.
+    /// </summary>
     public static class Constants
     {
         public const string HTTP = "https://";

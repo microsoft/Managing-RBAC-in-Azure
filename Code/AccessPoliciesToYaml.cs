@@ -22,6 +22,10 @@ namespace RBAC
     /// </summary>
     public class AccessPoliciesToYaml
     {
+        /// <summary>
+        /// Constructor to create an instance of the AccessPoliciesToYaml class for use in Unit Testing.
+        /// </summary>
+        /// <param name="testing">True if unit tests are being run. Otherwise, false.</param>
         public AccessPoliciesToYaml(bool testing)
         {
             Testing = testing;
@@ -554,6 +558,12 @@ namespace RBAC
             }
             Constants.getLog().Flush();
         }
+
+        /// <summary>
+        /// This method throws an exception instead of exiting the program when Testing is true. 
+        /// Otherwise, if Testing is false, the program exits.
+        /// </summary>
+        /// <param name="message">The error message to print to the console</param>
         public void Exit(string message)
         {
             if (!Testing)
@@ -569,6 +579,8 @@ namespace RBAC
                 throw new Exception($"{message}");
             }
         }
+
+        // This field indicates if unit tests are being run
         public bool Testing { get; set; }
     }
 }

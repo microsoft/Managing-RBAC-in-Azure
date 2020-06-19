@@ -1,10 +1,4 @@
 
-using Microsoft.Azure.Management.AppService.Fluent.Models;
-using Microsoft.Azure.Management.BatchAI.Fluent.Models;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using Microsoft.Azure.Management.KeyVault;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
