@@ -297,7 +297,7 @@ namespace RBAC
             {
                 up.checkSPInvalidFields(name, incomplete);
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
@@ -309,7 +309,7 @@ namespace RBAC
             {
                 up.checkSPInvalidFields(name, incomplete);
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
@@ -321,7 +321,7 @@ namespace RBAC
             {
                 up.checkSPInvalidFields(name, incomplete);
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
