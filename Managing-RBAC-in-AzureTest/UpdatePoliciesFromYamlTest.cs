@@ -419,6 +419,83 @@ namespace RBAC
             {
                 Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
             }
+
+            try
+            {
+                var a = up.translateShorthand("read", "Key", new string[] { "read", "write", "read - list", "storage" }, Constants.READ_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Key 'read' permission is duplicated", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all", "read" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("'All' permission removes need for other Key permissions", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "delete", "read", "write" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("update, create, delete permissions are already included in Key 'write' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all - snap" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid Key 'all - <snap>' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "all - write", "write - list" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid Key 'write - <list>' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "write - create", "update", "create" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("create permissions are already included in Key 'write' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all - storage, write, crypto" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.IsTrue(a.SequenceEqual(new string[] { "get", "list", "purge" }));
+            }
+            catch
+            {
+                Assert.Fail();
+            }
         }
 
         [TestMethod]

@@ -645,7 +645,7 @@ namespace RBAC
                 {
                     if (shorthand == "all" && permissions.Length != 1)
                     {
-                        throw new Exception($"'All' permission removes need for other certificate permissions");
+                        throw new Exception($"'All' permission removes need for other {permissionType} permissions");
                     }
 
                     // Check for duplicates
@@ -666,7 +666,7 @@ namespace RBAC
                     string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim().ToLower()).ToArray();
                     foreach (string p in valuesToRemove)
                     {
-                        if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && shorthandWords.Contains(p)))
+                        if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && !shorthandPermissions.Contains(p)))
                         {
                             throw new Exception($"Invalid {permissionType} '{shorthand} - <{p}>' permission");
                         }
@@ -706,7 +706,7 @@ namespace RBAC
             }
             else
             {
-                if (permissionType == "key")
+                if (permissionType.ToLower() == "key")
                 {
                     if (shorthand == "read")
                     {
@@ -725,7 +725,7 @@ namespace RBAC
                         return Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS;
                     }
                 }
-                else if (permissionType == "secret")
+                else if (permissionType.ToLower() == "secret")
                 {
                     if (shorthand == "read")
                     {
