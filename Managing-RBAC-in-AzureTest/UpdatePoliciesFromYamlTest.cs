@@ -131,7 +131,8 @@ namespace RBAC
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
-            List<KeyVaultProperties> yamlVaults = vaultsRetrieved;
+            List<KeyVaultProperties> vaultsRetrieved1 = createExpectedYamlVaults();
+            List<KeyVaultProperties> yamlVaults = vaultsRetrieved1;
 
             // Check making 6 changes (first two only count as one change) 
             yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
@@ -150,9 +151,9 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
-                //exit
             }
 
+            yamlVaults = createExpectedYamlVaults();
             // Add an entire KV
             yamlVaults.Add(new KeyVaultProperties
             {
@@ -192,7 +193,6 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: KeyVault, TestAddKV, in the YAML file was not found in the JSON file.", e.Message);
-                //exit
             }
             yamlVaults.RemoveAt(4);
 
@@ -206,12 +206,11 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: KeyVault, RG1Test1, specified in the JSON file was not found in the YAML file.", e.Message);
-                //exit
             }
         }
 
-       [TestMethod]
-       public void TestCheckSPFields()
+        [TestMethod]
+        public void TestCheckSPFields()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             PrincipalPermissions sp = new PrincipalPermissions()
@@ -223,6 +222,7 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
+
             PrincipalPermissions sp1 = new PrincipalPermissions()
             {
                 Type = "User",
@@ -232,6 +232,7 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
+
             string name = "vaultName";
 
             try
@@ -244,7 +245,6 @@ namespace RBAC
             }
 
             PrincipalPermissions incomplete = sp1;
-            // Check null Type
             incomplete.Type = null;
             try
             {
@@ -256,10 +256,9 @@ namespace RBAC
                 Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
-            // Check empty Type
             incomplete.Type = "  ";
             try
-            {
+            { 
                 up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
@@ -268,10 +267,10 @@ namespace RBAC
                 Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
-            // Check null DisplayName
             incomplete.Type = sp.Type;
             incomplete.DisplayName = null;
             try
+
             {
                 up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
@@ -281,7 +280,6 @@ namespace RBAC
                 Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
-            // Check empty DisplayName
             incomplete.DisplayName = " ";
             try
             {
@@ -293,43 +291,39 @@ namespace RBAC
                 Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
-            // Check null Key Permissions
             incomplete.DisplayName = sp.DisplayName;
             incomplete.PermissionsToKeys = null;
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
+            }
+            catch (Exception e)
+            {
                 Assert.Fail();
             }
-            catch(Exception e)
-            {
-                Assert.AreEqual($"Missing PermissionsToKeys for {name}", e.Message);
-            }
 
-            // Check null Secret Permissions
             incomplete.PermissionsToKeys = sp.PermissionsToKeys;
             incomplete.PermissionsToSecrets = null;
             try
+
             {
                 up.checkSPInvalidFields(name, incomplete);
-                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing PermissionsToSecrets for {name}", e.Message);
+                Assert.Fail();
             }
 
-            // Check null Certificate Permissions
             incomplete.PermissionsToSecrets = sp.PermissionsToSecrets;
             incomplete.PermissionsToCertificates = null;
             try
+
             {
                 up.checkSPInvalidFields(name, incomplete);
-                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing PermissionsToCertificates for {name}", e.Message);
+                Assert.Fail();
             }
         }
 
@@ -347,7 +341,7 @@ namespace RBAC
                 TenantId = "tenant",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "Service Principal",
                         DisplayName = "RBACAutomationApp",
@@ -356,7 +350,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -471,7 +465,6 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: An access policy has already been defined for Katie Helman in {kv.VaultName}.", e.Message);
-                //exit
             }
 
             KeyVaultProperties invalid = kv;
@@ -504,9 +497,10 @@ namespace RBAC
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: An access policy has already been defined for RBACAutomationApp in {kv.VaultName}.", e.Message);
-                //exit
             }
         }
+
+        [TestMethod]
         public void TestCheckValidPermissions()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
@@ -568,7 +562,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: Key permission(s) 'read, purge'", e.Message);
+                Assert.AreEqual($"Key permission(s) 'read, purge' repeated", e.Message);
             }
 
             // Check repeated secret permissions, with different spacing
@@ -660,7 +654,7 @@ namespace RBAC
                 TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "Group",
                         DisplayName = "1ES Site Reliability Engineering",
@@ -669,7 +663,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -678,7 +672,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Mazin Shaaeldin",
@@ -687,7 +681,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",
@@ -708,7 +702,7 @@ namespace RBAC
                 TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "Service Principal",
                         DisplayName = "RBACAutomationApp",
@@ -717,7 +711,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -726,7 +720,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",
@@ -747,7 +741,7 @@ namespace RBAC
                 TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "Group",
                         DisplayName = "RBACKeyVault",
@@ -756,7 +750,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get" },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -765,7 +759,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { "purge" },
                         PermissionsToCertificates = new string[] { "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",
@@ -786,7 +780,7 @@ namespace RBAC
                 TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Mazin Shaaeldin",
@@ -795,7 +789,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Katie Helman",
@@ -804,7 +798,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" },
                         PermissionsToCertificates = new string[] { "get", "list" }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "Service Principal",
                         DisplayName = "RBACAutomationApp",
@@ -813,7 +807,7 @@ namespace RBAC
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
                     },
-                    new PrincipalPermissions
+                    new PrincipalPermissions()
                     {
                         Type = "User",
                         DisplayName = "Opeyemi Olaoluwa",

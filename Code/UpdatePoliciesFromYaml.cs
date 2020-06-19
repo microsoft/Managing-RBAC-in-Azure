@@ -514,32 +514,44 @@ namespace RBAC
         /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
         public void checkValidPermissions(PrincipalPermissions sp)
         {
+            var trimKeyPermissions = new string[sp.PermissionsToKeys.Length];
             foreach (string kp in sp.PermissionsToKeys)
             {
-                if (!Constants.VALID_KEY_PERMISSIONS.Contains(kp.ToLower()) && (!kp.ToLower().StartsWith("all -")) && (!kp.ToLower().StartsWith("read -"))
-                    && (!kp.ToLower().StartsWith("write -")) && (!kp.ToLower().StartsWith("storage -")) && (kp.ToLower().StartsWith("crypto - ")))
+                var k = kp.Trim().ToLower();
+                trimKeyPermissions[trimKeyPermissions.Count(s => s != null)] = k;
+                if (!Constants.VALID_KEY_PERMISSIONS.Contains(k.ToLower()) && (!k.ToLower().StartsWith("all -")) && (!k.ToLower().StartsWith("read -"))
+                    && (!k.ToLower().StartsWith("write -")) && (!k.ToLower().StartsWith("storage -")) && (!k.ToLower().StartsWith("crypto - ")))
                 {
                     throw new Exception($"Invalid key permission '{kp}'");
                 }
             }
+            sp.PermissionsToKeys = trimKeyPermissions;
 
+            var trimSecPermissions = new string[sp.PermissionsToSecrets.Length];
             foreach (string s in sp.PermissionsToSecrets)
             {
-                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(s.ToLower()) && (!s.ToLower().StartsWith("all -")) && (!s.ToLower().StartsWith("read -"))
-                    && (!s.ToLower().StartsWith("write -")) && (!s.ToLower().StartsWith("storage -")))
+                var se = s.Trim().ToLower();
+                trimSecPermissions[trimSecPermissions.Count(s => s != null)] = se;
+                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(se.ToLower()) && (!se.ToLower().StartsWith("all -")) && (!se.ToLower().StartsWith("read -"))
+                    && (!se.ToLower().StartsWith("write -")) && (!se.ToLower().StartsWith("storage -")))
                 {
                     throw new Exception($"Invalid secret permission '{s}'");
                 }
             }
+            sp.PermissionsToSecrets = trimSecPermissions;
 
+            var trimCertPermissions = new string[sp.PermissionsToCertificates.Length];
             foreach (string cp in sp.PermissionsToCertificates)
             {
-                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(cp.ToLower()) && (!cp.ToLower().StartsWith("all -")) && (!cp.ToLower().StartsWith("read -"))
-                    && (!cp.ToLower().StartsWith("write -")) && (!cp.ToLower().StartsWith("storage -")) && (!cp.ToLower().StartsWith("management -")))
+                var c = cp.Trim().ToLower();
+                trimCertPermissions[trimCertPermissions.Count(s => s != null)] = c;
+                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(c.ToLower()) && (!c.ToLower().StartsWith("all -")) && (!c.ToLower().StartsWith("read -"))
+                    && (!c.ToLower().StartsWith("write -")) && (!c.ToLower().StartsWith("storage -")) && (!c.ToLower().StartsWith("management -")))
                 {
                     throw new Exception($"Invalid certificate permission '{cp}'");
                 }
             }
+            sp.PermissionsToCertificates = trimCertPermissions;
 
             if (sp.PermissionsToKeys.Distinct().Count() != sp.PermissionsToKeys.Count())
             {
