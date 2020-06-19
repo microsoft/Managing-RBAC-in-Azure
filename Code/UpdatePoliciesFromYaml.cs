@@ -294,12 +294,6 @@ namespace RBAC
                         if (total != 0)
                         {
                             string type = sp.Type.ToLower().Trim();
-                            if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
-                                   type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
-                            {
-                                throw new Exception($"An access policy has already been defined for {sp.DisplayName} in {kv.VaultName}.");
-                            }
-                           
                             Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
                             if (data.ContainsKey("ObjectId"))
                             {
@@ -316,6 +310,11 @@ namespace RBAC
 
                                 try
                                 {
+                                   if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
+                                   type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
+                                   {
+                                        throw new Exception($"An access policy has already been defined");
+                                   }
                                     sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
@@ -341,6 +340,10 @@ namespace RBAC
                     }
                     catch (Exception e)
                     {
+                        if (Testing)
+                        {
+                            throw new Exception(e.Message);
+                        }
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"Error: {e.Message}");
                         Console.ResetColor();
@@ -352,6 +355,10 @@ namespace RBAC
             }
             catch (Exception e)
             {
+                if (Testing)
+                {
+                    throw new Exception(e.Message);
+                }
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
