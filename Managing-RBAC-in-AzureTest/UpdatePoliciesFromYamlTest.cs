@@ -244,7 +244,7 @@ namespace RBAC
             }
 
             PrincipalPermissions incomplete = sp1;
-
+            // Check null Type
             incomplete.Type = null;
             try
             {
@@ -256,6 +256,7 @@ namespace RBAC
                 Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
+            // Check empty Type
             incomplete.Type = "  ";
             try
             {
@@ -267,6 +268,7 @@ namespace RBAC
                 Assert.AreEqual($"Missing Type for {name}", e.Message);
             }
 
+            // Check null DisplayName
             incomplete.Type = sp.Type;
             incomplete.DisplayName = null;
             try
@@ -279,6 +281,7 @@ namespace RBAC
                 Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
+            // Check empty DisplayName
             incomplete.DisplayName = " ";
             try
             {
@@ -290,37 +293,43 @@ namespace RBAC
                 Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
             }
 
-
+            // Check null Key Permissions
             incomplete.DisplayName = sp.DisplayName;
             incomplete.PermissionsToKeys = null;
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
             }
             catch(Exception e)
             {
-                Assert.Fail();
+                Assert.AreEqual($"Missing PermissionsToKeys for {name}", e.Message);
             }
+
+            // Check null Secret Permissions
             incomplete.PermissionsToKeys = sp.PermissionsToKeys;
             incomplete.PermissionsToSecrets = null;
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.Fail();
+                Assert.AreEqual($"Missing PermissionsToSecrets for {name}", e.Message);
             }
 
+            // Check null Certificate Permissions
             incomplete.PermissionsToSecrets = sp.PermissionsToSecrets;
             incomplete.PermissionsToCertificates = null;
             try
             {
                 up.checkSPInvalidFields(name, incomplete);
+                Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.Fail();
+                Assert.AreEqual($"Missing PermissionsToCertificates for {name}", e.Message);
             }
         }
 
@@ -344,8 +353,8 @@ namespace RBAC
                         DisplayName = "RBACAutomationApp",
                         Alias = "",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
-                        PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
-                        PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
                     },
                     new PrincipalPermissions
                     {
@@ -362,13 +371,230 @@ namespace RBAC
             JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
             var secrets = ap.getSecrets(json);
 
+            // Check UsersContained less than 2 error
             try
             {
                 up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
             }
             catch (Exception e)
             {
                 Assert.AreEqual($"Error: RG1Test2 does not contain at least two users. Vault Skipped.", e.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestUpdateVault()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var secrets = ap.getSecrets(json);
+
+            KeyVaultProperties noPermiss = new KeyVaultProperties()
+            {
+                VaultName = "RG1Test2",
+                ResourceGroupName = "RBAC",
+                SubscriptionId = "subid",
+                Location = "eastus",
+                TenantId = "tenant",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions
+                    {
+                        Type = "User",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
+                        PermissionsToKeys = new string[] { },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    }
+                }
+            };
+
+            // Check no permissions defined
+            try
+            {
+                up.updateVault(noPermiss, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Skipped User, 'Opeyemi Olaoluwa'. Does not have any permissions specified.", e.Message);
+            }
+
+            KeyVaultProperties kv = new KeyVaultProperties()
+            {
+                VaultName = "RG1Test2",
+                ResourceGroupName = "RBAC",
+                SubscriptionId = "subid",
+                Location = "eastus",
+                TenantId = "tenant",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions
+                    {
+                        Type = "User",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
+                        PermissionsToKeys = new string[] { "get", "list" },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                    new PrincipalPermissions
+                    {
+                        Type = "User",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
+                        PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                    new PrincipalPermissions
+                    {
+                        Type = "User",
+                        DisplayName = "Elizabeth Mary",
+                        Alias = "t-kahelm@microsoft.com",
+                        PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                }
+            };
+
+            // Check access policy already defined for user
+            try
+            {
+                up.updateVault(kv, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: An access policy has already been defined for Katie Helman in {kv.VaultName}.", e.Message);
+                //exit
+            }
+
+            KeyVaultProperties invalid = kv;
+            invalid.AccessPolicies.RemoveAt(2);
+            invalid.AccessPolicies.Add(new PrincipalPermissions
+            {
+                Type = "Service Principal",
+                DisplayName = "RBACAutomationApp",
+                Alias = "",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            });
+            invalid.AccessPolicies.Add(new PrincipalPermissions
+            {
+                Type = "Service Principal",
+                DisplayName = "RBACAutomationApp",
+                Alias = "",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            });
+
+            //Check access policy already defined for a type that is not a user
+            try
+            {
+                up.updateVault(invalid, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: An access policy has already been defined for RBACAutomationApp in {kv.VaultName}.", e.Message);
+                //exit
+            }
+        }
+        public void TestCheckValidPermissions()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            PrincipalPermissions sp = new PrincipalPermissions
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
+                PermissionsToKeys = new string[] { "getS", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check invalid key permission
+            try
+            {
+                up.checkValidPermissions(sp);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid key permission 'getS'", e.Message);
+            }
+
+            PrincipalPermissions invalid = sp;
+            // Check invalid secret permission
+            invalid.PermissionsToKeys = new string[] { };
+            invalid.PermissionsToSecrets = new string[] { "managecontacts", "list" };
+            try
+            {
+                up.checkValidPermissions(invalid);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid secret permission 'managecontacts'", e.Message);
+            }
+
+            // Check invalid certificate permission
+            invalid.PermissionsToSecrets = new string[] { };
+            invalid.PermissionsToCertificates = new string[] { "managecontactz", "managecontactz" };
+            try
+            {
+                up.checkValidPermissions(invalid);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid certificate permission 'managecontactz'", e.Message);
+            }
+
+            // Check repeated key permissions
+            invalid.PermissionsToCertificates = new string[] { };
+            invalid.PermissionsToKeys = new string[] { "read", "read", "purge", "purge" };
+            try
+            {
+                up.checkValidPermissions(invalid);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Key permission(s) 'read, purge'", e.Message);
+            }
+
+            // Check repeated secret permissions, with different spacing
+            invalid.PermissionsToKeys = new string[] { };
+            invalid.PermissionsToSecrets = new string[] { "get", "      get" };
+            try
+            {
+                up.checkValidPermissions(invalid);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Secret permission(s) 'get' repeated", e.Message);
+            }
+
+            // Check repeated certificate permissions, disregarding case
+            invalid.PermissionsToSecrets = new string[] { };
+            invalid.PermissionsToCertificates = new string[] { "all - PURGE", "all - purge" };
+            try
+            {
+                up.checkValidPermissions(invalid);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Certificate permission(s) 'all - purge' repeated", e.Message);
             }
         }
 
@@ -404,6 +630,7 @@ namespace RBAC
             Assert.IsTrue(pp.PermissionsToSecrets.All(Constants.ALL_SECRET_PERMISSIONS.Contains) && pp.PermissionsToSecrets.Length == Constants.ALL_SECRET_PERMISSIONS.Length);
             Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains) && pp.PermissionsToCertificates.Length == Constants.ALL_CERTIFICATE_PERMISSIONS.Length);
         }
+
         [TestMethod]
         public void TestTranslateShorthand()
         {
@@ -417,91 +644,6 @@ namespace RBAC
             catch(Exception e)
             {
                 Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
-            }
-        }
-
-        [TestMethod]
-        public void TestCheckValidPermissions()
-        {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            PrincipalPermissions sp = new PrincipalPermissions
-            {
-                Type = "Group",
-                DisplayName = "TestGroup",
-                Alias = "1essre@microsoft.com",
-                PermissionsToKeys = new string[] { "getS", "list" },
-                PermissionsToSecrets = new string[] { },
-                PermissionsToCertificates = new string[] { }
-            };
-
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Invalid key permission 'getS'", e.Message); //thre it thro so wehre caught?
-            }
-
-            sp.PermissionsToKeys = new string[] { };
-            sp.PermissionsToSecrets = new string[] { "managecontacts", "list" };
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Invalid secret permission 'managecontacts'", e.Message); 
-            }
-
-            sp.PermissionsToSecrets = new string[] { };
-            sp.PermissionsToCertificates = new string[] { "managecontactz", "managecontactz" };
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Invalid certificate permission 'managecontactz'", e.Message);
-            }
-
-            sp.PermissionsToCertificates = new string[] { };
-            sp.PermissionsToKeys = new string[] { "read", "read", "purge", "purge"};
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Key permission(s) 'read, purge' repeated", e.Message); 
-            }
-
-            sp.PermissionsToKeys = new string[] { };
-            sp.PermissionsToSecrets = new string[] { "get", "      get" };
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Secret permission(s) 'get' repeated", e.Message);
-            }
-
-            sp.PermissionsToSecrets = new string[] { };
-            sp.PermissionsToCertificates = new string[] { "all - PURGE", "all - purge" };
-            try
-            {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Secret permission(s) 'get' repeated", e.Message);
             }
         }
 
@@ -805,7 +947,7 @@ namespace RBAC
             }
 
             // Tenant id empty
-            kv.TenantId = null;
+            kv.TenantId = "";
             try
             {
                 up.checkVaultInvalidFields(kv);

@@ -284,7 +284,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        private void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
+        public void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
             GraphServiceClient graphClient)
         {
             try
@@ -302,8 +302,23 @@ namespace RBAC
                         if (total != 0)
                         {
                             string type = sp.Type.ToLower().Trim();
+                            try
+                            {
+                                if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
+                                   type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
+                                {
+                                    throw new Exception($"An access policy has already been defined");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                Console.ResetColor();
+                                System.Environment.Exit(1);
+                            }
+                            
                             Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
-
                             if (data.ContainsKey("ObjectId"))
                             {
                                 // Set ServicePrincipal data
@@ -319,12 +334,6 @@ namespace RBAC
 
                                 try
                                 {
-                                    if (type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1 ||
-                                    type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1)
-                                    {
-                                        throw new Exception($"An access policy has already been defined");
-                                    }
-
                                     sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
@@ -347,7 +356,7 @@ namespace RBAC
                         else
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
+                            Console.WriteLine($"Error: Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
                             Console.ResetColor();
                         }
                     }
