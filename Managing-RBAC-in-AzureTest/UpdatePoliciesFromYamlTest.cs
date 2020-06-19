@@ -943,7 +943,39 @@ namespace RBAC
                 Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
             }
         }
+        [TestMethod]
+        public void TestGetShorthandPermissions()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            try
+            {
+                var res = up.getShorthandPermissions("all", "key");
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("Cannot remove 'all' from a permission", e.Message);
+            }
 
+            Assert.IsNull(up.getShorthandPermissions("none", "key"));
+            Assert.IsNull(up.getShorthandPermissions("none", "secret"));
+            Assert.IsNull(up.getShorthandPermissions("none", "certificate"));
+            Assert.IsNull(up.getShorthandPermissions("read", "none"));
+
+            Assert.IsTrue(Constants.READ_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "key")));
+            Assert.IsTrue(Constants.WRITE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("write", "key")));
+            Assert.IsTrue(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("crypto", "key")));
+            Assert.IsTrue(Constants.STORAGE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "key")));
+
+            Assert.IsTrue(Constants.READ_SECRET_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "secret")));
+            Assert.IsTrue(Constants.WRITE_SECRET_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("write", "secret")));
+            Assert.IsTrue(Constants.STORAGE_SECRET_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "secret")));
+
+            Assert.IsTrue(Constants.READ_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "certificate")));
+            Assert.IsTrue(Constants.WRITE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("write", "certificate")));
+            Assert.IsTrue(Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("management", "certificate")));
+            Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
+        }
         private List<KeyVaultProperties> createExpectedYamlVaults()
         {
             var exp = new List<KeyVaultProperties>();
