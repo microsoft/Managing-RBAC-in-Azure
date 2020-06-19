@@ -257,7 +257,6 @@ namespace RBAC
                 {
                     if (e.Message.Contains("404"))
                     {
-
                         Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Unable to find client id secret\n" + e.ToString());
                         Constants.getLog().Flush();
                         Exit($"\nError: clientIdSecret could not be found.");
