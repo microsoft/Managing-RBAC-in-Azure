@@ -15,7 +15,11 @@ namespace RBAC
         /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
+            run(args, false);
+        }
+        public static void run(string[] args, bool testing)
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
             Constants.toggle = "phase2";
 
             Console.WriteLine("Reading input file...");
