@@ -1339,9 +1339,6 @@ namespace RBAC
             string yaml = System.IO.File.ReadAllText("../../../expected/ExpectedPhase2Output.yml");
             var deserializer = new DeserializerBuilder().Build();
             List<KeyVaultProperties> expected = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
-            var serializer = new SerializerBuilder().Build();
-            string actual = serializer.Serialize(output);
-            System.IO.File.WriteAllText("../../../output/ActualPhase2Output.yml", actual);
             Assert.IsTrue(output.SequenceEqual(expected));
         }
     }
