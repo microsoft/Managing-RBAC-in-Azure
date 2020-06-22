@@ -68,7 +68,9 @@ You can do so by editing the YamlOutput.yml directly to...
 - Add or remove specific permissions for a Security Principal with an existing Access Policy
 - Remove an existing Access Policy for a Security Principal
 - Add a new Access Policy for a Security Principal
-  - Note that Security Principals of Type **User** must define **Type**, **DisplayName**, **Alias**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates**, while **all other types** require **Type**, **DisplayName**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates** only
+  - Note that Security Principals of Type **User** or **Group** must define **Type**, **DisplayName**, **Alias**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates**, while types **Application** and **Service Principal** require **Type**, **DisplayName**, **PermissionsToKeys**, **PermissionsToSecrets**, and **PermissionsToCertificates** only
+  
+Refer to the [YamlSample.yml file](Config/YamlSample.yml) for formatting.
   
 ## Use of Shorthands
 - We have also made shorthands available for each type of Permission:
@@ -93,11 +95,19 @@ You can do so by editing the YamlOutput.yml directly to...
 - **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
    - Ensure you add a space after the shorthand!
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-- All of the shorthands are defined in the Constants.cs file and can be edited
+- All of the shorthands are defined in the **Constants.cs** file and can be modified
 
-```
-Note that a KeyVault will NOT update if it does not contain at least 2 Users within its Access Policies.
-``` 
+## Global Constants and Design Considerations
+In the **Constants.cs** file, we have defined:
+- various URL addresses utilized to create the KeyVaultManagement and Graph clients
+- **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
+  - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users. 
+- **MAX_NUM_CHANGES** to limit the amount of changes someone can make at once
+  - One change refers to changes in one Security Principal's access policies i.e. you can grant/delete any number of their permissions and it will equate to one change
+  - This number is currently set to 5, meaning that someone cannot make more than 5 changes per program run
+- all of the shorthand keywords as well as all valid permissions for each permission block
+
+All of these constants can be modified should they need to change.
 
 # Contributing 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a 
