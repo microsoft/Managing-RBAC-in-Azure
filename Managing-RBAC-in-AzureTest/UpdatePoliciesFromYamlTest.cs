@@ -739,7 +739,7 @@ namespace RBAC
             {
                 up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
@@ -792,7 +792,7 @@ namespace RBAC
             {
                 up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
@@ -845,7 +845,7 @@ namespace RBAC
             {
                 up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
             }
-            catch (Exception e)
+            catch
             {
                 Assert.Fail();
             }
@@ -1286,6 +1286,19 @@ namespace RBAC
             {
                 Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
             }
+        }
+        [TestMethod]
+        public void TestFullRun()
+        {
+            string[] args = { "../../../input/TestActualVaults.json", "../../../input/Phase2Input.yml" };
+            var output = UpdatePoliciesFromYamlProgram.run(args, true);
+            string yaml = System.IO.File.ReadAllText("../../../expected/ExpectedPhase2Output.yml");
+            var deserializer = new DeserializerBuilder().Build();
+            List<KeyVaultProperties> expected = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+            var serializer = new SerializerBuilder().Build();
+            string actual = serializer.Serialize(output);
+            System.IO.File.WriteAllText("../../../output/ActualPhase2Output.yml", actual);
+            Assert.IsTrue(output.SequenceEqual(expected));
         }
     }
 }

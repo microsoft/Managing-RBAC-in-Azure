@@ -17,7 +17,7 @@ namespace RBAC
         {
             run(args, false);
         }
-        public static void run(string[] args, bool testing)
+        public static List<KeyVaultProperties> run(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
             Constants.toggle = "phase2";
@@ -40,7 +40,7 @@ namespace RBAC
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Finished!");
 
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(testing);
 
             Console.WriteLine("Reading yaml file...");
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml(args[1]);
@@ -56,6 +56,11 @@ namespace RBAC
             {
                 Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made");
             }
+            if (testing)
+            {
+                return up.Changed;
+            }
+            return null;
         }
     }
 }

@@ -233,9 +233,9 @@ namespace RBAC
                     Console.WriteLine($"Error: {e.Message} Vault Skipped.");
                     Console.ResetColor();
                 }
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging finished...");
-                Constants.getLog().Flush();
             }
+            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging finished...");
+            Constants.getLog().Flush();
         }
 
         /// <summary>
@@ -647,7 +647,7 @@ namespace RBAC
         /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
         public string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
         {
-            var shorthandInstances = permissions.Where(val => val.Trim().StartsWith(shorthand)).ToArray();
+            var shorthandInstances = permissions.Where(val => val.Trim().ToLower().StartsWith(shorthand)).ToArray();
             if (shorthandInstances.Length > 1)
             {
                 throw new Exception($"{permissionType} '{shorthand}' permission is duplicated");
