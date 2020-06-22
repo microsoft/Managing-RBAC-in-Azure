@@ -22,6 +22,7 @@ namespace RBAC
     /// </summary>
     public class AccessPoliciesToYaml
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         /// <summary>
         /// Constructor to create an instance of the AccessPoliciesToYaml class for use in Unit Testing.
         /// </summary>
@@ -37,12 +38,12 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
+            log.Info("Checking file extensions");
             try 
             {
                 if (args.Length != 2)
                 {
                     throw new Exception("Missing input file.");
-
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
