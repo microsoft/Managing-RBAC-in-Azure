@@ -101,7 +101,7 @@ Refer to the [YamlSample.yml file](Config/YamlSample.yml) for formatting.
 In the **Constants.cs** file, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
-  - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users. 
+  - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users 
 - **MAX_NUM_CHANGES** to limit the amount of changes someone can make at once
   - One change refers to changes in one Security Principal's access policies i.e. you can grant/delete any number of their permissions and it will equate to one change
   - This number is currently set to 5, meaning that someone cannot make more than 5 changes per program run
