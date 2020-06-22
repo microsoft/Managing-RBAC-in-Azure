@@ -53,7 +53,7 @@ namespace RBAC
             }
             else
             {
-                Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made");
+                Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made.");
             }
             if (testing)
             {

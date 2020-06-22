@@ -1,9 +1,5 @@
-using Microsoft.Azure.Management.KeyVault;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 
@@ -16,8 +12,6 @@ namespace RBAC
         /// <summary>
         /// This method verifies that the the file arguments are of the correct type.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestVerifyFileExtensions()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -67,10 +61,8 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that the read json file is consistent with an expected json file
+        /// This method verifies that the read json file is consistent with an expected json file.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestReadJsonFile()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -82,10 +74,8 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that invalid json fields are handled in AadAppKeyDetails & Resources (not inside)
+        /// This method verifies that invalid json fields are handled in AadAppKeyDetails & Resources (not inside).
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestCheckJsonFields()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -185,12 +175,11 @@ namespace RBAC
                 Assert.AreEqual("Missing Resources in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'.", e.Message);
             }
         }
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that incorrect Resource fields are handled
+        /// This method verifies that incorrect Resource fields are handled.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestCheckMissingResourceFields()
         {
             var completeJson = createExpectedJson();
@@ -230,12 +219,11 @@ namespace RBAC
                 Assert.AreEqual("Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.", e.Message);
             }
         }
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that invalid secrets are handled
+        /// This method verifies that invalid secrets are handled.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestGetSecrets()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -290,12 +278,11 @@ namespace RBAC
                 Assert.IsTrue(e.Message.Contains("tenantIdSecret could not be found."));
             }
         }
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that a kvm client is succesfully created
+        /// This method verifies that a kvm client is succesfully created.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestCreateKVMClient()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -303,12 +290,11 @@ namespace RBAC
             var kc = ap.createKVMClient(sec);
             Assert.IsNotNull(kc);
         }
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that a graph client is succesfully created or handled if not
+        /// This method verifies that a graph client is succesfully created or handled if not.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestCreateGraphClient()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -326,12 +312,11 @@ namespace RBAC
                 Assert.AreEqual("Error: No ClientId was specified.", e.Message);
             }
         }
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that the code's output matches the expected output
+        /// This method verifies that the code's output matches the expected output.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
         public void TestSuccessfulRun()
         {
             string[] args = { "../../../input/TestActualVaults.json", "../../../output/ActualOutput.yml" };
@@ -340,10 +325,9 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates an expected json that is used for testing purposes
+        /// This method creates an expected json that is used for testing purposes.
         /// </summary>
-        /// <param name= "nothing"></param>
-        /// <returns>nothing</returns>
+        /// <returns>The expected deserialized JsonInput</returns>
         private JsonInput createExpectedJson()
         {
             var exp = new JsonInput();

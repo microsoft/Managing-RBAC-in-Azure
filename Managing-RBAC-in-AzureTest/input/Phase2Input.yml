@@ -118,43 +118,6 @@
   Location: eastus
   TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
   AccessPolicies:
-  - Type: Service Principal
-    DisplayName: RBACAutomationApp
-    Alias: ''
-    PermissionsToKeys:
-    - Get
-    - List
-    - Update
-    - Create
-    - Import
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToSecrets:
-    - Get
-    - List
-    - Set
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToCertificates:
-    - Get
-    - List
-    - Update
-    - Create
-    - Import
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    - ManageContacts
-    - ManageIssuers
-    - GetIssuers
-    - ListIssuers
-    - SetIssuers
-    - DeleteIssuers
   - Type: User
     DisplayName: Katie Helman
     Alias: t-kahelm@microsoft.com
@@ -315,16 +278,9 @@
   - Type: User
     DisplayName: Katie Helman
     Alias: t-kahelm@microsoft.com
-    PermissionsToKeys: []
-    PermissionsToSecrets:
-    - Get
-    - List
-    - Set
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    - Purge
+    PermissionsToKeys:
+    - all
+    PermissionsToSecrets: []
     PermissionsToCertificates:
     - Get
     - List
@@ -354,23 +310,21 @@
     DisplayName: Opeyemi Olaoluwa
     Alias: t-opolao@microsoft.com
     PermissionsToKeys:
-    - Get
-    - List
-    - Update
-    - Create
-    - Import
-    - Delete
-    - Recover
-    - Backup
-    - Restore
+    - read
+    - write
+    - crypto
+    - storage
+    - purge
     PermissionsToSecrets:
-    - Get
-    - List
-    - Set
-    - Delete
-    - Recover
-    - Backup
-    - Restore
+    - write - delete
     PermissionsToCertificates:
-    - Get
-    - List
+    - management - ManageIssuers
+  - Type: Group
+    DisplayName: 1ES Site Reliability Engineering
+    Alias: 1essre@microsoft.com
+    PermissionsToKeys:
+    - All
+    PermissionsToSecrets:
+    - All
+    PermissionsToCertificates:
+    - All
