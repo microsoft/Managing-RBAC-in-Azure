@@ -1,10 +1,4 @@
 
-using Microsoft.Azure.Management.AppService.Fluent.Models;
-using Microsoft.Azure.Management.BatchAI.Fluent.Models;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using Microsoft.Azure.Management.KeyVault;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Extensions.Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
@@ -21,6 +15,9 @@ namespace RBAC
     [TestClass]
     public class UpdatePoliciesFromYamlTest
     {
+        /// <summary>
+        /// This method verifies that the yaml is deserialized properly.
+        /// </summary>
         [TestMethod]
         public void TestYamlDeserialization()
         {
@@ -30,6 +27,11 @@ namespace RBAC
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
             Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
         }
+
+        /// <summary>
+        /// This method verifies that the program handles if there are invalid fields 
+        /// or changes made in the yaml other than those in the AccessPolicies.
+        /// </summary>
         [TestMethod]
         public void TestCheckVaultChanges()
         {
@@ -43,6 +45,7 @@ namespace RBAC
             {
                 Assert.Fail();
             }
+
             var badName = new KeyVaultProperties { VaultName = "NotExist" };
             try
             {
@@ -107,6 +110,7 @@ namespace RBAC
             {
                 Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
             }
+
             var badTen = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
@@ -126,6 +130,10 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies how changes are counted and that the program handles the number of 
+        /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
+        /// </summary>
         [TestMethod]
         public void TestCheckChanges()
         {
@@ -209,6 +217,143 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the program handles invalid KeyVaultProperties fields.
+        /// </summary>
+        [TestMethod]
+        public void TestCheckVaultInvalidFields()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+
+            // Vault Name null
+            KeyVaultProperties kv = new KeyVaultProperties();
+            kv.VaultName = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Vault Name empty
+            kv.VaultName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource Group name null
+            kv.VaultName = "Vault Name";
+            kv.ResourceGroupName = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Resource group name empty
+            kv.ResourceGroupName = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id null
+            kv.ResourceGroupName = "Resource Group Name";
+            kv.SubscriptionId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Subscription id empty
+            kv.SubscriptionId = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+            }
+
+            // Location null 
+            kv.SubscriptionId = "SubscriptionId";
+            kv.Location = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Location empty
+            kv.Location = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id null
+            kv.Location = "Location";
+            kv.TenantId = null;
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
+
+            // Tenant id empty
+            kv.TenantId = "";
+            try
+            {
+                up.checkVaultInvalidFields(kv);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that the program handles invalid PrincipalPermissions fields.
+        /// </summary>
         [TestMethod]
         public void TestCheckSPFields()
         {
@@ -327,6 +472,10 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the number of users in a KeyVault's AccessPolicies are being counted properly and 
+        /// that the program handles if the KeyVault does not contain the minimum number of users defined in Constants.cs.
+        /// </summary>
         [TestMethod]
         public void TestUsersContained()
         {
@@ -376,6 +525,10 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the program handles if the PrincipalPermissions object does not have permissions defined, 
+        /// if they already have an access policy defined, or if their shorthand permissions are invalid.
+        /// </summary>
         [TestMethod]
         public void TestUpdateVault()
         {
@@ -484,7 +637,7 @@ namespace RBAC
                 }
             };
 
-            //Check access policy already defined for a type that is not a user
+            // Check access policy already defined for a type that is not a user
             try
             {
                 up.updateVault(invalid, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
@@ -495,6 +648,7 @@ namespace RBAC
                 Assert.AreEqual($"Error: An access policy has already been defined for RBACAutomationApp in {kv.VaultName}.", e.Message);
             }
 
+            // Check invalid shorthand permissions
             try
             {
                 var a = up.translateShorthand("read", "Key", new string[] { "read", "write", "read - list", "storage" }, Constants.READ_KEY_PERMISSIONS,
@@ -573,6 +727,9 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the program handles invalid or repeated permissions.
+        /// </summary>
         [TestMethod]
         public void TestCheckValidPermissions()
         {
@@ -665,6 +822,9 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the program handles invalid or incorrect fields within each type of PrincipalPermissions.
+        /// </summary>
         [TestMethod]
         public void TestVerifySP()
         {
@@ -895,6 +1055,9 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method verifies that the shorthands are translated to their respective permissions properly.
+        /// </summary>
         [TestMethod]
         public void TestTranslateShorthands()
         {
@@ -928,6 +1091,9 @@ namespace RBAC
             Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains) && pp.PermissionsToCertificates.Length == Constants.ALL_CERTIFICATE_PERMISSIONS.Length);
         }
 
+        /// <summary>
+        /// This method verifies that "all" shorthand cannot be repeated.
+        /// </summary>
         [TestMethod]
         public void TestTranslateShorthand()
         {
@@ -943,6 +1109,10 @@ namespace RBAC
                 Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
             }
         }
+
+        /// <summary>
+        /// This method verifies that the correct permissions are being identified by the shorthand keyword.
+        /// </summary>
         [TestMethod]
         public void TestGetShorthandPermissions()
         {
@@ -976,6 +1146,11 @@ namespace RBAC
             Assert.IsTrue(Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("management", "certificate")));
             Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
         }
+
+        /// <summary>
+        /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
+        /// </summary>
+        /// <returns>The list of KeyVaultProperties from the deserialized yaml</returns>
         private List<KeyVaultProperties> createExpectedYamlVaults()
         {
             var exp = new List<KeyVaultProperties>();
@@ -1155,137 +1330,6 @@ namespace RBAC
             });
 
             return exp;
-        }
-
-        [TestMethod]
-        public void TestCheckVaultInvalidFields()
-        {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-
-            // Vault Name null
-            KeyVaultProperties kv = new KeyVaultProperties();
-            kv.VaultName = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
-            }
-
-            // Vault Name empty
-            kv.VaultName = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
-            }
-
-            // Resource Group name null
-            kv.VaultName = "Vault Name";
-            kv.ResourceGroupName = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
-            }
-
-            // Resource group name empty
-            kv.ResourceGroupName = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
-            }
-
-            // Subscription id null
-            kv.ResourceGroupName = "Resource Group Name";
-            kv.SubscriptionId = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
-            }
-
-            // Subscription id empty
-            kv.SubscriptionId = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
-            }
-
-            // Location null 
-            kv.SubscriptionId = "SubscriptionId";
-            kv.Location = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
-            }
-
-            // Location empty
-            kv.Location = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
-            }
-
-            // Tenant id null
-            kv.Location = "Location";
-            kv.TenantId = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
-            }
-
-            // Tenant id empty
-            kv.TenantId = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
-            }
         }
         [TestMethod]
         public void TestFullRun()
