@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
-using YamlDotNet.Serialization;
 
 namespace RBAC
 {
@@ -14,14 +12,14 @@ namespace RBAC
     public class KeyVaultProperties
     {
         public KeyVaultProperties() { }
-        public KeyVaultProperties(Vault vault, GraphServiceClient graphClient, StreamWriter log)
+        public KeyVaultProperties(Vault vault, GraphServiceClient graphClient)
         {
             this.VaultName = vault.Name;
             this.ResourceGroupName = getResourceGroup(vault.Id);
             this.SubscriptionId = getSubscription(vault.Id);
             this.Location = vault.Location;
             this.TenantId = vault.Properties.TenantId.ToString();
-            this.AccessPolicies = getAccessPolicies(vault.Properties.AccessPolicies, graphClient, log);
+            this.AccessPolicies = getAccessPolicies(vault.Properties.AccessPolicies, graphClient);
         }
 
         /// <summary>
@@ -45,7 +43,6 @@ namespace RBAC
             {
                 resourceGroupsValue = resourceGroupsValue.Substring(0, resourceGroupsValueEnd);
             }
-
             return resourceGroupsValue;
         }
 
@@ -70,7 +67,6 @@ namespace RBAC
             {
                 subscriptionValue = subscriptionValue.Substring(0, subscriptionValueEnd);
             }
-
             return subscriptionValue;
         }
 
@@ -80,14 +76,14 @@ namespace RBAC
         /// <param name="accessPolicies">The list of AccessPolicyEntrys</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>The list of ServicePrincipal objects</returns>
-        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient, StreamWriter log)
+        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
         {
             List<PrincipalPermissions> policies = new List<PrincipalPermissions>();
 
             var policiesEnum = accessPolicies.GetEnumerator();
             while (policiesEnum.MoveNext())
             {
-                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient, log));
+                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient));
             }
             return policies;
         }

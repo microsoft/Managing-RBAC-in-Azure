@@ -1,23 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using YamlDotNet.Serialization;
-using Newtonsoft.Json;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Identity.Client;
-using Microsoft.Azure.Management.KeyVault;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Rest.Azure;
-using Microsoft.Graph;
-using Microsoft.Azure.Management.KeyVault.Fluent.Models;
-using System.IO;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Serilog;
-using Serilog.Context;
 
 namespace RBAC
 {
@@ -32,7 +14,6 @@ namespace RBAC
             // ..\..\..\..\Config\MasterConfig.json 
             // ..\..\..\..\Config\YamlOutput.yml
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
-            Constants.toggle = "phase1";
 
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);

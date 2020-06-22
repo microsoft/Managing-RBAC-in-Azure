@@ -20,7 +20,6 @@ namespace RBAC
         public static void run(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
-            Constants.toggle = "phase2";
 
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);

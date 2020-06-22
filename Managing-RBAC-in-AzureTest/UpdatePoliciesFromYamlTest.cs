@@ -901,7 +901,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.Fail();
+                Assert.AreEqual($"Error: Alias is required for {group.DisplayName}. Group skipped.", e.Message);
             }
 
             // Check Group with defining empty Alias

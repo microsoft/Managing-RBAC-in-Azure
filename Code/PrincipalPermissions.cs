@@ -1,10 +1,7 @@
-﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.KeyVault.Models;
+﻿using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using YamlDotNet.Serialization;
 
@@ -19,9 +16,9 @@ namespace RBAC
         {
             this.Alias = "";
         }
-        public PrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient, StreamWriter log)
+        public PrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
-            Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient, log);
+            Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
             this.Type = typeAndName["Type"];
             this.DisplayName = getDisplayName(typeAndName);
@@ -38,7 +35,7 @@ namespace RBAC
         /// <param name="accessPol">The current AccessPolicyEntry</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>A string array holding the Type, DisplayName, and Alias if applicable</returns>
-        private Dictionary<string,string> getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient, StreamWriter log)
+        private Dictionary<string,string> getTypeAndName(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
             // User
@@ -84,7 +81,6 @@ namespace RBAC
             // "Unknown Application
             catch
             {
-                log.WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + $": Principal with object id {accessPol.ObjectId} not found");
                 data["Type"] = "Unknown";
                 return data;
             }
@@ -150,11 +146,11 @@ namespace RBAC
                 string type = this.Type.Trim().ToLower();
                 string rhsType = spp.Type.Trim().ToLower();
                 bool aliasIsSame = false;
-                if (rhsType == "user")
+                if (rhsType == "user" || rhsType == "group")
                 {
                     aliasIsSame = (this.Alias == spp.Alias);
                 }
-                else if (rhsType == "group" || rhsType == "application" || rhsType == "service principal" || rhsType == "unknown")
+                else
                 {
                     aliasIsSame = true;
                 }

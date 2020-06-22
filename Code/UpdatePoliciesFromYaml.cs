@@ -1,20 +1,11 @@
-﻿using Microsoft.Azure.Management.Cdn.Fluent.Models;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
+﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Azure.Management.ResourceManager.Fluent.PolicyAssignment.Definition;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Graph;
-using Microsoft.Rest.Azure;
-using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using YamlDotNet.Serialization;
-using System.Text;
-using System.IO;
 
 namespace RBAC
 {
@@ -39,12 +30,9 @@ namespace RBAC
         {
             try
             {
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserializing Code");
                 string yaml = System.IO.File.ReadAllText(yamlDirectory);
                 var deserializer = new DeserializerBuilder().Build();
                 List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
-
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking valid fields");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
@@ -53,13 +41,10 @@ namespace RBAC
                         checkSPInvalidFields(kv.VaultName, sp);
                     }
                 }
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Finished Deserializing Code");
                 return yamlVaults;
             }
             catch (Exception e)
             {
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Deserialization FAILED");
-                Constants.getLog().Flush();
                 Exit($"Error: {e.Message}");
                 return null;
             }
@@ -199,7 +184,6 @@ namespace RBAC
         public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
-            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Checking vault changes & updating vault");
             foreach (KeyVaultProperties kv in yamlVaults)
             {
                 try
@@ -227,8 +211,6 @@ namespace RBAC
                     Console.WriteLine($"Error: {e.Message} Vault Skipped.");
                     Console.ResetColor();
                 }
-                Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging finished...");
-                Constants.getLog().Flush();
             }
         }
 
@@ -291,8 +273,8 @@ namespace RBAC
                         {
                             string type = sp.Type.ToLower().Trim();
 
-                            if ((type == "user" && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
-                            (type != "user" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
+                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
+                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
                             {
                                 Exit($"Error: An access policy has already been defined for {sp.DisplayName} in {kv.VaultName}.");
                             }
@@ -394,7 +376,7 @@ namespace RBAC
 
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"The DisplayName '{sp.DisplayName}' is misspelled and cannot be recognized. User skipped.");
+                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized. User skipped.");
                     }
                     data["ObjectId"] = user.Id;
                 }
@@ -416,14 +398,19 @@ namespace RBAC
             {
                 try
                 {
+                    if (sp.Alias.Trim().Length == 0)
+                    {
+                        throw new Exception($"Alias is required for {sp.DisplayName}. Group skipped.");
+                    }
+
                     Group group = graphClient.Groups
                     .Request()
-                    .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
+                    .Filter($"startswith(Mail,'{sp.Alias}')")
                     .GetAsync().Result[0];
 
-                    if (sp.Alias.Length != 0 && sp.Alias.Trim().ToLower() != group.Mail.ToLower())
+                    if (sp.DisplayName.Trim().ToLower() != group.DisplayName.ToLower())
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. Group skipped.");
+                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized. Group skipped.");
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
@@ -784,7 +771,6 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(message);
                 Console.ResetColor();
-                Constants.getLog().Close();
                 Environment.Exit(1);
             }
             else
