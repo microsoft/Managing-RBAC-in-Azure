@@ -323,7 +323,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual("\nError: No ClientId was specified.", e.Message);
+                Assert.AreEqual("Error: No ClientId was specified.", e.Message);
             }
         }
         [TestMethod]

@@ -212,8 +212,6 @@ namespace RBAC
                     Console.ResetColor();
                 }
             }
-            Constants.getLog().WriteLine(DateTime.Now.ToString("MM/dd/yyyy") + " " + DateTime.Now.ToString("h:mm:ss.fff tt") + ": Logging finished...");
-            Constants.getLog().Flush();
         }
 
         /// <summary>
