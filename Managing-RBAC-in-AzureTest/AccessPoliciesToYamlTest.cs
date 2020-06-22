@@ -13,6 +13,11 @@ namespace RBAC
     public class AccessPoliciesToYamlTest
     {
         [TestMethod]
+        /// <summary>
+        /// This method verifies that the the file arguments are of the correct type.
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestVerifyFileExtensions()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -61,6 +66,11 @@ namespace RBAC
         }
 
         [TestMethod]
+        /// <summary>
+        /// This method verifies that the read json file is consistent with an expected json file
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestReadJsonFile()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -69,7 +79,13 @@ namespace RBAC
             
             Assert.IsTrue(exp.Equals(json));
         }
+
         [TestMethod]
+        /// <summary>
+        /// This method verifies that invalid json fields are handled in AadAppKeyDetails & Resources (not inside)
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestCheckJsonFields()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -170,6 +186,11 @@ namespace RBAC
             }
         }
         [TestMethod]
+        /// <summary>
+        /// This method verifies that incorrect Resource fields are handled
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestCheckMissingResourceFields()
         {
             var completeJson = createExpectedJson();
@@ -210,6 +231,11 @@ namespace RBAC
             }
         }
         [TestMethod]
+        /// <summary>
+        /// This method verifies that invalid secrets are handled
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestGetSecrets()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -265,6 +291,11 @@ namespace RBAC
             }
         }
         [TestMethod]
+        /// <summary>
+        /// This method verifies that a kvm client is succesfully created
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestCreateKVMClient()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -273,6 +304,11 @@ namespace RBAC
             Assert.IsNotNull(kc);
         }
         [TestMethod]
+        /// <summary>
+        /// This method verifies that a graph client is succesfully created or handled if not
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestCreateGraphClient()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -291,12 +327,23 @@ namespace RBAC
             }
         }
         [TestMethod]
+        /// <summary>
+        /// This method verifies that the code's output matches the expected output
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         public void TestSuccessfulRun()
         {
             string[] args = { "../../../input/TestActualVaults.json", "../../../output/ActualOutput.yml" };
             AccessPoliciesToYamlProgram.Main(args);
             Assert.AreEqual(System.IO.File.ReadAllText("../../../output/ActualOutput.yml"), System.IO.File.ReadAllText("../../../expected/ExpectedOutput.yml"));
         }
+
+        /// <summary>
+        /// This method creates an expected json that is used for testing purposes
+        /// </summary>
+        /// <param name= "nothing"></param>
+        /// <returns>nothing</returns>
         private JsonInput createExpectedJson()
         {
             var exp = new JsonInput();
