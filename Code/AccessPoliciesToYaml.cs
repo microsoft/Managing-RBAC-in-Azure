@@ -37,7 +37,6 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
-            log.Info("Logging for phase 1 beginning...");
             log.Info("Checking file extensions...");
             try 
             {
@@ -61,7 +60,7 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
-                log.Info("File extensions verified");
+                log.Info("File extensions verified!");
             }
             catch(Exception e)
             {
@@ -88,7 +87,7 @@ namespace RBAC
                 checkJsonFields(vaultList, configVaults);
                 checkMissingAadFields(vaultList, configVaults);
                 checkMissingResourceFields(vaultList, configVaults);
-                log.Info("Json file read");
+                log.Info("Json file read!");
                 return vaultList; 
             }
             catch (Exception e)
@@ -97,7 +96,7 @@ namespace RBAC
                 log.Debug("Note that all of the fields within AadAppKeyDetails are required, but not all fields are required within Resources for each Resource object." +
                     $"\n Refer to {Constants.JSON_SAMPLE} for a sample json input." +
                     $"\n Refer to {Constants.READ_ME} and search 'Creating the MasterConfig.json File to learn more in the ReadME.");
-                Exit($"\nError: {e.Message}");
+                Exit($"Error: {e.Message}");
                 return null;
             }
         }
@@ -255,7 +254,7 @@ namespace RBAC
             {
                 log.Info("Getting app Name...");
                 secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
-                log.Info("App name retrieved");
+                log.Info("App name retrieved!");
 
                 // Creates the SecretClient and grabs secrets
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
@@ -267,7 +266,7 @@ namespace RBAC
                     log.Info("Getting clientId...");
                     KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
                     secrets["clientId"] = clientIdSecret.Value;
-                    log.Info("ClientId retrieved");
+                    log.Info("ClientId retrieved!");
                 }
                 catch (Exception e)
                 {
@@ -287,7 +286,7 @@ namespace RBAC
                     log.Info("Getting clientKey...");
                     KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
                     secrets["clientKey"] = clientKeySecret.Value;
-                    log.Info("ClientKey retrieved");
+                    log.Info("ClientKey retrieved!");
                 }
                 catch (Exception e)
                 {
@@ -307,7 +306,7 @@ namespace RBAC
                     log.Info("Getting tenantId...");
                     KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
                     secrets["tenantId"] = tenantIdSecret.Value;
-                    log.Info("TenantId retrieved");
+                    log.Info("TenantId retrieved!");
                 }
                 catch (Exception e)
                 {
@@ -328,7 +327,7 @@ namespace RBAC
                 log.Error($"AppName was not retrieved. {e.Message}");
                 Exit($"Error: {e.Message}");
             }
-            log.Info("Secrets retrieved");
+            log.Info("Secrets retrieved!");
 
             return secrets;
         }
@@ -346,7 +345,7 @@ namespace RBAC
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
                 var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
-                log.Info("KVM Client created");
+                log.Info("KVM Client created!");
                 return ret;
             } 
             catch (Exception e)
@@ -383,7 +382,7 @@ namespace RBAC
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
                 var ret = new GraphServiceClient(authProvider);
-                log.Info("Graph Client created");
+                log.Info("Graph Client created!");
                 return ret;
             }
             catch (Exception e)
@@ -469,7 +468,7 @@ namespace RBAC
             {
                 keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
-            log.Info("Vaults Retrieved");
+            log.Info("Vaults Retrieved!");
             return keyVaultsRetrieved;
         }
 
@@ -546,15 +545,14 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
-            log.Info("Converting to Yaml...");
+            log.Info("Converting to YAML...");
             try
             {
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
-                log.Info("Yaml created");
-                log.Info("Logging for phase 1 Complete");
+                log.Info("YAML created!");
             }
             catch (Exception e)
             {
@@ -576,6 +574,7 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(message);
                 Console.ResetColor();
+                log.Info("Progam exited.");
                 Environment.Exit(1);
             }
             else

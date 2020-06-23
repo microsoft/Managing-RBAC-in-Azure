@@ -12,7 +12,6 @@ namespace RBAC
         public const string KVM_CLIENT = "https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet";
         public const string GRAPH_CLIENT_CREATE = "https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS";
 
-
         public const string HTTP = "https://";
         public const string AZURE_URL = ".vault.azure.net";
         public const string MICROSOFT_LOGIN = "https://login.microsoftonline.com/";

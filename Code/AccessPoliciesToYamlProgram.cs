@@ -17,6 +17,10 @@ namespace RBAC
             // ..\..\..\..\Config\YamlOutput.yml
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
 
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("Refer to 'LogFile.log' for more details should an error be thrown.\n");
+            Console.ResetColor();
+
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);

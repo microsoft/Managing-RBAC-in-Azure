@@ -309,18 +309,18 @@ namespace RBAC
                 {
                     try
                     {
-                        log.Info($"Verifying that permissions exist for {sp.DisplayName}...");
+                        log.Info($"Verifying that permissions exist for {sp.DisplayName} with Alias '{sp.Alias}'...");
                         int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
                         if (total != 0)
                         {
                             log.Info("Permissions exist!");
                             string type = sp.Type.ToLower().Trim();
-                            log.Info($"Verifying that the access policy for {sp.DisplayName} is unique...");
+                            log.Info($"Verifying that the access policy for {sp.DisplayName} with Alias '{sp.Alias}' is unique...");
                             if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
                                 (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
                             {
                                 log.Error("AccessPolicyAlreadyDefined");
-                                log.Debug($"An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                log.Debug($"An access policy has already been defined for {sp.DisplayName} with Alias '{sp.Alias}' in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
                                 Exit($"Error: An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
                             log.Info("Access policies are 1:1!");
@@ -344,7 +344,7 @@ namespace RBAC
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
 
-                                    log.Info($"Validating the permissions for {sp.DisplayName}...");
+                                    log.Info($"Validating the permissions for {sp.DisplayName} with Alias '{sp.Alias}'...");
                                     checkValidPermissions(sp); //errors with invalid valsd or repreated info
                                     log.Info("Permissions are valid!");
                                     log.Info("Translating shorthands...");
@@ -426,7 +426,7 @@ namespace RBAC
         public Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            log.Info($"Verifying {sp.DisplayName}...");
+            log.Info($"Verifying the data for {sp.DisplayName} with Alias '{sp.Alias}'...");
             if (type == "user")
             {
                 try
@@ -445,7 +445,7 @@ namespace RBAC
                         throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = user.Id;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"User verified!");
                 }
                 catch (Exception e)
                 {
@@ -485,7 +485,7 @@ namespace RBAC
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Group verified!");
                 }
                 catch (Exception e)
                 {
@@ -520,7 +520,7 @@ namespace RBAC
                     }
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Application verified!");
                 }
                 catch (Exception e)
                 {
@@ -554,7 +554,7 @@ namespace RBAC
                         throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
                     }
                     data["ObjectId"] = principal.Id;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Service Principal verified!");
                 }
                 catch (Exception e)
                 {
