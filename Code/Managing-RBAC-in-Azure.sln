@@ -5,11 +5,8 @@ VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-Azure", "Managing-RBAC-in-Azure.csproj", "{459C5BBB-22B3-4690-AE28-F04D7C69F3EF}"
 EndProject
-<<<<<<< HEAD
-=======
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-AzureTest", "..\Managing-RBAC-in-AzureTest\Managing-RBAC-in-AzureTest.csproj", "{9B4EF74E-451B-4021-A60A-F8A34D545AD7}"
 EndProject
->>>>>>> a8d17682a13ecc978adcb61143d6d1f62568ff90
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,13 +17,10 @@ Global
 		{459C5BBB-22B3-4690-AE28-F04D7C69F3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{459C5BBB-22B3-4690-AE28-F04D7C69F3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{459C5BBB-22B3-4690-AE28-F04D7C69F3EF}.Release|Any CPU.Build.0 = Release|Any CPU
-<<<<<<< HEAD
-=======
 		{9B4EF74E-451B-4021-A60A-F8A34D545AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B4EF74E-451B-4021-A60A-F8A34D545AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B4EF74E-451B-4021-A60A-F8A34D545AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B4EF74E-451B-4021-A60A-F8A34D545AD7}.Release|Any CPU.Build.0 = Release|Any CPU
->>>>>>> a8d17682a13ecc978adcb61143d6d1f62568ff90
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
