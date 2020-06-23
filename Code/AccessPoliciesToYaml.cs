@@ -37,24 +37,36 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
-            log.Info("Checking file extensions");
+            log.Info("Logging for phase 1 beginning...");
+            log.Info("Checking file extensions...");
             try 
             {
-                if (args.Length != 2)
+                if (args.Length == 0)
                 {
-                    throw new Exception("Missing input file.");
+                    throw new Exception("Missing 2 input files.");
+                }
+                if (args.Length == 1)
+                {
+                    throw new Exception("Missing 1 input file.");
+                }
+                if (args.Length > 2)
+                {
+                    throw new Exception("Too many input files. Maximum needed is 2.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
-                    throw new Exception("The 1st argument is not a .json file");
+                    throw new Exception("The 1st argument is not a .json file.");
                 }
                 if (System.IO.Path.GetExtension(args[1]) != ".yml")
                 {
-                    throw new Exception("The 2nd argument is not a .yml file");
+                    throw new Exception("The 2nd argument is not a .yml file.");
                 }
+                log.Info("File extensions verified");
             }
             catch(Exception e)
             {
+                log.Error($"Invalid Main arguments. {e.Message}");
+                log.Debug($"Refer to {Constants.READ_ME} & search 'Defining your File paths' if you've forgotten how to do so.");
                 Exit($"Error: {e.Message}");
             }
         }
@@ -66,6 +78,7 @@ namespace RBAC
         /// <returns>A JsonInput object that stores the Json input data</returns>
         public JsonInput readJsonFile(string jsonDirectory)
         {
+            log.Info("Reading in Json file....");
             try
             {
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
@@ -75,10 +88,15 @@ namespace RBAC
                 checkJsonFields(vaultList, configVaults);
                 checkMissingAadFields(vaultList, configVaults);
                 checkMissingResourceFields(vaultList, configVaults);
+                log.Info("Json file read");
                 return vaultList; 
             }
             catch (Exception e)
             {
+                log.Error($"Unable to read & deserialize Json. {e.Message}");
+                log.Debug("Note that all of the fields within AadAppKeyDetails are required, but not all fields are required within Resources for each Resource object." +
+                    $"\n Refer to {Constants.JSON_SAMPLE} for a sample json input." +
+                    $"\n Refer to {Constants.READ_ME} and search 'Creating the MasterConfig.json File to learn more in the ReadME.");
                 Exit($"\nError: {e.Message}");
                 return null;
             }
@@ -230,10 +248,14 @@ namespace RBAC
         /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
         public Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
+            log.Info("Getting Secrets...");
+
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             try
             {
+                log.Info("Getting app Name...");
                 secrets["appName"] = vaultList.AadAppKeyDetails.AadAppName;
+                log.Info("App name retrieved");
 
                 // Creates the SecretClient and grabs secrets
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
@@ -241,57 +263,73 @@ namespace RBAC
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
                 try
                 {
+                    // Getting 
+                    log.Info("Getting clientId...");
                     KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
                     secrets["clientId"] = clientIdSecret.Value;
+                    log.Info("ClientId retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
+                        log.Error("ClientIdSecret could not be found. ");
                         Exit($"Error: clientIdSecret could not be found.");
                     }
                     else
                     {
+                        log.Error($"ClientIdSecret was not retrieved. {e.Message}");
                         Exit($"Error: clientIdSecret {e.Message}.");
                     }
                 }
                 try
                 {
+                    log.Info("Getting clientKey...");
                     KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
                     secrets["clientKey"] = clientKeySecret.Value;
+                    log.Info("ClientKey retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
+                        log.Error("ClientKeySecret could not be found.");
                         Exit($"Error: clientKeySecret could not be found.");
                     }
                     else
                     {
+                        log.Error($"ClientKeySecret was not retrieved. {e.Message}.");
                         Exit($"Error: clientKeySecret {e.Message}.");
                     }
                 }
                 try
                 {
+                    log.Info("Getting tenantId...");
                     KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
                     secrets["tenantId"] = tenantIdSecret.Value;
+                    log.Info("TenantId retrieved");
                 }
                 catch (Exception e)
                 {
                     if (e.Message.Contains("404"))
                     {
+                        log.Error("TenantIdSecret could not be found");
                         Exit($"Error: tenantIdSecret could not be found.");
                     }
                     else
                     {
+                        log.Error($"TenantIdSecret was not retrieved. {e.Message}.");
                         Exit($"Error: tenantIdSecret {e.Message}.");
                     }
                 }
             } 
             catch (Exception e)
             {
+                log.Error($"AppName was not retrieved. {e.Message}");
                 Exit($"Error: {e.Message}");
             }
+            log.Info("Secrets retrieved");
+
             return secrets;
         }
 
@@ -302,15 +340,19 @@ namespace RBAC
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
         public Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
+            log.Info("Creating KVM Client...");
             try
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
                 var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
+                log.Info("KVM Client created");
                 return ret;
             } 
             catch (Exception e)
             {
+                log.Error(e.Message);
+                log.Debug($"Refer to {Constants.KVM_CLIENT} for information on KeyVaultMananagentClient class");
                 Exit($"Error: {e.Message}");
                 return null;
             }
@@ -323,6 +365,7 @@ namespace RBAC
         /// <returns>The GraphServiceClient created using the secret information</returns>
         public GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
+            log.Info("Creating Graph Client...");
             try
             {
                 string auth = Constants.MICROSOFT_LOGIN + secrets["tenantId"];
@@ -340,13 +383,16 @@ namespace RBAC
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
                 var ret = new GraphServiceClient(authProvider);
+                log.Info("Graph Client created");
                 return ret;
             }
             catch (Exception e)
             {
+                log.Error(e.Message);
+                log.Debug($"Refer to {Constants.GRAPH_CLIENT_CREATE} for information on creating a graph client");
                 Exit($"Error: {e.Message}");   
                 return null;
-            }
+            } 
         }
 
         /// <summary>
@@ -359,9 +405,13 @@ namespace RBAC
         public List<KeyVaultProperties> getVaults(JsonInput vaultList, 
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
+            log.Info("Getting Vaults...");
             List<Vault> vaultsRetrieved = new List<Vault>();
             foreach (Resource res in vaultList.Resources)
             {
+                log.Info($"Entering SubscriptionID: {res.SubscriptionId}");
+                
+
                 // Associates the client with the subscription
                 kvmClient.SubscriptionId = res.SubscriptionId;
                
@@ -375,6 +425,7 @@ namespace RBAC
                     bool notFound = false;
                     foreach (ResourceGroup resGroup in res.ResourceGroups) 
                     {
+                        log.Info($"Entering ResourceGroup: {resGroup.ResourceGroupName}");
                         // If the Subscription is not found, then do not continue looking for vaults in this subscription
                         if (notFound)
                         {
@@ -391,12 +442,14 @@ namespace RBAC
                         {
                             foreach (string vaultName in resGroup.KeyVaults) 
                             {
+                                log.Info($"Entering VaultName: {vaultName}");
                                 try
                                 {
                                     vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName)); 
                                 } 
                                 catch (CloudException e)
                                 {
+                                    log.Error(e.Message);
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine($"Error: {e.Message}");
                                     Console.ResetColor();
@@ -416,6 +469,7 @@ namespace RBAC
             {
                 keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
+            log.Info("Vaults Retrieved");
             return keyVaultsRetrieved;
         }
 
@@ -439,6 +493,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
+                    log.Error(e.Message);
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Error: {e.Message}");
                     Console.ResetColor();
@@ -453,6 +508,7 @@ namespace RBAC
                 }
                 catch (CloudException e)
                 {
+                    log.Error(e.Message);
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Error: {e.Message}");
                     Console.ResetColor();
@@ -490,12 +546,15 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
+            log.Info("Converting to Yaml...");
             try
             {
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
+                log.Info("Yaml created");
+                log.Info("Logging for phase 1 Complete");
             }
             catch (Exception e)
             {
