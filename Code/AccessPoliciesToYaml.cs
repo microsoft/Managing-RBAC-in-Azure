@@ -22,7 +22,6 @@ namespace RBAC
     /// </summary>
     public class AccessPoliciesToYaml
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         /// <summary>
         /// Constructor to create an instance of the AccessPoliciesToYaml class for use in Unit Testing.
         /// </summary>
@@ -528,5 +527,7 @@ namespace RBAC
 
         // This field indicates if unit tests are being run
         public bool Testing { get; set; }
+        // This field defines the logger
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     }
 }

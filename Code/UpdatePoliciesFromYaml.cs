@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+﻿using log4net.Util;
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
@@ -28,11 +29,25 @@ namespace RBAC
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         public List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
         {
+            List<KeyVaultProperties> yamlVaults = new List<KeyVaultProperties>();
             try
             {
+                log.Info("Reading .yml file...");
                 string yaml = System.IO.File.ReadAllText(yamlDirectory);
+                log.Info("File successfully read!");
+                log.Info("Deserializing .yml file...");
                 var deserializer = new DeserializerBuilder().Build();
-                List<KeyVaultProperties> yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+                yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+                log.Info("File successfully deserialized!");
+            }
+            catch(Exception e)
+            {
+                log.Error($"DeserializationFail", e);
+                log.Debug("Refer to the .yml Sample (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+            }
+            try 
+            {
+                log.Info("Checking for invalid fields...");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
@@ -41,13 +56,15 @@ namespace RBAC
                         checkSPInvalidFields(kv.VaultName, sp);
                     }
                 }
-                return yamlVaults;
             }
             catch (Exception e)
             {
+                log.Error($"InvalidFields", e);
+                log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' should be defined for each KeyVault. " + "For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the 'Editing the Access Policies' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                 Exit($"Error: {e.Message}");
-                return null;
             }
+            log.Info("Fields validated!");
+            return yamlVaults;
         }
 
         /// <summary>
@@ -58,6 +75,7 @@ namespace RBAC
         /// <returns>The number of changes made</returns>
         public int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
+            log.Info($"Checking the number of changes made...");
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
             {
@@ -92,27 +110,33 @@ namespace RBAC
                     }
                 }
             }
-
             if (changes > Constants.MAX_NUM_CHANGES)
             {
+                log.Error("ChangesExceedLimit");
+                log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {changes} policies. Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                 Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
             }
-
+            log.Info("The number of changes made was valid!");
+            log.Info("Scanning the .yml and .json files...");
             foreach (KeyVaultProperties kv in vaultsRetrieved)
             {
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
+                    log.Error($"VaultDeleted");
+                    log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
                     Exit($"Error: KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
                 }
             }
-
             foreach (KeyVaultProperties kv in yamlVaults)
             {
                 if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
-                    Exit($"Error: KeyVault, {kv.VaultName}, in the YAML file was not found in the JSON file.");
+                    log.Error($"VaultAdded");
+                    log.Debug($"KeyVault '{kv.VaultName}' was not specified in the .json file and was added to the .yml file! Please remove this KeyVault.");
+                    Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
                 }
             }
+            log.Info("Files verified!");
             return changes;
         }
 
@@ -124,23 +148,27 @@ namespace RBAC
         {
             if (kv.VaultName == null || kv.VaultName.Trim() == "")
             {
-                throw new Exception($"Missing VaultName for {kv.VaultName}");
+                throw new Exception($"Missing 'VaultName' for KeyVault '{kv.VaultName}'");
             }
             if (kv.ResourceGroupName == null || kv.ResourceGroupName.Trim() == "")
             {
-                throw new Exception($"Missing ResourceGroupName for {kv.VaultName}");
+                throw new Exception($"Missing 'ResourceGroupName' for KeyVault '{kv.VaultName}'");
             }
             if (kv.SubscriptionId == null || kv.SubscriptionId.Trim() == "")
             {
-                throw new Exception($"Missing SubscriptionId for {kv.VaultName}");
+                throw new Exception($"Missing 'SubscriptionId' for KeyVault '{kv.VaultName}'");
             }
             if (kv.Location == null || kv.Location.Trim() == "")
             {
-                throw new Exception($"Missing Location for {kv.VaultName}");
+                throw new Exception($"Missing 'Location' for KeyVault '{kv.VaultName}'");
             }
             if (kv.TenantId == null || kv.TenantId.Trim() == "")
             {
-                throw new Exception($"Missing TenantId for {kv.VaultName}");
+                throw new Exception($"Missing 'TenantId' for KeyVault '{kv.VaultName}'");
+            }
+            if (kv.AccessPolicies == null)
+            {
+                throw new Exception($"Missing 'AccessPolicies' for KeyVault '{kv.VaultName}'");
             }
         }
 
@@ -188,26 +216,37 @@ namespace RBAC
             {
                 try
                 {
+                    log.Info($"Verifying that only 'AccessPolicies' has been changed for KeyVault '{kv.VaultName}'...");
                     checkVaultChanges(vaultsRetrieved, kv);
+                    log.Info("Vault changes verified!");
+                    log.Info("Verifying the number of access policies for type 'User'...");
                     if (!vaultsRetrieved.Contains(kv))
                     {
-                        if (kv.usersContained() < Constants.MIN_NUM_USERS)
+                        int numUsers = kv.usersContained();
+                        if (numUsers < Constants.MIN_NUM_USERS)
                         {
+                            log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
+                            log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"{kv.VaultName} does not contain at least two users.");
+                            Console.WriteLine($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                             Console.ResetColor();
                         }
                         else
                         {
-                            Console.WriteLine("Updating " + kv.VaultName + "...");
+                            log.Info("User access policies verified!");
+                            log.Info($"Updating KeyVault '{kv.VaultName}'...");
+                            Console.WriteLine($"Updating {kv.VaultName}...");
                             updateVault(kv, kvmClient, secrets, graphClient);
+                            log.Info($"KeyVault '{kv.VaultName}' successfully updated!");
                             Console.WriteLine($"{kv.VaultName} successfully updated!");
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    log.Error($"VaultFieldsChanged: KeyVault '{kv.VaultName}' skipped!", e);
+                    log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
+                    Console.ForegroundColor = ConsoleColor.Red; 
                     Console.WriteLine($"Error: {e.Message} Vault Skipped.");
                     Console.ResetColor();
                 }
@@ -224,26 +263,26 @@ namespace RBAC
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
             {
-                throw new Exception($"VaultName {kv.VaultName} was changed or added.");
+                throw new Exception($"VaultName for KeyVault '{kv.VaultName}' was changed or added.");
             }
 
             // If KeyVault name was correct, then check the other fields
             KeyVaultProperties originalKV = lookupName[kv.VaultName].ToList()[0];
             if (originalKV.ResourceGroupName != kv.ResourceGroupName.Trim())
             {
-                throw new Exception($"ResourceGroupName for {kv.VaultName} was changed.");
+                throw new Exception($"ResourceGroupName for KeyVault '{kv.VaultName}' was changed.");
             }
             if (originalKV.SubscriptionId != kv.SubscriptionId.Trim())
             {
-                throw new Exception($"SubscriptionId for {kv.VaultName} was changed.");
+                throw new Exception($"SubscriptionId for KeyVault '{kv.VaultName}' was changed.");
             }
             if (originalKV.Location != kv.Location.Trim())
             {
-                throw new Exception($"Location for {kv.VaultName} was changed.");
+                throw new Exception($"Location for KeyVault '{kv.VaultName}' was changed.");
             }
             if (originalKV.TenantId != kv.TenantId.Trim())
             {
-                throw new Exception($"TenantId for {kv.VaultName} was changed.");
+                throw new Exception($"TenantId for KeyVault '{kv.VaultName}' was changed.");
             }
         }
 
@@ -268,17 +307,21 @@ namespace RBAC
                 {
                     try
                     {
+                        log.Info($"Verifying that permissions exist for {sp.DisplayName}...");
                         int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
                         if (total != 0)
                         {
+                            log.Info("Permissions exist!");
                             string type = sp.Type.ToLower().Trim();
-
+                            log.Info($"Verifying that the access policy for {sp.DisplayName} is unique...");
                             if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
                                 (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
                             {
-                                Exit($"Error: An access policy has already been defined for {sp.DisplayName} in {kv.VaultName}.");
+                                log.Error("AccessPolicyAlreadyDefined");
+                                log.Debug($"An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                Exit($"Error: An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
-
+                            log.Info("Access policies are 1:1!");
                             Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
                             if (data.ContainsKey("ObjectId"))
                             {
@@ -299,7 +342,10 @@ namespace RBAC
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
 
-                                    checkValidPermissions(sp);
+                                    log.Info($"Validating the permissions for {sp.DisplayName}...");
+                                    checkValidPermissions(sp); //errors with invalid valsd or repreated info
+                                    log.Info("Permissions are valid!");
+                                    log.Info("Translating shorthands...");
                                     translateShorthands(sp);
 
                                     properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
@@ -307,12 +353,26 @@ namespace RBAC
                                 }
                                 catch (Exception e)
                                 {
+                                    // Errors caught for checkValidPermissions
+                                    if (e.Message.Contains("Invalid") || e.Message.Contains("repeated"))
+                                    {
+                                        log.Error("InvalidPermission");
+                                        log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
+                                    }
+                                    // Errors caught for translateShorthands
+                                    else
+                                    {
+                                        log.Error("InvalidShorthand");
+                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/README.md");
+                                    }
                                     Exit($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                                 }
                             }
                         }
                         else
                         {
+                            log.Error($"UndefinedAccessPolicies: {sp.DisplayName} skipped!");
+                            log.Debug($"'{sp.DisplayName}' of Type '{sp.Type}' does not have any permissions specified. Grant the {sp.Type} at least one permission or delete the {sp.Type} entirely to remove all of their permissions.");
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"Error: Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
                             Console.ResetColor();
@@ -324,8 +384,10 @@ namespace RBAC
                         {
                             throw new Exception(e.Message);
                         }
+                        log.Error("UnknownType: Skipped!");
+                        log.Debug(e.Message);
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Error: {e.Message}");
+                        Console.WriteLine($"Error: {e.Message} Skipped!");
                         Console.ResetColor();
                     }
                 }
@@ -344,6 +406,8 @@ namespace RBAC
                 {
                     throw new Exception(e.Message);
                 }
+                log.Error("VaultNotFound", e);
+                log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
@@ -360,14 +424,14 @@ namespace RBAC
         public Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-
+            log.Info($"Verifying {sp.DisplayName}...");
             if (type == "user")
             {
                 try
                 {
                     if (sp.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}. User skipped.");
+                        throw new Exception($"Alias is required for {sp.DisplayName}.");
                     }
 
                     User user = graphClient.Users[sp.Alias.ToLower().Trim()]
@@ -376,20 +440,25 @@ namespace RBAC
 
                     if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized. User skipped.");
+                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = user.Id;
+                    log.Info($"{sp.DisplayName} verified!");
                 }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("ResourceNotFound"))
                     {
+                        log.Error($"ResourceNotFound: User with Alias '{sp.Alias}' skipped!", e);
+                        log.Debug($"The User with Alias '{sp.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
                         Console.WriteLine($"Error: Could not find User with Alias '{sp.Alias}'. User skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"Error: {e.Message}");
+                        log.Error("UserFieldsInvalid");
+                        log.Debug(e.Message);
+                        Console.WriteLine($"Error: {e.Message} User skipped.");
                     }
                     Console.ResetColor();
                 }
@@ -400,7 +469,7 @@ namespace RBAC
                 {
                     if (sp.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}. Group skipped.");
+                        throw new Exception($"Alias is required for {sp.DisplayName}.");
                     }
 
                     Group group = graphClient.Groups
@@ -410,21 +479,26 @@ namespace RBAC
 
                     if (sp.DisplayName.Trim().ToLower() != group.DisplayName.ToLower())
                     {
-                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized. Group skipped.");
+                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
+                    log.Info($"{sp.DisplayName} verified!");
                 }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
+                        log.Error($"ResourceNotFound: Group with Alias '{sp.Alias}' skipped!", e);
+                        log.Debug($"The Group with Alias '{sp.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
                         Console.WriteLine($"Error: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"Error: {e.Message}");
+                        log.Error("GroupFieldsInvalid");
+                        log.Debug(e.Message);
+                        Console.WriteLine($"Error: {e.Message} Group skipped.");
                     }
                     Console.ResetColor();
                 }
@@ -440,21 +514,26 @@ namespace RBAC
 
                     if (sp.Alias.Length != 0)
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. Application skipped.");
+                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
                     }
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
+                    log.Info($"{sp.DisplayName} verified!");
                 }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
+                        log.Error($"ResourceNotFound: Application with DisplayName '{sp.DisplayName}' skipped!", e);
+                        log.Debug($"The Application with DisplayName '{sp.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. For more information on creating an Application in AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
                         Console.WriteLine($"Error: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"Error: {e.Message}");
+                        log.Error("ApplicationFieldsInvalid");
+                        log.Debug(e.Message);
+                        Console.WriteLine($"Error: {e.Message} Application skipped.");
                     }
                     Console.ResetColor();
                 }
@@ -470,27 +549,32 @@ namespace RBAC
 
                     if (sp.Alias.Length != 0)
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}. ServicePrincipal skipped.");
+                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
                     }
                     data["ObjectId"] = principal.Id;
+                    log.Info($"{sp.DisplayName} verified!");
                 }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
+                        log.Error($"ResourceNotFound: ServicePrincipal with DisplayName '{sp.DisplayName}' skipped!", e);
+                        log.Debug($"The ServicePrincipal with DisplayName '{sp.DisplayName}' could not be found. Please verify that this Service Principal exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
                         Console.WriteLine($"Error: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
-                        Console.WriteLine($"Error: {e.Message}");
+                        log.Error("ServicePrincipalFieldsInvalid");
+                        log.Debug(e.Message);
+                        Console.WriteLine($"Error: {e.Message} Service Principal skipped.");
                     }
                     Console.ResetColor();
                 }
             }
             else
             {
-                throw new Exception($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'. Skipped.");
+                throw new Exception($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'.");
             }
             return data;
         }
@@ -664,7 +748,7 @@ namespace RBAC
                     {
                         if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && !shorthandPermissions.Contains(p)))
                         {
-                            throw new Exception($"Invalid {permissionType} '{shorthand} - <{p}>' permission");
+                            throw new Exception($"Remove values could not be recognized in {permissionType} permission '{shorthand} - <{p}>'");
                         }
 
                         // The remove value is a shorthand, then replace the shorthand with its permissions
@@ -771,6 +855,7 @@ namespace RBAC
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(message);
                 Console.ResetColor();
+                log.Info("Program exited.");
                 Environment.Exit(1);
             }
             else
@@ -781,6 +866,9 @@ namespace RBAC
 
         // This field indicates if unit tests are being run
         public bool Testing { get; set; }
+        // This field indicates if the KeyVaults have changed
         public List<KeyVaultProperties> Changed { get; set; }
+        // This field defines the logger
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     }
 }
