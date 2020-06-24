@@ -7,11 +7,6 @@ namespace RBAC
     /// </summary>
     public static class Constants
     {
-        public const string READ_ME = "https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/README.md";
-        public const string JSON_SAMPLE = "https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/MasterConfigExample.json";
-        public const string KVM_CLIENT = "https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet";
-        public const string GRAPH_CLIENT_CREATE = "https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS";
-
         public const string HTTP = "https://";
         public const string AZURE_URL = ".vault.azure.net";
         public const string MICROSOFT_LOGIN = "https://login.microsoftonline.com/";

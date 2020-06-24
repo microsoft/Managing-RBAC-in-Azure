@@ -270,12 +270,12 @@ namespace RBAC
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.Error("ClientIdSecret could not be found. ");
+                        log.Error("ClientIdSecret could NOT be found.", e);
                         Exit($"Error: clientIdSecret could not be found.");
                     }
                     else
                     {
-                        log.Error($"ClientIdSecret was not retrieved. {e.Message}");
+                        log.Error("ClientIdSecret was NOT retrieved.", e);
                         Exit($"Error: clientIdSecret {e.Message}.");
                     }
                 }
@@ -290,12 +290,12 @@ namespace RBAC
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.Error("ClientKeySecret could not be found.");
+                        log.Error("ClientKeySecret could NOT be found.", e);
                         Exit($"Error: clientKeySecret could not be found.");
                     }
                     else
                     {
-                        log.Error($"ClientKeySecret was not retrieved. {e.Message}.");
+                        log.Error("ClientKeySecret was NOT retrieved", e);
                         Exit($"Error: clientKeySecret {e.Message}.");
                     }
                 }
@@ -310,19 +310,19 @@ namespace RBAC
                 {
                     if (e.Message.Contains("404"))
                     {
-                        log.Error("TenantIdSecret could not be found");
+                        log.Error("TenantIdSecret could NOT be found", e);
                         Exit($"Error: tenantIdSecret could not be found.");
                     }
                     else
                     {
-                        log.Error($"TenantIdSecret was not retrieved. {e.Message}.");
+                        log.Error("TenantIdSecret was NOT retrieved.", e);
                         Exit($"Error: tenantIdSecret {e.Message}.");
                     }
                 }
             } 
             catch (Exception e)
             {
-                log.Error($"AppName was not retrieved. {e.Message}");
+                log.Error($"AppName was NOT retrieved.", e);
                 Exit($"Error: {e.Message}");
             }
             log.Info("Secrets retrieved!");
@@ -348,8 +348,8 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                log.Error(e.Message);
-                log.Debug($"Refer to {Constants.KVM_CLIENT} for information on KeyVaultMananagentClient class");
+                log.Error("KVM Client NOT Created", e);
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultMananagentClient class");
                 Exit($"Error: {e.Message}");
                 return null;
             }
@@ -385,8 +385,8 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error(e.Message);
-                log.Debug($"Refer to {Constants.GRAPH_CLIENT_CREATE} for information on creating a graph client");
+                log.Error("Graph Client NOT created", e);
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a graph client");
                 Exit($"Error: {e.Message}");   
                 return null;
             } 
