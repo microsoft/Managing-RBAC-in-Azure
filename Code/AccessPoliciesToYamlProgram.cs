@@ -13,8 +13,6 @@ namespace RBAC
         /// <param name="args">Contains the Json directory and Yaml directory</param>
         public static void Main(string[] args)
         {
-            // ..\..\..\..\Config\MasterConfig.json 
-            // ..\..\..\..\Config\YamlOutput.yml
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;

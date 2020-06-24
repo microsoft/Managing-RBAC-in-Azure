@@ -43,7 +43,8 @@ namespace RBAC
             catch(Exception e)
             {
                 log.Error($"DeserializationFail", e);
-                log.Debug("Refer to the YamlSample.yml (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+                log.Debug("Refer to the YamlSample.yml (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on " +
+                    "formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
             }
             try 
             {
@@ -51,16 +52,18 @@ namespace RBAC
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
-                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                    foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                     {
-                        checkSPInvalidFields(kv.VaultName, sp);
+                        checkPPInvalidFields(kv.VaultName, principalPermissions);
                     }
                 }
             }
             catch (Exception e)
             {
                 log.Error($"InvalidFields", e);
-                log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' should be defined for each KeyVault. " + "For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the 'Editing the Access Policies' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' " +
+                    "should be defined for each KeyVault. For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the " +
+                    "'Editing the Access Policies' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                 Exit($"Error: {e.Message}");
             }
             log.Info("Fields validated!");
@@ -86,9 +89,9 @@ namespace RBAC
                     if (old.Count() != 0)
                     {
                         var oldVault = old.First();
-                        foreach (PrincipalPermissions p in kv.AccessPolicies)
+                        foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                         {
-                            if (!oldVault.AccessPolicies.Contains(p))
+                            if (!oldVault.AccessPolicies.Contains(principalPermissions))
                             {
                                 changes++;
                             }
@@ -97,10 +100,10 @@ namespace RBAC
                         {
                             var oldPol = oldVault.AccessPolicies[i];
                             var name = oldPol.DisplayName;
-                            var curr = kv.AccessPolicies.ToLookup(p => p.DisplayName)[name];
+                            var curr = kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[name];
                             if (oldPol.Type.ToLower() == "user")
                             {
-                                curr = kv.AccessPolicies.ToLookup(p => p.Alias)[oldPol.Alias];
+                                curr = kv.AccessPolicies.ToLookup(pp => pp.Alias)[oldPol.Alias];
                             }
                             if (curr.Count() == 0)
                             {
@@ -113,7 +116,9 @@ namespace RBAC
             if (changes > Constants.MAX_NUM_CHANGES)
             {
                 log.Error("ChangesExceedLimit");
-                log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {changes} policies. Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {changes} policies. " +
+                    $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
+                    $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                 Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
             }
             log.Info("The number of changes made was valid!");
@@ -123,7 +128,8 @@ namespace RBAC
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
                     log.Error($"VaultDeleted");
-                    log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
+                    log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
+                        $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
                     Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
                 }
             }
@@ -176,26 +182,26 @@ namespace RBAC
         /// This method verifies that the PrincipalPermissions object has the necessary fields.
         /// </summary>
         /// <param name="name">The KeyVault name</param>
-        /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        public void checkSPInvalidFields(string name, PrincipalPermissions sp)
+        /// <param name="principalPermissions">The PrincipalPermissions for which we want to validate</param>
+        public void checkPPInvalidFields(string name, PrincipalPermissions principalPermissions)
         {
-            if (sp.Type == null || sp.Type.Trim() == "")
+            if (principalPermissions.Type == null || principalPermissions.Type.Trim() == "")
             {
                 throw new Exception($"Missing Type for {name}");
             }
-            if (sp.DisplayName == null || sp.DisplayName.Trim() == "")
+            if (principalPermissions.DisplayName == null || principalPermissions.DisplayName.Trim() == "")
             {
                 throw new Exception($"Missing DisplayName for {name}");
             }
-            if (sp.PermissionsToKeys == null)
+            if (principalPermissions.PermissionsToKeys == null)
             {
                 throw new Exception($"Missing PermissionsToKeys for {name}");
             }
-            if (sp.PermissionsToSecrets == null)
+            if (principalPermissions.PermissionsToSecrets == null)
             {
                 throw new Exception($"Missing PermissionsToSecrets for {name}");
             }
-            if (sp.PermissionsToCertificates == null)
+            if (principalPermissions.PermissionsToCertificates == null)
             {
                 throw new Exception($"Missing PermissionsToCertificates for {name}");
             }
@@ -208,7 +214,7 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
-        /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
+        /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
         public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
@@ -227,7 +233,8 @@ namespace RBAC
                         if (numUsers < Constants.MIN_NUM_USERS)
                         {
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
-                            log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
+                            log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
+                                $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                             Console.ResetColor();
@@ -305,53 +312,54 @@ namespace RBAC
                 VaultProperties properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
                 properties.AccessPolicies = new List<AccessPolicyEntry>();
 
-                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                 {
                     try
                     {
-                        log.Info($"Verifying that permissions exist for {sp.DisplayName} with Alias '{sp.Alias}'...");
-                        int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
+                        log.Info($"Verifying that permissions exist for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+                        int total = principalPermissions.PermissionsToCertificates.Length + principalPermissions.PermissionsToKeys.Length + principalPermissions.PermissionsToSecrets.Length;
                         if (total != 0)
                         {
                             log.Info("Permissions exist!");
-                            string type = sp.Type.ToLower().Trim();
-                            log.Info($"Verifying that the access policy for {sp.DisplayName} with Alias '{sp.Alias}' is unique...");
-                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
-                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
+                            string type = principalPermissions.Type.ToLower().Trim();
+                            log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
+                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
+                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
                             {
                                 log.Error("AccessPolicyAlreadyDefined");
-                                log.Debug($"An access policy has already been defined for {sp.DisplayName} with Alias '{sp.Alias}' in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                                Exit($"Error: An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'.");
+                                log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
+                                    $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
                             log.Info("Access policies are 1:1!");
-                            Dictionary<string, string> data = verifyServicePrincipal(sp, type, graphClient);
+                            Dictionary<string, string> data = verifySecurityPrincipal(principalPermissions, type, graphClient);
                             if (data.ContainsKey("ObjectId"))
                             {
-                                // Set ServicePrincipal data
-                                sp.ObjectId = data["ObjectId"];
+                                // Set security principal data
+                                principalPermissions.ObjectId = data["ObjectId"];
                                 if (type == "group")
                                 {
-                                    sp.Alias = data["Alias"];
+                                    principalPermissions.Alias = data["Alias"];
                                 }
                                 else if (type == "application")
                                 {
-                                    sp.ApplicationId = data["ApplicationId"];
+                                    principalPermissions.ApplicationId = data["ApplicationId"];
                                 }
 
                                 try
                                 {
-                                    sp.PermissionsToKeys = sp.PermissionsToKeys.Select(s => s.ToLowerInvariant()).ToArray();
-                                    sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
-                                    sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
+                                    principalPermissions.PermissionsToKeys = principalPermissions.PermissionsToKeys.Select(key => key.ToLowerInvariant()).ToArray();
+                                    principalPermissions.PermissionsToSecrets = principalPermissions.PermissionsToSecrets.Select(secret => secret.ToLowerInvariant()).ToArray();
+                                    principalPermissions.PermissionsToCertificates = principalPermissions.PermissionsToCertificates.Select(certif => certif.ToLowerInvariant()).ToArray();
 
-                                    log.Info($"Validating the permissions for {sp.DisplayName} with Alias '{sp.Alias}'...");
-                                    checkValidPermissions(sp); //errors with invalid valsd or repreated info
+                                    log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+                                    checkValidPermissions(principalPermissions);
                                     log.Info("Permissions are valid!");
                                     log.Info("Translating shorthands...");
-                                    translateShorthands(sp);
+                                    translateShorthands(principalPermissions);
 
-                                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), sp.ObjectId,
-                                            new Permissions(sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates)));
+                                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
+                                            new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                                 }
                                 catch (Exception e)
                                 {
@@ -365,18 +373,20 @@ namespace RBAC
                                     else
                                     {
                                         log.Error("InvalidShorthand");
-                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
+                                            $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                                     }
-                                    Exit($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
+                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                                 }
                             }
                         }
                         else
                         {
-                            log.Error($"UndefinedAccessPolicies: {sp.DisplayName} skipped!");
-                            log.Debug($"'{sp.DisplayName}' of Type '{sp.Type}' does not have any permissions specified. Grant the {sp.Type} at least one permission or delete the {sp.Type} entirely to remove all of their permissions.");
+                            log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
+                            log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
+                                $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Error: Skipped {sp.Type}, '{sp.DisplayName}'. Does not have any permissions specified.");
+                            Console.WriteLine($"Error: Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
                             Console.ResetColor();
                         }
                     }
@@ -417,32 +427,32 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the ServicePrincipal exists and returns a dictionary that holds its data.
+        /// This method verifies that the security principal exists and returns a dictionary that holds its data.
         /// </summary>
-        /// <param name="sp">The current PrincipalPermissions object</param>
+        /// <param name="principalPermissions">The current PrincipalPermissions object</param>
         /// <param name="type">The PrincipalPermissions type</param>
-        /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
-        /// <returns>A dictionary containing the service principal data</returns>
-        public Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
+        /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
+        /// <returns>A dictionary containing the security principal data</returns>
+        public Dictionary<string, string> verifySecurityPrincipal(PrincipalPermissions principalPermissions, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            log.Info($"Verifying the data for {sp.DisplayName} with Alias '{sp.Alias}'...");
+            log.Info($"Verifying the data for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
             if (type == "user")
             {
                 try
                 {
-                    if (sp.Alias.Trim().Length == 0)
+                    if (principalPermissions.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}.");
+                        throw new Exception($"Alias is required for {principalPermissions.DisplayName}.");
                     }
 
-                    User user = graphClient.Users[sp.Alias.ToLower().Trim()]
+                    User user = graphClient.Users[principalPermissions.Alias.ToLower().Trim()]
                     .Request()
                     .GetAsync().Result;
 
-                    if (sp.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
+                    if (principalPermissions.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
-                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
+                        throw new Exception($"The DisplayName '{principalPermissions.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = user.Id;
                     log.Info($"User verified!");
@@ -452,9 +462,10 @@ namespace RBAC
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("ResourceNotFound"))
                     {
-                        log.Error($"ResourceNotFound: User with Alias '{sp.Alias}' skipped!", e);
-                        log.Debug($"The User with Alias '{sp.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        Console.WriteLine($"Error: Could not find User with Alias '{sp.Alias}'. User skipped.");
+                        log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
+                        log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
+                            $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
+                        Console.WriteLine($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -469,19 +480,19 @@ namespace RBAC
             {
                 try
                 {
-                    if (sp.Alias.Trim().Length == 0)
+                    if (principalPermissions.Alias.Trim().Length == 0)
                     {
-                        throw new Exception($"Alias is required for {sp.DisplayName}.");
+                        throw new Exception($"Alias is required for {principalPermissions.DisplayName}.");
                     }
 
                     Group group = graphClient.Groups
                     .Request()
-                    .Filter($"startswith(Mail,'{sp.Alias}')")
+                    .Filter($"startswith(Mail,'{principalPermissions.Alias}')")
                     .GetAsync().Result[0];
 
-                    if (sp.DisplayName.Trim().ToLower() != group.DisplayName.ToLower())
+                    if (principalPermissions.DisplayName.Trim().ToLower() != group.DisplayName.ToLower())
                     {
-                        throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
+                        throw new Exception($"The DisplayName '{principalPermissions.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
@@ -492,9 +503,10 @@ namespace RBAC
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
-                        log.Error($"ResourceNotFound: Group with Alias '{sp.Alias}' skipped!", e);
-                        log.Debug($"The Group with Alias '{sp.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        Console.WriteLine($"Error: Could not find Group with DisplayName '{sp.DisplayName}'. Group skipped.");
+                        log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
+                        log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
+                            $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
+                        Console.WriteLine($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
@@ -511,12 +523,12 @@ namespace RBAC
                 {
                     Application app = graphClient.Applications
                     .Request()
-                    .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
+                    .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
                     .GetAsync().Result[0];
 
-                    if (sp.Alias.Length != 0)
+                    if (principalPermissions.Alias.Length != 0)
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
+                        throw new Exception($"The Alias '{principalPermissions.Alias}' should not be defined and cannot be recognized for {principalPermissions.DisplayName}.");
                     }
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
@@ -527,9 +539,11 @@ namespace RBAC
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
-                        log.Error($"ResourceNotFound: Application with DisplayName '{sp.DisplayName}' skipped!", e);
-                        log.Debug($"The Application with DisplayName '{sp.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. For more information on creating an Application in AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        Console.WriteLine($"Error: Could not find Application with DisplayName '{sp.DisplayName}'. Application skipped.");
+                        log.Error($"ResourceNotFound: Application with DisplayName '{principalPermissions.DisplayName}' skipped!", e);
+                        log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
+                            $"For more information on creating an Application in AAD, visit " +
+                            $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
+                        Console.WriteLine($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
                     }
                     else
                     {
@@ -546,12 +560,12 @@ namespace RBAC
                 {
                     ServicePrincipal principal = graphClient.ServicePrincipals
                         .Request()
-                        .Filter($"startswith(DisplayName,'{sp.DisplayName}')")
+                        .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
                         .GetAsync().Result[0];
 
-                    if (sp.Alias.Length != 0)
+                    if (principalPermissions.Alias.Length != 0)
                     {
-                        throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
+                        throw new Exception($"The Alias '{principalPermissions.Alias}' should not be defined and cannot be recognized for {principalPermissions.DisplayName}.");
                     }
                     data["ObjectId"] = principal.Id;
                     log.Info($"Service Principal verified!");
@@ -561,9 +575,11 @@ namespace RBAC
                     Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
-                        log.Error($"ResourceNotFound: ServicePrincipal with DisplayName '{sp.DisplayName}' skipped!", e);
-                        log.Debug($"The ServicePrincipal with DisplayName '{sp.DisplayName}' could not be found. Please verify that this Service Principal exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        Console.WriteLine($"Error: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. Service Principal skipped.");
+                        log.Error($"ResourceNotFound: ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' skipped!", e);
+                        log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
+                            $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
+                            $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
+                        Console.WriteLine($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
@@ -576,7 +592,8 @@ namespace RBAC
             }
             else
             {
-                throw new Exception($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'.");
+                throw new Exception($"'{principalPermissions.Type}' is not a valid type for {principalPermissions.DisplayName}. Valid types are 'User', 'Group', " +
+                    $"'Application', or 'Service Principal'.");
             }
             return data;
         }
@@ -584,61 +601,61 @@ namespace RBAC
         /// <summary>
         /// This method verifies that the PrincipalPermissions object has valid permissions and does not contain duplicate permissions.
         /// </summary>
-        /// <param name="sp">The PrincipalPermissions for which we want to validate</param>
-        public void checkValidPermissions(PrincipalPermissions sp)
+        /// <param name="principalPermissions">The PrincipalPermissions for which we want to validate</param>
+        public void checkValidPermissions(PrincipalPermissions principalPermissions)
         {
-            var trimKeyPermissions = new string[sp.PermissionsToKeys.Length];
-            foreach (string kp in sp.PermissionsToKeys)
+            var trimKeyPermissions = new string[principalPermissions.PermissionsToKeys.Length];
+            foreach (string key in principalPermissions.PermissionsToKeys)
             {
-                var k = kp.Trim().ToLower();
-                trimKeyPermissions[trimKeyPermissions.Count(s => s != null)] = k;
+                var k = key.Trim().ToLower();
+                trimKeyPermissions[trimKeyPermissions.Count(val => val != null)] = k;
                 if (!Constants.VALID_KEY_PERMISSIONS.Contains(k.ToLower()) && (!k.ToLower().StartsWith("all -")) && (!k.ToLower().StartsWith("read -"))
                     && (!k.ToLower().StartsWith("write -")) && (!k.ToLower().StartsWith("storage -")) && (!k.ToLower().StartsWith("crypto - ")))
                 {
-                    throw new Exception($"Invalid key permission '{kp}'");
+                    throw new Exception($"Invalid key permission '{key}'");
                 }
             }
-            sp.PermissionsToKeys = trimKeyPermissions;
+            principalPermissions.PermissionsToKeys = trimKeyPermissions;
 
-            var trimSecPermissions = new string[sp.PermissionsToSecrets.Length];
-            foreach (string s in sp.PermissionsToSecrets)
+            var trimSecPermissions = new string[principalPermissions.PermissionsToSecrets.Length];
+            foreach (string secret in principalPermissions.PermissionsToSecrets)
             {
-                var se = s.Trim().ToLower();
-                trimSecPermissions[trimSecPermissions.Count(s => s != null)] = se;
+                var se = secret.Trim().ToLower();
+                trimSecPermissions[trimSecPermissions.Count(val => val != null)] = se;
                 if (!Constants.VALID_SECRET_PERMISSIONS.Contains(se.ToLower()) && (!se.ToLower().StartsWith("all -")) && (!se.ToLower().StartsWith("read -"))
                     && (!se.ToLower().StartsWith("write -")) && (!se.ToLower().StartsWith("storage -")))
                 {
-                    throw new Exception($"Invalid secret permission '{s}'");
+                    throw new Exception($"Invalid secret permission '{secret}'");
                 }
             }
-            sp.PermissionsToSecrets = trimSecPermissions;
+            principalPermissions.PermissionsToSecrets = trimSecPermissions;
 
-            var trimCertPermissions = new string[sp.PermissionsToCertificates.Length];
-            foreach (string cp in sp.PermissionsToCertificates)
+            var trimCertifPermissions = new string[principalPermissions.PermissionsToCertificates.Length];
+            foreach (string certif in principalPermissions.PermissionsToCertificates)
             {
-                var c = cp.Trim().ToLower();
-                trimCertPermissions[trimCertPermissions.Count(s => s != null)] = c;
+                var c = certif.Trim().ToLower();
+                trimCertifPermissions[trimCertifPermissions.Count(val => val != null)] = c;
                 if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(c.ToLower()) && (!c.ToLower().StartsWith("all -")) && (!c.ToLower().StartsWith("read -"))
                     && (!c.ToLower().StartsWith("write -")) && (!c.ToLower().StartsWith("storage -")) && (!c.ToLower().StartsWith("management -")))
                 {
-                    throw new Exception($"Invalid certificate permission '{cp}'");
+                    throw new Exception($"Invalid certificate permission '{certif}'");
                 }
             }
-            sp.PermissionsToCertificates = trimCertPermissions;
+            principalPermissions.PermissionsToCertificates = trimCertifPermissions;
 
-            if (sp.PermissionsToKeys.Distinct().Count() != sp.PermissionsToKeys.Count())
+            if (principalPermissions.PermissionsToKeys.Distinct().Count() != principalPermissions.PermissionsToKeys.Count())
             {
-                List<string> duplicates = findDuplicates(sp.PermissionsToKeys);
+                List<string> duplicates = findDuplicates(principalPermissions.PermissionsToKeys);
                 throw new Exception($"Key permission(s) '{string.Join(", ", duplicates)}' repeated");
             }
-            if (sp.PermissionsToSecrets.Distinct().Count() != sp.PermissionsToSecrets.Count())
+            if (principalPermissions.PermissionsToSecrets.Distinct().Count() != principalPermissions.PermissionsToSecrets.Count())
             {
-                List<string> duplicates = findDuplicates(sp.PermissionsToSecrets);
+                List<string> duplicates = findDuplicates(principalPermissions.PermissionsToSecrets);
                 throw new Exception($"Secret permission(s) '{string.Join(", ", duplicates)}' repeated");
             }
-            if (sp.PermissionsToCertificates.Distinct().Count() != sp.PermissionsToCertificates.Count())
+            if (principalPermissions.PermissionsToCertificates.Distinct().Count() != principalPermissions.PermissionsToCertificates.Count())
             {
-                List<string> duplicates = findDuplicates(sp.PermissionsToCertificates);
+                List<string> duplicates = findDuplicates(principalPermissions.PermissionsToCertificates);
                 throw new Exception($"Certificate permission(s) '{string.Join(", ", duplicates)}' repeated");
             }
         }
@@ -667,39 +684,39 @@ namespace RBAC
         /// <summary>
         /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
         /// </summary>
-        /// <param name="sp">The current PrincipalPermissions object</param>
-        public void translateShorthands(PrincipalPermissions sp)
+        /// <param name="principalPermissions">The current PrincipalPermissions object</param>
+        public void translateShorthands(PrincipalPermissions principalPermissions)
         {
-            sp.PermissionsToKeys = translateShorthand("all", "Key", sp.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("all", "Key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("read", "Key", sp.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("read", "Key", principalPermissions.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("write", "Key", sp.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("write", "Key", principalPermissions.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("storage", "Key", sp.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("storage", "Key", principalPermissions.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            sp.PermissionsToKeys = translateShorthand("crypto", "Key", sp.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("crypto", "Key", principalPermissions.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
 
-            sp.PermissionsToSecrets = translateShorthand("all", "secret", sp.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
+            principalPermissions.PermissionsToSecrets = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            sp.PermissionsToSecrets = translateShorthand("read", "secret", sp.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
+            principalPermissions.PermissionsToSecrets = translateShorthand("read", "secret", principalPermissions.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            sp.PermissionsToSecrets = translateShorthand("write", "secret", sp.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
+            principalPermissions.PermissionsToSecrets = translateShorthand("write", "secret", principalPermissions.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            sp.PermissionsToSecrets = translateShorthand("storage", "secret", sp.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
+            principalPermissions.PermissionsToSecrets = translateShorthand("storage", "secret", principalPermissions.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
 
-            sp.PermissionsToCertificates = translateShorthand("all", "certificate", sp.PermissionsToCertificates, Constants.ALL_CERTIFICATE_PERMISSIONS,
-                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            sp.PermissionsToCertificates = translateShorthand("read", "certificate", sp.PermissionsToCertificates, Constants.READ_CERTIFICATE_PERMISSIONS,
-                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            sp.PermissionsToCertificates = translateShorthand("write", "certificate", sp.PermissionsToCertificates, Constants.WRITE_CERTIFICATE_PERMISSIONS,
-                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            sp.PermissionsToCertificates = translateShorthand("storage", "certificate", sp.PermissionsToCertificates, Constants.STORAGE_CERTIFICATE_PERMISSIONS,
-                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            sp.PermissionsToCertificates = translateShorthand("management", "certificate", sp.PermissionsToCertificates, Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS,
-                Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = translateShorthand("all", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.ALL_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = translateShorthand("read", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.READ_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = translateShorthand("write", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.WRITE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = translateShorthand("storage", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.STORAGE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = translateShorthand("management", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
         }
 
         /// <summary>

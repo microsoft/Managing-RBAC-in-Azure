@@ -8,7 +8,7 @@ using YamlDotNet.Serialization;
 namespace RBAC
 {
     /// <summary>
-    /// This class stores the AccessPolicies of a Service Principal.
+    /// This class stores the AccessPolicies of a security principal.
     /// </summary>
     public class PrincipalPermissions
     {
@@ -30,7 +30,7 @@ namespace RBAC
 
 
         /// <summary>
-        /// This method gets the Type, DisplayName, and Alias of the ServicePrincipal using the GraphServiceClient.
+        /// This method gets the Type, DisplayName, and Alias of the security principal using the GraphServiceClient.
         /// </summary>
         /// <param name="accessPol">The current AccessPolicyEntry</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
@@ -87,10 +87,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method gets the DisplayName of the ServicePrincipal.
+        /// This method gets the DisplayName of the security principal.
         /// </summary>
         /// <param name="typeAndName">The string array holding the Type, DisplayName, and Alias</param>
-        /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        /// <returns>The DisplayName of the security principal if one exists. Otherwise, returns an empty string.</returns>
         private string getDisplayName(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 1)
@@ -101,10 +101,10 @@ namespace RBAC
         }
 
         /// <summary>
-        ///  This method gets the Alias of the ServicePrincipal.
+        ///  This method gets the Alias of the security principal.
         /// </summary>
         /// <param name="typeAndName">A string array holding the Type, DisplayName, and Alias if applicable</param>
-        /// <returns>The Alias of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        /// <returns>The Alias of the security principal if one exists. Otherwise, returns an empty string.</returns>
         private string getAlias(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 2)
@@ -115,10 +115,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method returns a string array of the permissions.Null if there were no granted permissions. Otherwise, returns the string array. 
+        /// This method gets a string array of the permissions.
         /// </summary>
         /// <param name="permissions">The list of Key, Secret, or Certificate permissions</param>
-        /// <returns>The string array of permissions</returns>
+        /// <returns>Null if there were no granted permissions. Otherwise, returns the string array of permissions</returns>
         private string[] getPermissions(IList<string> permissions)
         {
             if (permissions != null && permissions.Count != 0)

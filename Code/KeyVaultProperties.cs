@@ -113,9 +113,9 @@ namespace RBAC
         public int usersContained()
         {
             int count = 0;
-            foreach(PrincipalPermissions sp in AccessPolicies)
+            foreach(PrincipalPermissions principalPermissions in AccessPolicies)
             {
-                if (sp.Type.Trim().ToLower() == "user")
+                if (principalPermissions.Type.Trim().ToLower() == "user")
                 {
                     count++;
                 }

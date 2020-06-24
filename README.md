@@ -20,8 +20,7 @@ Take note of the ClientKey value.
 4. Navigate to the **API permissions** tab and click **Add a permission**. Under **Microsoft APIs**, select **Microsoft Graph**. 
 5. Click **Delegated Permissions**, expand the **User** category, and select **User.Read**, **User.Read.All**, and **User.ReadBasic.All**. 
 6. Now click **Application Permissions**, expand the **User** category, and select **User.Read.All**. 
-7. Now click **Add Permissions**. Note that depending on your associated Tenant, your access requests for these API permissions may require manual approval 
-and could result in a multi-day process. 
+7. Now click **Add Permissions**. Note that depending on your associated Tenant, you may require a tenant admin to grant the consent.
 
 For more information on setting up your AAD Application, [click here.](https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-app)
 
