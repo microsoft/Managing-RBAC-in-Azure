@@ -20,36 +20,46 @@ namespace RBAC
         public const int MIN_NUM_USERS = 2;
         public const int MAX_NUM_CHANGES = 5;
 
+        public enum USER_TYPES { User, Group, ServicePrincipal, Application }
         // Defines shorthands for keys
-        public static readonly string[] ALL_KEY_PERMISSIONS = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge" };
-        public static readonly string[] READ_KEY_PERMISSIONS = { "get", "list" };
-        public static readonly string[] WRITE_KEY_PERMISSIONS = { "update", "create", "delete" };
-        public static readonly string[] STORAGE_KEY_PERMISSIONS = { "import", "recover", "backup", "restore" };
-        public static readonly string[] CRYPTOGRAPHIC_KEY_PERMISSIONS = { "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign" };
+        public enum ALL_KEY_PERMISSIONS { get, list, update, create, import, delete, recover,
+            backup, restore, decrypt, encrypt, unwrapkey, wrapkey, verify, sign, purge }
+        public enum READ_KEY_PERMISSIONS { get, list };
+        public enum WRITE_KEY_PERMISSIONS { update, create, delete }
+        public enum STORAGE_KEY_PERMISSIONS { import, recover, backup, restore }
+        public enum CRYPTOGRAPHIC_KEY_PERMISSIONS { decrypt, encrypt, unwrapkey, wrapkey, verify, sign }
 
         // Defines shorthands for secrets
-        public static readonly string[] ALL_SECRET_PERMISSIONS = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
-        public static readonly string[] READ_SECRET_PERMISSIONS = { "get", "list" };
-        public static readonly string[] WRITE_SECRET_PERMISSIONS = { "set", "delete" };
-        public static readonly string[] STORAGE_SECRET_PERMISSIONS = { "recover", "backup", "restore" };
+        public enum ALL_SECRET_PERMISSIONS { get, list, set, delete, recover, backup, restore, purge }
+        public enum READ_SECRET_PERMISSIONS { get, list }
+        public enum WRITE_SECRET_PERMISSIONS { set, delete }
+        public enum STORAGE_SECRET_PERMISSIONS { recover, backup, restore }
 
         // Defines shorthands for certificates
-        public static readonly string[] ALL_CERTIFICATE_PERMISSIONS = { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts",
-            "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge" };
-        public static readonly string[] READ_CERTIFICATE_PERMISSIONS = { "get", "list" };
-        public static readonly string[] WRITE_CERTIFICATE_PERMISSIONS = { "update", "create", "delete" };
-        public static readonly string[] STORAGE_CERTIFICATE_PERMISSIONS = { "import", "recover", "backup", "restore" };
-        public static readonly string[] MANAGEMENT_CERTIFICATE_PERMISSIONS = { "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" };
+        public enum ALL_CERTIFICATE_PERMISSIONS { get, list, update, create, import, delete, recover, backup, restore, managecontacts,
+            manageissuers, getissuers, listissuers, setissuers, deleteissuers, purge }
+        public enum READ_CERTIFICATE_PERMISSIONS { get, list }
+        public enum WRITE_CERTIFICATE_PERMISSIONS { update, create, delete }
+        public enum STORAGE_CERTIFICATE_PERMISSIONS { import, recover, backup, restore }
+        public enum MANAGEMENT_CERTIFICATE_PERMISSIONS { managecontacts, manageissuers, getissuers, listissuers, setissuers, deleteissuers }
 
         // Defines shorthand keywords
-        public static readonly string[] SHORTHANDS_KEYS = { "all", "read", "write", "storage", "crypto" };
-        public static readonly string[] SHORTHANDS_SECRETS = { "all", "read", "write", "storage" };
-        public static readonly string[] SHORTHANDS_CERTIFICATES = { "all", "read", "write", "storage", "management" };
+        public enum SHORTHANDS_KEYS { all, read, write, storage, crypto }
+        public enum SHORTHANDS_SECRETS { all, read, write, storage }
+        public enum SHORTHANDS_CERTIFICATES { all, read, write, storage, management }
 
         // Defines all valid permissions
-        public static readonly string[] VALID_KEY_PERMISSIONS = ALL_KEY_PERMISSIONS.Concat(SHORTHANDS_KEYS).ToArray();
-        public static readonly string[] VALID_SECRET_PERMISSIONS = ALL_SECRET_PERMISSIONS.Concat(SHORTHANDS_SECRETS).ToArray();
-        public static readonly string[] VALID_CERTIFICATE_PERMISSIONS = ALL_CERTIFICATE_PERMISSIONS.Concat(SHORTHANDS_CERTIFICATES).ToArray();
+        public enum VALID_KEY_PERMISSIONS
+        {
+            get, list, update, create, import, delete, recover, backup, restore, decrypt, 
+            encrypt, unwrapkey, wrapkey, verify, sign, purge, all, read, write, storage, crypto
+        }
+        public enum VALID_SECRET_PERMISSIONS { get, list, set, delete, recover, backup, restore, purge, all, read, write, storage }
+        public enum VALID_CERTIFICATE_PERMISSIONS
+        {
+            get, list, update, create, import, delete, recover, backup, restore, managecontacts,
+            manageissuers, getissuers, listissuers, setissuers, deleteissuers, purge,
+            all, read, write, storage, management
+        }
     }
 }
