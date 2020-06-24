@@ -305,66 +305,10 @@ namespace RBAC
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
                 string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
-                try
-                {
-                    log.Info("Getting clientId...");
-                    KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
-                    secrets["clientId"] = clientIdSecret.Value;
-                    log.Info("ClientId retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("ClientIdSecret could not be found. ");
-                        Exit($"Error: clientIdSecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"ClientIdSecret was not retrieved. {e.Message}");
-                        Exit($"Error: clientIdSecret {e.Message}.");
-                    }
-                }
-                try
-                {
-                    log.Info("Getting clientKey...");
-                    KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
-                    secrets["clientKey"] = clientKeySecret.Value;
-                    log.Info("ClientKey retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("ClientKeySecret could not be found.");
-                        Exit($"Error: clientKeySecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"ClientKeySecret was not retrieved. {e.Message}.");
-                        Exit($"Error: clientKeySecret {e.Message}.");
-                    }
-                }
-                try
-                {
-                    log.Info("Getting tenantId...");
-                    KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
-                    secrets["tenantId"] = tenantIdSecret.Value;
-                    log.Info("TenantId retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("TenantIdSecret could not be found");
-                        Exit($"Error: tenantIdSecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"TenantIdSecret was not retrieved. {e.Message}.");
-                        Exit($"Error: tenantIdSecret {e.Message}.");
-                    }
-                }
+
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientIdSecretName, "clientId");
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
             } 
             catch (Exception e)
             {
@@ -372,8 +316,38 @@ namespace RBAC
                 Exit($"Error: {e.Message}");
             }
             log.Info("Secrets retrieved!");
-
             return secrets;
+        }
+
+        /// <summary>
+        /// This method provides error-handling for getting a secret value.
+        /// </summary>
+        /// <param name="secretClient">The SecretClient utilized to retrieve the secret value</param>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="name">The name of the secret, specified in the MasterConfig.json file</param>
+        /// <param name="key">The type of secret i.e. tenantId</param>
+        private void getSecret(SecretClient secretClient, Dictionary<string, string> secrets, string name, string key)
+        {
+            try
+            {
+                log.Info($"Getting {key}...");
+                KeyVaultSecret secret = secretClient.GetSecret(name);
+                secrets[key] = secret.Value;
+                log.Info($"{key} retrieved!");
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Contains("404"))
+                {
+                    log.Error($"{key}Secret could not be found");
+                    Exit($"Error: {key}Secret could not be found.");
+                }
+                else
+                {
+                    log.Error($"{key}Secret was not retrieved. {e.Message}.");
+                    Exit($"Error: {key}Secret {e.Message}.");
+                }
+            }
         }
 
         /// <summary>
@@ -388,9 +362,9 @@ namespace RBAC
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-                var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
+                var kvmClient = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
                 log.Info("KVM Client created!");
-                return ret;
+                return kvmClient;
             } 
             catch (Exception e)
             {
@@ -425,9 +399,9 @@ namespace RBAC
                     Constants.GRAPHCLIENT_URL
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
-                var ret = new GraphServiceClient(authProvider);
+                var graphClient = new GraphServiceClient(authProvider);
                 log.Info("Graph Client created!");
-                return ret;
+                return graphClient;
             }
             catch (Exception e)
             {
