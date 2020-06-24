@@ -14,6 +14,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using System.Reflection;
 
 namespace RBAC
 {
@@ -104,24 +105,32 @@ namespace RBAC
         /// <summary>
         /// This method verifies that all of the required inputs exist within the Json file.
         /// </summary>
-
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
         public void checkJsonFields(JsonInput vaultList, JObject configVaults)
         {
             List<string> missingInputs = new List<string>();
-            if (vaultList.AadAppKeyDetails == null)
+            int numValid = 0;
+            if (vaultList.AadAppKeyDetails != null)
+            {
+                ++numValid;
+            }
+            else
             {
                 missingInputs.Add("AadAppKeyDetails");
             }
-            if (vaultList.Resources == null)
+
+            if (vaultList.Resources != null)
+            {
+                ++numValid;
+            }
+            else
             {
                 missingInputs.Add("Resources");
             }
 
             int numMissing = missingInputs.Count();
-            int numValid = 2 - numMissing;
-            if (missingInputs.Count() == 0 && configVaults.Children().Count() != 2)
+            if (missingInputs.Count() == 0 && configVaults.Children().Count() != numValid)
             {
                 throw new Exception($"Invalid fields in Json were defined. Valid fields are 'AadAppKeyDetails' and 'Resources'.");
             }
@@ -143,32 +152,11 @@ namespace RBAC
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
         public void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
         {
-            List<string> missingInputs = new List<string>();
-            if (vaultList.AadAppKeyDetails.AadAppName == null)
-            {
-                missingInputs.Add("AadAppName");
-            }
-            if (vaultList.AadAppKeyDetails.VaultName == null)
-            {
-                missingInputs.Add("VaultName");
-            }
-            if (vaultList.AadAppKeyDetails.ClientIdSecretName == null)
-            {
-                missingInputs.Add("ClientIdSecretName");
-            }
-            if (vaultList.AadAppKeyDetails.ClientKeySecretName == null)
-            {
-                missingInputs.Add("ClientKeySecretName");
-            }
-            if (vaultList.AadAppKeyDetails.TenantIdSecretName == null)
-            {
-                missingInputs.Add("TenantIdSecretName");
-            }
-
+            List<string> missingInputs = getMissingInputs(vaultList);
+            int numValid = Convert.ToInt32(missingInputs.Last());
             int numMissing = missingInputs.Count();
             JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
-            int numValid = 5 - numMissing;
-            if (numMissing == 0 && (aadDetails.Children().Count() != 5))
+            if (numMissing == 0 && (aadDetails.Children().Count() != numValid))
             {
                 throw new Exception($"Invalid fields for AadAppKeyDetails were defined. " +
                     $"Valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
@@ -182,6 +170,63 @@ namespace RBAC
             {
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails.");
             }
+        }
+
+        /// <summary>
+        /// This method returns a list of missing inputs from AadAppKeyDetails as well as the number of valid inputs.
+        /// </summary>
+        /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
+        /// <returns>A list of missing inputs from AadAppKeyDetails</returns>
+        public List<string> getMissingInputs(JsonInput vaultList)
+        {
+            List<string> missingInputs = new List<string>();
+            int numValid = 0;
+            if (vaultList.AadAppKeyDetails.AadAppName != null)
+            {
+                ++numValid;
+            }
+            else
+            {
+                missingInputs.Add("AadAppName");
+            }
+
+            if (vaultList.AadAppKeyDetails.VaultName != null)
+            {
+                ++numValid;
+            }
+            else
+            {
+                missingInputs.Add("VaultName");
+            }
+
+            if (vaultList.AadAppKeyDetails.ClientIdSecretName != null)
+            {
+                ++numValid;
+            }
+            else
+            {
+                missingInputs.Add("ClientIdSecretName");
+            }
+
+            if (vaultList.AadAppKeyDetails.ClientKeySecretName != null)
+            {
+                ++numValid;
+            }
+            else
+            {
+                missingInputs.Add("ClientKeySecretName");
+            }
+
+            if (vaultList.AadAppKeyDetails.TenantIdSecretName != null)
+            {
+                ++numValid;
+            }
+            else
+            {
+                missingInputs.Add("TenantIdSecretName");
+            }
+            missingInputs.Add(numValid.ToString());
+            return missingInputs;
         }
 
         /// <summary>
@@ -260,66 +305,10 @@ namespace RBAC
                 string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
                 string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
-                try
-                {
-                    log.Info("Getting clientId...");
-                    KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
-                    secrets["clientId"] = clientIdSecret.Value;
-                    log.Info("ClientId retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("ClientIdSecret could not be found. ");
-                        Exit($"Error: clientIdSecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"ClientIdSecret was not retrieved. {e.Message}");
-                        Exit($"Error: clientIdSecret {e.Message}.");
-                    }
-                }
-                try
-                {
-                    log.Info("Getting clientKey...");
-                    KeyVaultSecret clientKeySecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientKeySecretName);
-                    secrets["clientKey"] = clientKeySecret.Value;
-                    log.Info("ClientKey retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("ClientKeySecret could not be found.");
-                        Exit($"Error: clientKeySecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"ClientKeySecret was not retrieved. {e.Message}.");
-                        Exit($"Error: clientKeySecret {e.Message}.");
-                    }
-                }
-                try
-                {
-                    log.Info("Getting tenantId...");
-                    KeyVaultSecret tenantIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.TenantIdSecretName);
-                    secrets["tenantId"] = tenantIdSecret.Value;
-                    log.Info("TenantId retrieved!");
-                }
-                catch (Exception e)
-                {
-                    if (e.Message.Contains("404"))
-                    {
-                        log.Error("TenantIdSecret could not be found");
-                        Exit($"Error: tenantIdSecret could not be found.");
-                    }
-                    else
-                    {
-                        log.Error($"TenantIdSecret was not retrieved. {e.Message}.");
-                        Exit($"Error: tenantIdSecret {e.Message}.");
-                    }
-                }
+
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientIdSecretName, "clientId");
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
+                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
             } 
             catch (Exception e)
             {
@@ -327,8 +316,38 @@ namespace RBAC
                 Exit($"Error: {e.Message}");
             }
             log.Info("Secrets retrieved!");
-
             return secrets;
+        }
+
+        /// <summary>
+        /// This method provides error-handling for getting a secret value.
+        /// </summary>
+        /// <param name="secretClient">The SecretClient utilized to retrieve the secret value</param>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="name">The name of the secret, specified in the MasterConfig.json file</param>
+        /// <param name="key">The type of secret i.e. tenantId</param>
+        private void getSecret(SecretClient secretClient, Dictionary<string, string> secrets, string name, string key)
+        {
+            try
+            {
+                log.Info($"Getting {key}...");
+                KeyVaultSecret secret = secretClient.GetSecret(name);
+                secrets[key] = secret.Value;
+                log.Info($"{key} retrieved!");
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Contains("404"))
+                {
+                    log.Error($"{key}Secret could not be found");
+                    Exit($"Error: {key}Secret could not be found.");
+                }
+                else
+                {
+                    log.Error($"{key}Secret was not retrieved. {e.Message}.");
+                    Exit($"Error: {key}Secret {e.Message}.");
+                }
+            }
         }
 
         /// <summary>
@@ -343,9 +362,9 @@ namespace RBAC
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-                var ret = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
+                var kvmClient = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
                 log.Info("KVM Client created!");
-                return ret;
+                return kvmClient;
             } 
             catch (Exception e)
             {
@@ -380,9 +399,9 @@ namespace RBAC
                     Constants.GRAPHCLIENT_URL
                 };
                 MsalAuthenticationProvider authProvider = new MsalAuthenticationProvider(cca, scopes.ToArray());
-                var ret = new GraphServiceClient(authProvider);
+                var graphClient = new GraphServiceClient(authProvider);
                 log.Info("Graph Client created!");
-                return ret;
+                return graphClient;
             }
             catch (Exception e)
             {
