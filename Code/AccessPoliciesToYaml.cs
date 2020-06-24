@@ -64,8 +64,9 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                log.Error($"Invalid Main arguments. {e.Message}");
-                log.Debug($"Refer to {Constants.READ_ME} & search 'Defining your File paths' if you've forgotten how to do so.");
+                log.Error("InvalidArgs", e);
+                log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
+                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
                 Exit($"Error: {e.Message}");
             }
         }
@@ -92,10 +93,8 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error($"Unable to read & deserialize Json. {e.Message}");
-                log.Debug("Note that all of the fields within AadAppKeyDetails are required, but not all fields are required within Resources for each Resource object." +
-                    $"\n Refer to {Constants.JSON_SAMPLE} for a sample json input." +
-                    $"\n Refer to {Constants.READ_ME} and search 'Creating the MasterConfig.json File to learn more in the ReadME.");
+                log.Error("DeserializationFail", e);
+                log.Debug("Refer to https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/Config/MasterConfigExample.jsonfor for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
                 Exit($"Error: {e.Message}");
                 return null;
             }
