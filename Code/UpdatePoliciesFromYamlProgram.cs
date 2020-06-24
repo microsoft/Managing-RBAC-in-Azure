@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Azure;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +21,10 @@ namespace RBAC
         public static List<KeyVaultProperties> run(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
+
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("Refer to 'LogFile.log' for more details should an error be thrown.\n");
+            Console.ResetColor();
 
             Console.WriteLine("Reading input file...");
             ap.verifyFileExtensions(args);
@@ -53,6 +58,7 @@ namespace RBAC
             }
             else
             {
+                log.Info("There is no difference between the YAML and the Key Vaults. No changes made.");
                 Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made.");
             }
             if (testing)
@@ -61,6 +67,8 @@ namespace RBAC
             }
             return null;
         }
+
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     }
 }
 

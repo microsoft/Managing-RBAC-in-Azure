@@ -25,6 +25,17 @@ namespace RBAC
                 Assert.Fail();
             }
 
+            string[] nothing = { };
+            try
+            {
+                ap.verifyFileExtensions(nothing);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual(e.Message, "Error: Missing 2 input files.");
+            }
+
             string[] invalidLength = { "file.json" };
             try
             {
@@ -33,7 +44,18 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: Missing input file.");
+                Assert.AreEqual(e.Message, "Error: Missing 1 input file.");
+            }
+
+            string[] tooMany = { "file1.json", "file2.json", "file3.yml" };
+            try
+            {
+                ap.verifyFileExtensions(tooMany);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual(e.Message, "Error: Too many input files. Maximum needed is 2.");
             }
 
             string[] invalidJson = { "file.jsn", "file.yml" };
@@ -44,7 +66,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: The 1st argument is not a .json file");
+                Assert.AreEqual(e.Message, "Error: The 1st argument is not a .json file.");
             }
 
             string[] invalidYml = { "file.json", "file.yaml" };
@@ -55,7 +77,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: The 2nd argument is not a .yml file");
+                Assert.AreEqual(e.Message, "Error: The 2nd argument is not a .yml file.");
             }
         }
 

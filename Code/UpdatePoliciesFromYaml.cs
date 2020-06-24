@@ -32,22 +32,22 @@ namespace RBAC
             List<KeyVaultProperties> yamlVaults = new List<KeyVaultProperties>();
             try
             {
-                log.Info("Reading .yml file...");
+                log.Info("Reading YAML file...");
                 string yaml = System.IO.File.ReadAllText(yamlDirectory);
-                log.Info("File successfully read!");
-                log.Info("Deserializing .yml file...");
+                log.Info("YAML successfully read!");
+                log.Info("Deserializing YAML file...");
                 var deserializer = new DeserializerBuilder().Build();
                 yamlVaults = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
-                log.Info("File successfully deserialized!");
+                log.Info("YAML successfully deserialized!");
             }
             catch(Exception e)
             {
                 log.Error($"DeserializationFail", e);
-                log.Debug("Refer to the .yml Sample (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+                log.Debug("Refer to the YamlSample.yml (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
             }
             try 
             {
-                log.Info("Checking for invalid fields...");
+                log.Info("Checking for null or empty fields...");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     checkVaultInvalidFields(kv);
@@ -117,14 +117,14 @@ namespace RBAC
                 Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
             }
             log.Info("The number of changes made was valid!");
-            log.Info("Scanning the .yml and .json files...");
+            log.Info("Checking for KeyVault additions or deletions...");
             foreach (KeyVaultProperties kv in vaultsRetrieved)
             {
                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
                 {
                     log.Error($"VaultDeleted");
                     log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
-                    Exit($"Error: KeyVault, {kv.VaultName}, specified in the JSON file was not found in the YAML file.");
+                    Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
                 }
             }
             foreach (KeyVaultProperties kv in yamlVaults)
@@ -136,7 +136,7 @@ namespace RBAC
                     Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
                 }
             }
-            log.Info("Files verified!");
+            log.Info("Checked successfully!");
             return changes;
         }
 
@@ -212,6 +212,7 @@ namespace RBAC
         public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
+            log.Info("Updating vaults...");
             foreach (KeyVaultProperties kv in yamlVaults)
             {
                 try
@@ -251,6 +252,7 @@ namespace RBAC
                     Console.ResetColor();
                 }
             }
+            log.Info("Updates finished!");
         }
 
         /// <summary>
@@ -307,18 +309,18 @@ namespace RBAC
                 {
                     try
                     {
-                        log.Info($"Verifying that permissions exist for {sp.DisplayName}...");
+                        log.Info($"Verifying that permissions exist for {sp.DisplayName} with Alias '{sp.Alias}'...");
                         int total = sp.PermissionsToCertificates.Length + sp.PermissionsToKeys.Length + sp.PermissionsToSecrets.Length;
                         if (total != 0)
                         {
                             log.Info("Permissions exist!");
                             string type = sp.Type.ToLower().Trim();
-                            log.Info($"Verifying that the access policy for {sp.DisplayName} is unique...");
+                            log.Info($"Verifying that the access policy for {sp.DisplayName} with Alias '{sp.Alias}' is unique...");
                             if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(v => v.Alias)[sp.Alias].Count() > 1) ||
                                 (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(v => v.DisplayName)[sp.DisplayName].Count() > 1))
                             {
                                 log.Error("AccessPolicyAlreadyDefined");
-                                log.Debug($"An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                log.Debug($"An access policy has already been defined for {sp.DisplayName} with Alias '{sp.Alias}' in KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
                                 Exit($"Error: An access policy has already been defined for {sp.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
                             log.Info("Access policies are 1:1!");
@@ -342,7 +344,7 @@ namespace RBAC
                                     sp.PermissionsToSecrets = sp.PermissionsToSecrets.Select(s => s.ToLowerInvariant()).ToArray();
                                     sp.PermissionsToCertificates = sp.PermissionsToCertificates.Select(s => s.ToLowerInvariant()).ToArray();
 
-                                    log.Info($"Validating the permissions for {sp.DisplayName}...");
+                                    log.Info($"Validating the permissions for {sp.DisplayName} with Alias '{sp.Alias}'...");
                                     checkValidPermissions(sp); //errors with invalid valsd or repreated info
                                     log.Info("Permissions are valid!");
                                     log.Info("Translating shorthands...");
@@ -363,7 +365,7 @@ namespace RBAC
                                     else
                                     {
                                         log.Error("InvalidShorthand");
-                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/README.md");
+                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                                     }
                                     Exit($"Error: {e.Message} for {sp.DisplayName} in {kv.VaultName}.");
                                 }
@@ -424,7 +426,7 @@ namespace RBAC
         public Dictionary<string, string> verifyServicePrincipal(PrincipalPermissions sp, string type, GraphServiceClient graphClient)
         {
             Dictionary<string, string> data = new Dictionary<string, string>();
-            log.Info($"Verifying {sp.DisplayName}...");
+            log.Info($"Verifying the data for {sp.DisplayName} with Alias '{sp.Alias}'...");
             if (type == "user")
             {
                 try
@@ -443,7 +445,7 @@ namespace RBAC
                         throw new Exception($"The DisplayName '{sp.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = user.Id;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"User verified!");
                 }
                 catch (Exception e)
                 {
@@ -483,7 +485,7 @@ namespace RBAC
                     }
                     data["ObjectId"] = group.Id;
                     data["Alias"] = group.Mail;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Group verified!");
                 }
                 catch (Exception e)
                 {
@@ -518,7 +520,7 @@ namespace RBAC
                     }
                     data["ObjectId"] = app.Id;
                     data["ApplicationId"] = app.AppId;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Application verified!");
                 }
                 catch (Exception e)
                 {
@@ -552,7 +554,7 @@ namespace RBAC
                         throw new Exception($"The Alias '{sp.Alias}' should not be defined and cannot be recognized for {sp.DisplayName}.");
                     }
                     data["ObjectId"] = principal.Id;
-                    log.Info($"{sp.DisplayName} verified!");
+                    log.Info($"Service Principal verified!");
                 }
                 catch (Exception e)
                 {
