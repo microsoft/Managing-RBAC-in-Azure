@@ -1,0 +1,144 @@
+- VaultName: your-vault-name
+  ResourceGroupName: your-resource-group-name
+  SubscriptionId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  Location: northcentralus
+  TenantId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  AccessPolicies:
+  - Type: User
+    DisplayName: first-last
+    Alias: alias@provider.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: first-last
+    Alias: alias@provider.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: your-vault-name
+  ResourceGroupName: your-resource-group-name
+  SubscriptionId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  Location: eastus
+  TenantId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+  AccessPolicies:
+  - Type: Group
+    DisplayName: group-name
+    Alias: alias@service.microsoft.com
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Backup
+    PermissionsToCertificates:
+    - ManageContacts
+  - Type: User
+    DisplayName: first-last
+    Alias: alias@provider.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+  - Type: User
+    DisplayName: first-last
+    Alias: alias@provider.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: Service Principal
+    DisplayName: app-name
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers

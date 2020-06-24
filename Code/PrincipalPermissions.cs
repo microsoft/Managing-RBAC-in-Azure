@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.KeyVault.Models;
+﻿using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
@@ -12,13 +10,13 @@ namespace RBAC
     /// <summary>
     /// This class stores the AccessPolicies of a Service Principal.
     /// </summary>
-    class ServicePrincipalPermissions
+    public class PrincipalPermissions
     {
-        public ServicePrincipalPermissions() 
+        public PrincipalPermissions() 
         {
             this.Alias = "";
         }
-        public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        public PrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
@@ -131,10 +129,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method overrides the Equals operator to allow comparison between two ServicePrincipalPermissions objects.
+        /// This method overrides the Equals operator to allow comparison between two PrincipalPermissions objects.
         /// </summary>
         /// <param name="rhs">The object to compare against</param>
-        /// <returns>True if rhs is of type ServicePrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
+        /// <returns>True if rhs is of type PrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
         public override bool Equals(Object rhs)
         {
             if ((rhs == null) || !this.GetType().Equals(rhs.GetType()))
@@ -143,20 +141,25 @@ namespace RBAC
             }
             else
             {
-                var spp = (ServicePrincipalPermissions)rhs;
-                if ((spp.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && spp.PermissionsToKeys != null))
+                var spp = (PrincipalPermissions)rhs;
+
+                string type = this.Type.Trim().ToLower();
+                string rhsType = spp.Type.Trim().ToLower();
+                bool aliasIsSame = false;
+                if (rhsType == "user" || rhsType == "group")
                 {
-                    return false;
+                    aliasIsSame = (this.Alias == spp.Alias);
                 }
-                if ((spp.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && spp.PermissionsToSecrets != null))
+                else
                 {
-                    return false;
+                    aliasIsSame = true;
                 }
-                if ((spp.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && spp.PermissionsToCertificates != null))
-                {
-                    return false;
-                }
-                return (this.ObjectId == spp.ObjectId) && (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
+                return (this.DisplayName.Trim().ToLower() == spp.DisplayName.Trim().ToLower()) && aliasIsSame && this.PermissionsToKeys.Length == spp.PermissionsToKeys.Length
+                    && (this.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).Contains)) && 
+                    (this.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).Contains))
+                    && this.PermissionsToSecrets.Length == spp.PermissionsToSecrets.Length
+                    && (this.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).Contains))
+                    && this.PermissionsToCertificates.Length == spp.PermissionsToCertificates.Length;
             }
         }
 
@@ -217,11 +220,5 @@ namespace RBAC
                 }
             }
         }
-
-        public static string[] allKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"};
-        public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
-        public static string[] allCertificatePermissions = {"get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge"};
     }
 }

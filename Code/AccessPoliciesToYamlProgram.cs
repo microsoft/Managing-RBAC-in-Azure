@@ -1,59 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using YamlDotNet.Serialization;
-using Newtonsoft.Json;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Identity.Client;
-using Microsoft.Azure.Management.KeyVault;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Rest.Azure;
-using Microsoft.Graph;
-using Microsoft.Azure.Management.KeyVault.Fluent.Models;
-using System.IO;
+using log4net;
 
 namespace RBAC
 {
-    class AccessPoliciesToYamlProgram
+    public class AccessPoliciesToYamlProgram
     {
         /// <summary>
-        /// This method reads in a JSON config file and prints out a serialized list of Key Vaults into a YAML file.
+        /// This method reads in a Json config file and prints out a serialized list of Key Vaults into a Yaml file.
         /// </summary>
-        /// <param name="args">None</param>
-        static void Main(string[] args)
+        /// <param name="args">Contains the Json directory and Yaml directory</param>
+        public static void Main(string[] args)
         {
-             Console.WriteLine("Reading input file...");
-             string masterConfig = System.IO.File.ReadAllText(@"..\..\..\..\Config\MasterConfig.json");
-             JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-             Console.WriteLine("Success!");
+            // ..\..\..\..\Config\MasterConfig.json 
+            // ..\..\..\..\Config\YamlOutput.yml
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(false);
 
-             Console.WriteLine("\nGrabbing secrets...");
-             var secrets = AccessPoliciesToYaml.getSecrets(vaultList);
+            Console.WriteLine("Reading input file...");
+            ap.verifyFileExtensions(args);
+            JsonInput vaultList = ap.readJsonFile(args[0]);
+            Console.WriteLine("Finished!");
+          
+            Console.WriteLine("Grabbing secrets...");
+            var secrets = ap.getSecrets(vaultList);
+            Console.WriteLine("Finished!");
 
-             // If secrets contains all 4 secrets needed, continue
-             if (secrets.Count == 4)
-             {
-                 Console.WriteLine("Success!");
-                 Console.WriteLine("\nCreating KeyVaultManagementClient and GraphServiceClient...");
-                 var kvmClient = AccessPoliciesToYaml.createKVMClient(secrets);
-                 var graphClient = AccessPoliciesToYaml.createGraphClient(secrets);
+            Console.WriteLine("Creating KeyVaultManagementClient and GraphServiceClient...");
+            var kvmClient = ap.createKVMClient(secrets);
+            var graphClient = ap.createGraphClient(secrets);
+            Console.WriteLine("Finished!");
 
-                // If both clients were created successfully, continue
-                if (kvmClient != null && graphClient != null)
-                {
-                    Console.WriteLine("Success!");
+            Console.WriteLine("Retrieving key vaults...");
+            List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
+            Console.WriteLine("Finished!");
 
-                    Console.WriteLine("\nRetrieving key vaults...");
-                    List<KeyVaultProperties> vaultsRetrieved = AccessPoliciesToYaml.getVaults(vaultList, kvmClient, graphClient);
-                    Console.WriteLine("Success!");
-
-                    Console.WriteLine("\nGenerating YAML output...");
-                    AccessPoliciesToYaml.convertToYaml(vaultsRetrieved);
-                    Console.WriteLine("Success!");
-                }
-             }
+            Console.WriteLine("Generating YAML output...");
+            ap.convertToYaml(vaultsRetrieved, args[1]);
+            Console.WriteLine("Finished!");
         }
     }
 }
