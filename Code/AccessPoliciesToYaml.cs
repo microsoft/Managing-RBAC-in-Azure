@@ -262,7 +262,6 @@ namespace RBAC
                 SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
                 try
                 {
-                    // Getting 
                     log.Info("Getting clientId...");
                     KeyVaultSecret clientIdSecret = secretClient.GetSecret(vaultList.AadAppKeyDetails.ClientIdSecretName);
                     secrets["clientId"] = clientIdSecret.Value;
