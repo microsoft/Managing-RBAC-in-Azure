@@ -448,9 +448,7 @@ namespace RBAC
                                 catch (CloudException e)
                                 {
                                     log.Error(e.Message);
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine($"Error: {e.Message}");
-                                    Console.ResetColor();
+                                    ConsoleError(e.Message);
                                     if (e.Body.Code == "SubscriptionNotFound")
                                     {
                                         notFound = true;
@@ -492,9 +490,7 @@ namespace RBAC
                 catch (CloudException e)
                 {
                     log.Error(e.Message);
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error: {e.Message}");
-                    Console.ResetColor();
+                    ConsoleError(e.Message);
                 }
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
@@ -507,9 +503,7 @@ namespace RBAC
                 catch (CloudException e)
                 {
                     log.Error(e.Message);
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error: {e.Message}");
-                    Console.ResetColor();
+                    ConsoleError(e.Message);
                 }
             }
             
@@ -555,9 +549,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
+                ConsoleError(e.Message);
             }
         }
 
@@ -570,9 +562,7 @@ namespace RBAC
         {
             if (!Testing)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(message);
-                Console.ResetColor();
+                ConsoleError(message);
                 log.Info("Progam exited.");
                 Environment.Exit(1);
             }
@@ -586,5 +576,11 @@ namespace RBAC
         public bool Testing { get; set; }
         // This field defines the logger
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private void ConsoleError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Error: {message}");
+            Console.ResetColor();
+        }
     }
 }

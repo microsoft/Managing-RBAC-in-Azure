@@ -14,6 +14,7 @@ namespace RBAC
         /// </summary>
         public void TestVerifyFileExtensions()
         {
+            // array loop
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             string[] args = { "file.json", "file.yml" };
             try
