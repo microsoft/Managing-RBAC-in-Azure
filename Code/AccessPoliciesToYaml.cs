@@ -79,6 +79,7 @@ namespace RBAC
         /// <returns>A JsonInput object that stores the Json input data</returns>
         public JsonInput readJsonFile(string jsonDirectory)
         {
+            // log.Info("hi");
             log.Info("Reading in Json file....");
             try
             {
@@ -484,6 +485,8 @@ namespace RBAC
             {
                 keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
+            // log.Info("TESTTESTEST");
+            // log.Info(keyVaultsRetrieved[0]);
             log.Info("Vaults Retrieved!");
             return keyVaultsRetrieved;
         }

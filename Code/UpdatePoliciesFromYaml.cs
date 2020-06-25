@@ -1,11 +1,14 @@
 ﻿using log4net.Util;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
+using System.Security.Permissions;
 using YamlDotNet.Serialization;
 
 namespace RBAC
@@ -70,6 +73,53 @@ namespace RBAC
             return yamlVaults;
         }
 
+        public void storeChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved) 
+        {
+            Dictionary<string, PrincipalPermissions> vaultAndPpDifferences = new Dictionary<string, PrincipalPermissions>();
+            List<PrincipalPermissions> PpDifferences = new List<PrincipalPermissions>();
+
+            // if security principal is in web vault but not yaml vault) inform user & store
+            foreach (KeyVaultProperties webKv in vaultsRetrieved)
+            {
+                foreach (PrincipalPermissions webPp in webKv.AccessPolicies)
+                {
+                    if (!checkIfSame(webPp,webKv.VaultName,yamlVaults))
+                    {
+                        vaultAndPpDifferences.Add(webKv.VaultName, webPp);
+                        PpDifferences.Add(webPp);
+                    }
+                }
+            }
+
+        }
+
+        public bool checkIfSame(PrincipalPermissions webPp, String webVaultName, List<KeyVaultProperties> yamlVaults)
+        {
+            bool same = true;
+
+            foreach (KeyVaultProperties yamlKv in yamlVaults)
+            {
+                foreach (PrincipalPermissions yamlPp in yamlKv.AccessPolicies)
+                {
+                    if (yamlKv.VaultName == webVaultName
+                        && yamlPp.Type == webPp.Type
+                        && yamlPp.DisplayName == webPp.DisplayName
+                        && yamlPp.Alias == webPp.Alias
+                        && (yamlPp.PermissionsToKeys != webPp.PermissionsToKeys
+                        || yamlPp.PermissionsToSecrets != webPp.PermissionsToSecrets
+                        || yamlPp.PermissionsToCertificates != webPp.PermissionsToSecrets))
+
+                    {
+                        same = false;
+                    }
+
+                }
+            }
+
+            return same;
+
+        }
+       
         /// <summary>
         /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
         /// </summary>
@@ -84,6 +134,8 @@ namespace RBAC
             {
                 if (!vaultsRetrieved.Contains(kv))
                 {
+                    // reChanges(kv, vaultsRetrieved);
+
                     var old = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName];
 
                     if (old.Count() != 0)
