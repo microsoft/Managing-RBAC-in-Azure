@@ -235,9 +235,10 @@ namespace RBAC
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
-                            Console.ResetColor();
+
+                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+
+
                         }
                         else
                         {
@@ -254,9 +255,8 @@ namespace RBAC
                 {
                     log.Error($"VaultFieldsChanged: KeyVault '{kv.VaultName}' skipped!", e);
                     log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
-                    Console.ForegroundColor = ConsoleColor.Red; 
-                    Console.WriteLine($"Error: {e.Message} Vault Skipped.");
-                    Console.ResetColor();
+
+                    ConsoleError($"{e.Message} Vault Skipped.");                
                 }
             }
             log.Info("Updates finished!");
@@ -385,9 +385,9 @@ namespace RBAC
                             log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
                             log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
                                 $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Error: Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
-                            Console.ResetColor();
+
+                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+
                         }
                     }
                     catch (Exception e)
@@ -398,9 +398,9 @@ namespace RBAC
                         }
                         log.Error("UnknownType: Skipped!");
                         log.Debug(e.Message);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Error: {e.Message} Skipped!");
-                        Console.ResetColor();
+
+                        ConsoleError($"Error: {e.Message} Skipped!");
+
                     }
                 }
                 if (!Testing)
@@ -420,9 +420,9 @@ namespace RBAC
                 }
                 log.Error("VaultNotFound", e);
                 log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
+
+                ConsoleError(e.Message);
+
             }
         }
 
@@ -459,21 +459,23 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    
                     if (e.Message.Contains("ResourceNotFound"))
                     {
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        Console.WriteLine($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        
                     }
                     else
                     {
                         log.Error("UserFieldsInvalid");
                         log.Debug(e.Message);
-                        Console.WriteLine($"Error: {e.Message} User skipped.");
+                        ConsoleError($"{e.Message} User skipped.");
+                     
                     }
-                    Console.ResetColor();
+                    
                 }
             }
             else if (type == "group")
@@ -500,21 +502,21 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        Console.WriteLine($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
+
+                        ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
                         log.Error("GroupFieldsInvalid");
                         log.Debug(e.Message);
-                        Console.WriteLine($"Error: {e.Message} Group skipped.");
+
+                        ConsoleError($"{e.Message} Group skipped.");
                     }
-                    Console.ResetColor();
                 }
             }
             else if (type == "application")
@@ -536,22 +538,25 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
                         log.Error($"ResourceNotFound: Application with DisplayName '{principalPermissions.DisplayName}' skipped!", e);
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        Console.WriteLine($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+
+
+                        ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+      
                     }
                     else
                     {
                         log.Error("ApplicationFieldsInvalid");
                         log.Debug(e.Message);
-                        Console.WriteLine($"Error: {e.Message} Application skipped.");
+
+                        ConsoleError($"{e.Message} Application skipped.");
+        
                     }
-                    Console.ResetColor();
                 }
             }
             else if (type == "service principal")
@@ -572,22 +577,20 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     if (e.Message.Contains("out of range"))
                     {
                         log.Error($"ResourceNotFound: ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' skipped!", e);
                         log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
                             $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        Console.WriteLine($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
+                        ConsoleError($" Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
                         log.Error("ServicePrincipalFieldsInvalid");
                         log.Debug(e.Message);
-                        Console.WriteLine($"Error: {e.Message} Service Principal skipped.");
+                        ConsoleError($"{e.Message} Service Principal skipped.");
                     }
-                    Console.ResetColor();
                 }
             }
             else
@@ -871,9 +874,7 @@ namespace RBAC
         {
             if (!Testing)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(message);
-                Console.ResetColor();
+                ConsoleError(message);
                 log.Info("Program exited.");
                 Environment.Exit(1);
             }
@@ -889,5 +890,12 @@ namespace RBAC
         public List<KeyVaultProperties> Changed { get; set; }
         // This field defines the logger
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private void ConsoleError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Error: {message}");
+            Console.ResetColor();
+        }
     }
 }
