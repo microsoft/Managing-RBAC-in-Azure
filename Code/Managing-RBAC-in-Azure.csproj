@@ -4,13 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>RBAC</RootNamespace>
-    <StartupObject>RBAC.AccessPoliciesToYamlProgram</StartupObject>
+    <StartupObject>RBAC.UpdatePoliciesFromYamlProgram</StartupObject>
     <Description></Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="Managing-RBAC-in-AzureTest\Managing-RBAC-in-AzureTest.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.1.1" />
@@ -23,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.5" />
     <PackageReference Include="Microsoft.Graph" Version="3.8.0" />
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
@@ -36,12 +33,5 @@
     <None Update="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Managing-RBAC-in-AzureTest\bin\Debug\netcoreapp3.1\cs-CZ\" />
-    <Folder Include="Managing-RBAC-in-AzureTest\bin\Debug\netcoreapp3.1\hu\" />
-    <Folder Include="Managing-RBAC-in-AzureTest\bin\Debug\netcoreapp3.1\ro\" />
-    <Folder Include="Managing-RBAC-in-AzureTest\bin\Debug\netcoreapp3.1\sv\" />
   </ItemGroup>
 </Project>

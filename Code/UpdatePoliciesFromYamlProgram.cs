@@ -48,9 +48,16 @@ namespace RBAC
 
             Console.WriteLine("Reading yaml file...");
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml(args[1]);
-            int changes = up.checkChanges(yamlVaults, vaultsRetrieved);
+            
+            //int changes = up.checkChanges(yamlVaults, vaultsRetrieved);
+           
             Console.WriteLine("Finished!");
-            if (changes != 0)
+            Console.WriteLine("Updating key vaults...");
+            up.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
+            Console.WriteLine("Updates finished!");
+
+
+            /*if (changes != 0)
             {
                 Console.WriteLine("Updating key vaults...");
                 up.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
@@ -60,7 +67,7 @@ namespace RBAC
             {
                 log.Info("There is no difference between the YAML and the Key Vaults. No changes made.");
                 Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made.");
-            }
+            }*/
             if (testing)
             {
                 return up.Changed;

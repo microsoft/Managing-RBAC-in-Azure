@@ -155,17 +155,17 @@ namespace RBAC
             int numValid = Convert.ToInt32(missingInputs.Last());
             int numMissing = missingInputs.Count();
             JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
-            if (numMissing == 0 && (aadDetails.Children().Count() != numValid))
+            if (numMissing == 1 && (aadDetails.Children().Count() != numValid))
             {
                 throw new Exception($"Invalid fields for AadAppKeyDetails were defined. " +
                     $"Valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
             }
-            else if (numMissing != 0 && aadDetails.Children().Count() != numValid)
+            else if (numMissing != 1 && aadDetails.Children().Count() != numValid)
             {
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails. Invalid fields were defined; " +
                     $"valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
             }
-            else if (numMissing > 0)
+            else if (numMissing > 1)
             {
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails.");
             }

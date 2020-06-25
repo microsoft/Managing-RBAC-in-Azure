@@ -691,7 +691,7 @@ namespace RBAC
 
             Assert.IsTrue(Constants.READ_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "key")));
             Assert.IsTrue(Constants.WRITE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("write", "key")));
-            Assert.IsTrue(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("crypto", "key")));
+            Assert.IsTrue(Constants.CRYPTO_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("crypto", "key")));
             Assert.IsTrue(Constants.STORAGE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "key")));
 
             Assert.IsTrue(Constants.READ_SECRET_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "secret")));
