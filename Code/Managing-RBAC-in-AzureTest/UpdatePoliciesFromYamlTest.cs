@@ -55,10 +55,10 @@ namespace RBAC
             var badRGName = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
-                ResourceGroupName = "RG",
-                SubscriptionId = "valid",
+                ResourceGroupName = "RBACKeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
                 Location = "eastus",
-                TenantId = "valid"
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
             };
             try
             {
@@ -73,10 +73,10 @@ namespace RBAC
             var badSubId = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
                 SubscriptionId = "bleep-bloop",
                 Location = "eastus",
-                TenantId = "valid"
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
             };
             try
             {
@@ -91,10 +91,10 @@ namespace RBAC
             var badLoc = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
                 Location = "nigeria",
-                TenantId = "valid"
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
             };
             try
             {
@@ -109,8 +109,8 @@ namespace RBAC
             var badTen = new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
                 Location = "eastus",
                 TenantId = "Landlord"
             };
@@ -170,7 +170,7 @@ namespace RBAC
                     new PrincipalPermissions
                     {
                         Type = "Service Principal",
-                        DisplayName = "SP1",
+                        DisplayName = "RBACAutomationApp",
                         Alias = "",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
@@ -179,8 +179,8 @@ namespace RBAC
                     new PrincipalPermissions
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
@@ -350,14 +350,14 @@ namespace RBAC
         /// This method verifies that the program handles invalid PrincipalPermissions fields.
         /// </summary>
         [TestMethod]
-        public void TestCheckPPFields()
+        public void TestCheckSPFields()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             PrincipalPermissions sp = new PrincipalPermissions()
             {
                 Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
                 PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
@@ -366,8 +366,8 @@ namespace RBAC
             PrincipalPermissions sp1 = new PrincipalPermissions()
             {
                 Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
                 PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
@@ -377,7 +377,7 @@ namespace RBAC
 
             try
             {
-                up.checkPPInvalidFields(name, sp);
+                up.checkSPInvalidFields(name, sp);
             }
             catch
             {
@@ -388,7 +388,7 @@ namespace RBAC
             incomplete.Type = null;
             try
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -399,7 +399,7 @@ namespace RBAC
             incomplete.Type = "  ";
             try
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -412,7 +412,7 @@ namespace RBAC
             try
 
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -423,7 +423,7 @@ namespace RBAC
             incomplete.DisplayName = " ";
             try
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -435,7 +435,7 @@ namespace RBAC
             incomplete.PermissionsToKeys = null;
             try
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
             }
             catch
             {
@@ -447,7 +447,7 @@ namespace RBAC
             try
 
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
             }
             catch
             {
@@ -459,7 +459,7 @@ namespace RBAC
             try
 
             {
-                up.checkPPInvalidFields(name, incomplete);
+                up.checkSPInvalidFields(name, incomplete);
             }
             catch
             {
@@ -488,7 +488,7 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "Service Principal",
-                        DisplayName = "SP1",
+                        DisplayName = "RBACAutomationApp",
                         Alias = "",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { },
@@ -497,23 +497,228 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
                     }
                 }
             };
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var secrets = ap.getSecrets(json);
 
             // Check UsersContained less than 2 error
             try
             {
-                up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, null, null, null);
+                up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"KeyVault 'RG1Test2' does not contain at least two users. Skipped.", e.Message);
+                Assert.AreEqual($"Error: RG1Test2 does not contain at least two users. Vault Skipped.", e.Message);
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that the program handles if the PrincipalPermissions object does not have permissions defined, 
+        /// if they already have an access policy defined, or if their shorthand permissions are invalid.
+        /// </summary>
+        [TestMethod]
+        public void TestUpdateVault()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var secrets = ap.getSecrets(json);
+
+            KeyVaultProperties noPermiss = new KeyVaultProperties()
+            {
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions()
+                    {
+                        Type = "User",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
+                        PermissionsToKeys = new string[] { },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    }
+                }
+            };
+
+            // Check no permissions defined
+            try
+            {
+                up.updateVault(noPermiss, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Skipped User, 'Opeyemi Olaoluwa'. Does not have any permissions specified.", e.Message);
+            }
+
+            KeyVaultProperties kv = new KeyVaultProperties()
+            {
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions()
+                    {
+                        Type = "User",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
+                        PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                    new PrincipalPermissions()
+                    {
+                        Type = "User",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
+                        PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                }
+            };
+
+            // Check access policy already defined for user
+            try
+            {
+                up.updateVault(kv, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: An access policy has already been defined for Katie Helman in {kv.VaultName}.", e.Message);
+            }
+
+            KeyVaultProperties invalid = new KeyVaultProperties()
+            {
+                VaultName = "RBACTestVault2",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
+                Location = "eastus",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                AccessPolicies = new List<PrincipalPermissions>()
+                {
+                    new PrincipalPermissions()
+                    {
+                        Type = "Service Principal",
+                        DisplayName = "RBACAutomationApp",
+                        PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                    new PrincipalPermissions()
+                    {
+                        Type = "Service Principal",
+                        DisplayName = "RBACAutomationApp",
+                        PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                        PermissionsToSecrets = new string[] { },
+                        PermissionsToCertificates = new string[] { }
+                    },
+                }
+            };
+
+            // Check access policy already defined for a type that is not a user
+            try
+            {
+                up.updateVault(invalid, ap.createKVMClient(secrets), secrets, ap.createGraphClient(secrets));
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: An access policy has already been defined for RBACAutomationApp in {kv.VaultName}.", e.Message);
+            }
+
+            // Check invalid shorthand permissions
+            try
+            {
+                var a = up.translateShorthand("read", "Key", new string[] { "read", "write", "read - list", "storage" }, Constants.READ_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Key 'read' permission is duplicated", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all", "read" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("'All' permission removes need for other Key permissions", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "delete", "read", "write" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("update, create, delete permissions are already included in Key 'write' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all - snap" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid Key 'all - <snap>' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "all - write", "write - list" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("Invalid Key 'write - <list>' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("write", "Key", new string[] { "write - create", "update", "create" }, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual("create permissions are already included in Key 'write' permission", e.Message);
+            }
+
+            try
+            {
+                var a = up.translateShorthand("all", "Key", new string[] { "all - storage, write, crypto" }, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                Assert.IsTrue(a.SequenceEqual(new string[] { "get", "list", "purge" }));
+            }
+            catch
+            {
+                Assert.Fail();
             }
         }
 
@@ -527,8 +732,8 @@ namespace RBAC
             PrincipalPermissions sp = new PrincipalPermissions
             {
                 Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
                 PermissionsToKeys = new string[] { "getS", "list" },
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
@@ -613,6 +818,239 @@ namespace RBAC
         }
 
         /// <summary>
+        /// This method verifies that the program handles invalid or incorrect fields within each type of PrincipalPermissions.
+        /// </summary>
+        [TestMethod]
+        public void TestVerifySP()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            JsonInput json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var secrets = ap.getSecrets(json);
+
+            PrincipalPermissions user = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "Opeyemi Olaoluwa",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check User without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Alias is required for {user.DisplayName}. User skipped.", e.Message);
+            }
+
+            // Check User with defining empty Alias
+            user.Alias = "       ";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Alias is required for {user.DisplayName}. User skipped.", e.Message);
+            }
+
+            // Check User with wrong Alias
+            user.Alias = "katie@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find User with Alias '{user.Alias}'. User skipped.", e.Message);
+            }
+
+            // Check User with wrong DisplayName
+            user.Alias = "t-kahelm@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(user, "user", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The DisplayName '{user.DisplayName}' is misspelled and cannot be recognized. User skipped.", e.Message);
+            }
+
+            PrincipalPermissions group = new PrincipalPermissions()
+            {
+                Type = "Group",
+                DisplayName = "RBACAutomationApp",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check Group without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Alias is required for {group.DisplayName}. Group skipped.", e.Message);
+            }
+
+            // Check Group with defining empty Alias
+            group.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{group.Alias}' is incorrect for {group.DisplayName} and cannot be recognized. Group skipped.", e.Message);
+            }
+
+            // Check Group with defining wrong Alias
+            group.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{group.Alias}' is incorrect for {group.DisplayName} and cannot be recognized. Group skipped.", e.Message);
+            }
+
+            // Check Group with wrong DisplayName
+            group.Alias = "";
+            group.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(group, "group", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find Group with DisplayName '{group.DisplayName}'. Group skipped.", e.Message);
+            }
+
+            PrincipalPermissions app = new PrincipalPermissions()
+            {
+                Type = "Application",
+                DisplayName = "BingStrategy",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check App without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
+            // Check App with defining empty Alias
+            app.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{app.Alias}' is incorrect for {app.DisplayName} and cannot be recognized. Application skipped.", e.Message);
+            }
+
+            // Check App with defining wrong Alias
+            app.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{app.Alias}' is incorrect for {app.DisplayName} and cannot be recognized. Application skipped.", e.Message);
+            }
+
+            // Check App with wrong DisplayName
+            app.Alias = "";
+            app.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(app, "application", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find Application with DisplayName '{app.DisplayName}'. Application skipped.", e.Message);
+            }
+
+            PrincipalPermissions sp = new PrincipalPermissions()
+            {
+                Type = "Group",
+                DisplayName = "RBACAutomationApp",
+                PermissionsToKeys = new string[] { "get", "list" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+
+            // Check SP without defining Alias
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
+            // Check SP with defining empty Alias
+            sp.Alias = "   ";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. ServicePrincipal skipped.", e.Message);
+            }
+
+            // Check SP with defining wrong Alias
+            sp.Alias = "1es@microsoft.com";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: The Alias '{sp.Alias}' is incorrect for {sp.DisplayName} and cannot be recognized. ServicePrincipal skipped.", e.Message);
+            }
+
+            // Check SP with wrong DisplayName
+            sp.Alias = "";
+            sp.DisplayName = "RBACAutomationApp1";
+            try
+            {
+                up.verifyServicePrincipal(sp, "service principal", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: Could not find ServicePrincipal with DisplayName '{sp.DisplayName}'. ServicePrincipal skipped.", e.Message);
+            }
+
+            sp.Type = "unknown";
+            try
+            {
+                up.verifyServicePrincipal(sp, "unknown", ap.createGraphClient(secrets));
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"'{sp.Type}' is not a valid type for {sp.DisplayName}. Valid types are 'User', 'Group', 'Application', or 'Service Principal'. Skipped.", e.Message);
+            }
+        }
+
+        /// <summary>
         /// This method verifies that the shorthands are translated to their respective permissions properly.
         /// </summary>
         [TestMethod]
@@ -622,8 +1060,8 @@ namespace RBAC
             var pp = new PrincipalPermissions
             {
                 Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
                 PermissionsToKeys = new string[] { "all" },
                 PermissionsToSecrets = new string[] { "all" },
                 PermissionsToCertificates = new string[] { "all" }
@@ -636,8 +1074,8 @@ namespace RBAC
             pp = new PrincipalPermissions
             {
                 Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
+                DisplayName = "Opeyemi Olaoluwa",
+                Alias = "t-opolao@microsoft.com",
                 PermissionsToKeys = new string[] { "read", "write", "storage", "crypto", "purge" },
                 PermissionsToSecrets = new string[] { "read", "write", "storage", "purge" },
                 PermissionsToCertificates = new string[] { "read", "write", "storage", "management", "purge" }
@@ -705,6 +1143,23 @@ namespace RBAC
         }
 
         /// <summary>
+        /// This method tests the full functionality of Phase 2.
+        /// </summary>
+        [TestMethod]
+        public void TestFullRun()
+        {
+            string[] args = { "../../../input/TestActualVaults.json", "../../../input/Phase2Input.yml" };
+            var output = UpdatePoliciesFromYamlProgram.run(args, true);
+            string yaml = System.IO.File.ReadAllText("../../../expected/ExpectedPhase2Output.yml");
+            var deserializer = new DeserializerBuilder().Build();
+            List<KeyVaultProperties> expected = deserializer.Deserialize<List<KeyVaultProperties>>(yaml);
+            var serializer = new SerializerBuilder().Build();
+            string actual = serializer.Serialize(output);
+            System.IO.File.WriteAllText("../../../output/ActualPhase2Output.yml", actual);
+            Assert.IsTrue(output.SequenceEqual(expected));
+        }
+
+        /// <summary>
         /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>
         /// <returns>The list of KeyVaultProperties from the deserialized yaml</returns>
@@ -715,17 +1170,17 @@ namespace RBAC
             exp.Add(new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
                         Type = "Group",
-                        DisplayName = "g1",
-                        Alias = "g1@valid.com",
+                        DisplayName = "1ES Site Reliability Engineering",
+                        Alias = "1essre@microsoft.com",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
@@ -733,8 +1188,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] { },
                         PermissionsToSecrets = new string[] { },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
@@ -742,8 +1197,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User B",
-                        Alias = "ub@valid.com",
+                        DisplayName = "Mazin Shaaeldin",
+                        Alias = "t-mashaa@microsoft.com",
                         PermissionsToKeys = new string[] { },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
@@ -751,8 +1206,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User C",
-                        Alias = "uc@valid.com",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
@@ -763,16 +1218,16 @@ namespace RBAC
             exp.Add(new KeyVaultProperties
             {
                 VaultName = "RG1Test2",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                ResourceGroupName = "RBAC-KeyVaultUnitTests",
+                SubscriptionId = "82bf28a8-6374-4908-b89c-5d1ab5495c5e",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
                         Type = "Service Principal",
-                        DisplayName = "SP1",
+                        DisplayName = "RBACAutomationApp",
                         Alias = "",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
@@ -781,8 +1236,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { }
@@ -790,8 +1245,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User B",
-                        Alias = "ub@valid.com",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
@@ -801,18 +1256,18 @@ namespace RBAC
 
             exp.Add(new KeyVaultProperties
             {
-                VaultName = "RG2Test1",
-                ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                VaultName = "PremiumRBACTest",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
                         Type = "Group",
-                        DisplayName = "g1",
-                        Alias = "g1@valid.com",
+                        DisplayName = "RBACKeyVault",
+                        Alias = "RBACKeyVault@service.microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"},
                         PermissionsToSecrets = new string[] {  "get" },
                         PermissionsToCertificates = new string[] { }
@@ -820,8 +1275,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] {  "get", "list" },
                         PermissionsToSecrets = new string[] { "purge" },
                         PermissionsToCertificates = new string[] { "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" }
@@ -829,8 +1284,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User B",
-                        Alias = "ub@valid.com",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
                         PermissionsToKeys = new string[] {  "decrypt", "encrypt", "wrapkey", "unwrapkey", "verify", "sign" },
                         PermissionsToSecrets = new string[] {  "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list" }
@@ -840,18 +1295,18 @@ namespace RBAC
 
             exp.Add(new KeyVaultProperties
             {
-                VaultName = "RG2Test2",
-                ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                VaultName = "RBACTestVault1",
+                ResourceGroupName = "RBACTest",
+                SubscriptionId = "6b94a915-57a9-4023-8fe8-3792e113ddff",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User A",
-                        Alias = "ua@valid.com",
+                        DisplayName = "Mazin Shaaeldin",
+                        Alias = "t-mashaa@microsoft.com",
                         PermissionsToKeys = new string[] { },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge" }
@@ -859,8 +1314,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User B",
-                        Alias = "ub@valid.com",
+                        DisplayName = "Katie Helman",
+                        Alias = "t-kahelm@microsoft.com",
                         PermissionsToKeys = new string[] { },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" },
                         PermissionsToCertificates = new string[] { "get", "list" }
@@ -868,7 +1323,7 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "Service Principal",
-                        DisplayName = "SP1",
+                        DisplayName = "RBACAutomationApp",
                         Alias = "",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] {  "get", "list", "set", "delete", "recover", "backup", "restore" },
@@ -877,8 +1332,8 @@ namespace RBAC
                     new PrincipalPermissions()
                     {
                         Type = "User",
-                        DisplayName = "User C",
-                        Alias = "uc@valid.com",
+                        DisplayName = "Opeyemi Olaoluwa",
+                        Alias = "t-opolao@microsoft.com",
                         PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                         PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                         PermissionsToCertificates = new string[] { "get", "list" }

@@ -1,10 +1,10 @@
 {
   "AadAppKeyDetails": {
-    "AadAppName": "AppName",
-    "VaultName": "KeyVault",
-    "ClientIdSecretName": "ClientId",
-    "ClientKeySecretName": "ClientKey",
-    "TenantIdSecretName": "TenantId"
+    "AadAppName": "RBACAutomationApp",
+    "VaultName": "RBAC-KeyVault",
+    "ClientIdSecretName": "RBACClientId",
+    "ClientKeySecretName": "RBACAppKey",
+    "TenantIdSecretName": "RBACTenant"
   },
   "Resources": [
     {

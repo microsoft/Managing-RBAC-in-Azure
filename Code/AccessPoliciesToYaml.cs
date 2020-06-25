@@ -484,6 +484,8 @@ namespace RBAC
             {
                 keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
+            // log.Info("TESTTESTEST");
+            // log.Info(keyVaultsRetrieved[0]);
             log.Info("Vaults Retrieved!");
             return keyVaultsRetrieved;
         }
@@ -591,15 +593,20 @@ namespace RBAC
             }
         }
 
-        // This field indicates if unit tests are being run
-        public bool Testing { get; set; }
-        // This field defines the logger
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        /// <summary>
+        /// This method prints the error message to the Console in red, then resets the color.
+        /// </summary>
+        /// <param name="message">The error message to be printed</param>
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
+
+        // This field indicates if unit tests are being run
+        public bool Testing { get; set; }
+        // This field defines the logger
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     }
 }

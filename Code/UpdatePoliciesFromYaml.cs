@@ -1,11 +1,14 @@
 ﻿using log4net.Util;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
+using System.Security.Permissions;
 using YamlDotNet.Serialization;
 
 namespace RBAC
@@ -70,6 +73,53 @@ namespace RBAC
             return yamlVaults;
         }
 
+        public void storeChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved) 
+        {
+            Dictionary<string, PrincipalPermissions> vaultAndPpDifferences = new Dictionary<string, PrincipalPermissions>();
+            List<PrincipalPermissions> PpDifferences = new List<PrincipalPermissions>();
+
+            // if security principal is in web vault but not yaml vault) inform user & store
+            foreach (KeyVaultProperties webKv in vaultsRetrieved)
+            {
+                foreach (PrincipalPermissions webPp in webKv.AccessPolicies)
+                {
+                    if (!checkIfSame(webPp,webKv.VaultName,yamlVaults))
+                    {
+                        vaultAndPpDifferences.Add(webKv.VaultName, webPp);
+                        PpDifferences.Add(webPp);
+                    }
+                }
+            }
+
+        }
+
+        public bool checkIfSame(PrincipalPermissions webPp, String webVaultName, List<KeyVaultProperties> yamlVaults)
+        {
+            bool same = true;
+
+            foreach (KeyVaultProperties yamlKv in yamlVaults)
+            {
+                foreach (PrincipalPermissions yamlPp in yamlKv.AccessPolicies)
+                {
+                    if (yamlKv.VaultName == webVaultName
+                        && yamlPp.Type == webPp.Type
+                        && yamlPp.DisplayName == webPp.DisplayName
+                        && yamlPp.Alias == webPp.Alias
+                        && (yamlPp.PermissionsToKeys != webPp.PermissionsToKeys
+                        || yamlPp.PermissionsToSecrets != webPp.PermissionsToSecrets
+                        || yamlPp.PermissionsToCertificates != webPp.PermissionsToSecrets))
+
+                    {
+                        same = false;
+                    }
+
+                }
+            }
+
+            return same;
+
+        }
+       
         /// <summary>
         /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
         /// </summary>
@@ -84,6 +134,8 @@ namespace RBAC
             {
                 if (!vaultsRetrieved.Contains(kv))
                 {
+                    // reChanges(kv, vaultsRetrieved);
+
                     var old = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName];
 
                     if (old.Count() != 0)
@@ -235,10 +287,7 @@ namespace RBAC
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-
                             ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
-
-
                         }
                         else
                         {
@@ -255,7 +304,6 @@ namespace RBAC
                 {
                     log.Error($"VaultFieldsChanged: KeyVault '{kv.VaultName}' skipped!", e);
                     log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
-
                     ConsoleError($"{e.Message} Vault Skipped.");                
                 }
             }
@@ -385,9 +433,7 @@ namespace RBAC
                             log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
                             log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
                                 $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-
                             ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
-
                         }
                     }
                     catch (Exception e)
@@ -398,9 +444,7 @@ namespace RBAC
                         }
                         log.Error("UnknownType: Skipped!");
                         log.Debug(e.Message);
-
                         ConsoleError($"Error: {e.Message} Skipped!");
-
                     }
                 }
                 if (!Testing)
@@ -420,9 +464,7 @@ namespace RBAC
                 }
                 log.Error("VaultNotFound", e);
                 log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
-
                 ConsoleError(e.Message);
-
             }
         }
 
@@ -459,23 +501,19 @@ namespace RBAC
                 }
                 catch (Exception e)
                 {
-                    
                     if (e.Message.Contains("ResourceNotFound"))
                     {
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
                         ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
-                        
                     }
                     else
                     {
                         log.Error("UserFieldsInvalid");
                         log.Debug(e.Message);
                         ConsoleError($"{e.Message} User skipped.");
-                     
                     }
-                    
                 }
             }
             else if (type == "group")
@@ -507,14 +545,12 @@ namespace RBAC
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-
                         ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
                         log.Error("GroupFieldsInvalid");
                         log.Debug(e.Message);
-
                         ConsoleError($"{e.Message} Group skipped.");
                     }
                 }
@@ -544,18 +580,13 @@ namespace RBAC
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-
-
                         ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
-      
                     }
                     else
                     {
                         log.Error("ApplicationFieldsInvalid");
                         log.Debug(e.Message);
-
                         ConsoleError($"{e.Message} Application skipped.");
-        
                     }
                 }
             }
@@ -887,18 +918,22 @@ namespace RBAC
             }
         }
 
-        // This field indicates if unit tests are being run
-        public bool Testing { get; set; }
-        // This field indicates if the KeyVaults have changed
-        public List<KeyVaultProperties> Changed { get; set; }
-        // This field defines the logger
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        /// <summary>
+        /// This method prints the error message to the Console in red, then resets the color.
+        /// </summary>
+        /// <param name="message">The error message to be printed</param>
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
+
+        // This field indicates if unit tests are being run
+        public bool Testing { get; set; }
+        // This field indicates if the KeyVaults have changed
+        public List<KeyVaultProperties> Changed { get; set; }
+        // This field defines the logger
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     }
 }
