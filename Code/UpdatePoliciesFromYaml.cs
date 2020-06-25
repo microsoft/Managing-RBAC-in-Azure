@@ -924,46 +924,47 @@ namespace RBAC
         return duplicates;
     }
 
-    /// <summary>
-    /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
-    /// </summary>
-    /// <param name="principalPermissions">The current PrincipalPermissions object</param>
-    public void translateShorthands(PrincipalPermissions principalPermissions)
-    {
-        string[] updatedKeyPermissions = translateShorthand("all", "key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
-            Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-        updatedKeyPermissions = translateShorthand("read", "key", principalPermissions.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
-            Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-        updatedKeyPermissions = translateShorthand("write", "key", principalPermissions.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
-            Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-        updatedKeyPermissions = translateShorthand("storage", "key", principalPermissions.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
-            Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-        updatedKeyPermissions = translateShorthand("crypto", "key", principalPermissions.PermissionsToKeys, Constants.CRYPTO_KEY_PERMISSIONS,
-            Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-        principalPermissions.PermissionsToKeys = updatedKeyPermissions;
+        /// <summary>
+        /// This method translates the shorthand notations for Keys, Secrets, and Certificates to their respective permissions.
+        /// </summary>
+        /// <param name="principalPermissions">The current PrincipalPermissions object</param>
+        public void translateShorthands(PrincipalPermissions principalPermissions)
+        {
+            string[] updatedKeyPermissions = translateShorthand("all", "key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            updatedKeyPermissions = translateShorthand("read", "key", updatedKeyPermissions, Constants.READ_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            updatedKeyPermissions = translateShorthand("write", "key", updatedKeyPermissions, Constants.WRITE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            updatedKeyPermissions = translateShorthand("storage", "key", updatedKeyPermissions, Constants.STORAGE_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            updatedKeyPermissions = translateShorthand("crypto", "key", updatedKeyPermissions, Constants.CRYPTO_KEY_PERMISSIONS,
+                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            principalPermissions.PermissionsToKeys = updatedKeyPermissions;
 
-        string[] updatedSecretPermissions = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
-            Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-        updatedSecretPermissions = translateShorthand("read", "secret", principalPermissions.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
-            Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-        updatedSecretPermissions = translateShorthand("write", "secret", principalPermissions.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
-            Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-        updatedSecretPermissions = translateShorthand("storage", "secret", principalPermissions.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
-            Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-        principalPermissions.PermissionsToSecrets = updatedSecretPermissions;
+            string[] updatedSecretPermissions = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            updatedSecretPermissions = translateShorthand("read", "secret", updatedSecretPermissions, Constants.READ_SECRET_PERMISSIONS,
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            updatedSecretPermissions = translateShorthand("write", "secret", updatedSecretPermissions, Constants.WRITE_SECRET_PERMISSIONS,
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            updatedSecretPermissions = translateShorthand("storage", "secret", updatedSecretPermissions, Constants.STORAGE_SECRET_PERMISSIONS,
+                Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            principalPermissions.PermissionsToSecrets = updatedSecretPermissions;
 
-        string[] updatedCertifPermissions = translateShorthand("all", "certificate", principalPermissions.PermissionsToCertificates,
-            Constants.ALL_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-        updatedCertifPermissions = translateShorthand("read", "certificate", principalPermissions.PermissionsToCertificates,
-            Constants.READ_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-        updatedCertifPermissions = translateShorthand("write", "certificate", principalPermissions.PermissionsToCertificates,
-            Constants.WRITE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-        updatedCertifPermissions = translateShorthand("storage", "certificate", principalPermissions.PermissionsToCertificates,
-            Constants.STORAGE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-        updatedCertifPermissions = translateShorthand("management", "certificate", principalPermissions.PermissionsToCertificates,
-            Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-        principalPermissions.PermissionsToCertificates = updatedCertifPermissions;
-    }
+            string[] updatedCertifPermissions = translateShorthand("all", "certificate", principalPermissions.PermissionsToCertificates, 
+                Constants.ALL_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            updatedCertifPermissions = translateShorthand("read", "certificate", updatedCertifPermissions, 
+                Constants.READ_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            updatedCertifPermissions = translateShorthand("write", "certificate", updatedCertifPermissions, 
+                Constants.WRITE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            updatedCertifPermissions = translateShorthand("storage", "certificate", updatedCertifPermissions, 
+                Constants.STORAGE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            updatedCertifPermissions = translateShorthand("management", "certificate", updatedCertifPermissions, 
+                Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = updatedCertifPermissions;
+        }
+ 
 
     /// <summary>
     /// This method translates the specified shorthand to its respective permissions.
