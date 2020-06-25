@@ -65,8 +65,9 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                log.Error($"Invalid Main arguments. {e.Message}");
-                log.Debug($"Refer to {Constants.READ_ME} & search 'Defining your File paths' if you've forgotten how to do so.");
+                log.Error("InvalidArgs", e);
+                log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
+                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
                 Exit($"Error: {e.Message}");
             }
         }
@@ -93,10 +94,8 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error($"Unable to read & deserialize Json. {e.Message}");
-                log.Debug("Note that all of the fields within AadAppKeyDetails are required, but not all fields are required within Resources for each Resource object." +
-                    $"\n Refer to {Constants.JSON_SAMPLE} for a sample json input." +
-                    $"\n Refer to {Constants.READ_ME} and search 'Creating the MasterConfig.json File to learn more in the ReadME.");
+                log.Error("DeserializationFail", e);
+                log.Debug("Refer to https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/Config/MasterConfigExample.jsonfor for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
                 Exit($"Error: {e.Message}");
                 return null;
             }
@@ -309,10 +308,11 @@ namespace RBAC
                 getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientIdSecretName, "clientId");
                 getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
                 getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
+
             } 
             catch (Exception e)
             {
-                log.Error($"AppName was not retrieved. {e.Message}");
+                log.Error($"AppName was NOT retrieved.", e);
                 Exit($"Error: {e.Message}");
             }
             log.Info("Secrets retrieved!");
@@ -368,8 +368,8 @@ namespace RBAC
             } 
             catch (Exception e)
             {
-                log.Error(e.Message);
-                log.Debug($"Refer to {Constants.KVM_CLIENT} for information on KeyVaultMananagentClient class");
+                log.Error("KVM Client NOT Created", e);
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultMananagentClient class");
                 Exit($"Error: {e.Message}");
                 return null;
             }
@@ -405,8 +405,8 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error(e.Message);
-                log.Debug($"Refer to {Constants.GRAPH_CLIENT_CREATE} for information on creating a graph client");
+                log.Error("Graph Client NOT created", e);
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a graph client");
                 Exit($"Error: {e.Message}");   
                 return null;
             } 
