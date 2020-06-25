@@ -49,7 +49,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("VaultName NotExist was changed or added.", e.Message);
+                Assert.AreEqual("VaultName for KeyVault 'NotExist' was changed or added.", e.Message);
             }
 
             var badRGName = new KeyVaultProperties
@@ -67,7 +67,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("ResourceGroupName for RG1Test1 was changed.", e.Message);
+                Assert.AreEqual("ResourceGroupName for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
             var badSubId = new KeyVaultProperties
@@ -85,7 +85,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("SubscriptionId for RG1Test1 was changed.", e.Message);
+                Assert.AreEqual("SubscriptionId for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
             var badLoc = new KeyVaultProperties
@@ -103,7 +103,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Location for RG1Test1 was changed.", e.Message);
+                Assert.AreEqual("Location for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
             var badTen = new KeyVaultProperties
@@ -121,7 +121,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("TenantId for RG1Test1 was changed.", e.Message);
+                Assert.AreEqual("TenantId for KeyVault 'RG1Test1' was changed.", e.Message);
             }
         }
 
@@ -195,7 +195,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: KeyVault, TestAddKV, in the YAML file was not found in the JSON file.", e.Message);
+                Assert.AreEqual($"Error: KeyVault 'TestAddKV' in the YAML file was not found in the JSON file.", e.Message);
             }
             yamlVaults.RemoveAt(4);
 
@@ -208,7 +208,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: KeyVault, RG1Test1, specified in the JSON file was not found in the YAML file.", e.Message);
+                Assert.AreEqual($"Error: KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
             }
         }
 
@@ -230,7 +230,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'VaultName' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Vault Name empty
@@ -242,7 +242,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing VaultName for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'VaultName' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Resource Group name null
@@ -255,7 +255,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'ResourceGroupName' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Resource group name empty
@@ -267,7 +267,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing ResourceGroupName for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'ResourceGroupName' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Subscription id null
@@ -280,7 +280,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'SubscriptionId' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Subscription id empty
@@ -292,7 +292,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing SubscriptionId for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'SubscriptionId' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Location null 
@@ -305,7 +305,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'Location' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Location empty
@@ -317,7 +317,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing Location for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'Location' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Tenant id null
@@ -330,7 +330,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'TenantId' for KeyVault '{kv.VaultName}'", e.Message);
             }
 
             // Tenant id empty
@@ -342,7 +342,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Missing TenantId for {kv.VaultName}", e.Message);
+                Assert.AreEqual($"Missing 'TenantId' for KeyVault '{kv.VaultName}'", e.Message);
             }
         }
 
@@ -629,9 +629,9 @@ namespace RBAC
                 PermissionsToCertificates = new string[] { "all" }
             };
             up.translateShorthands(pp);
-            Assert.IsTrue(pp.PermissionsToKeys.SequenceEqual(Constants.ALL_KEY_PERMISSIONS));
-            Assert.IsTrue(pp.PermissionsToSecrets.SequenceEqual(Constants.ALL_SECRET_PERMISSIONS));
-            Assert.IsTrue(pp.PermissionsToCertificates.SequenceEqual(Constants.ALL_CERTIFICATE_PERMISSIONS));
+            Assert.IsTrue(pp.PermissionsToKeys.All(Constants.ALL_KEY_PERMISSIONS.Contains));
+            Assert.IsTrue(pp.PermissionsToSecrets.All(Constants.ALL_SECRET_PERMISSIONS.Contains));
+            Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains));
 
             pp = new PrincipalPermissions
             {
@@ -691,7 +691,7 @@ namespace RBAC
 
             Assert.IsTrue(Constants.READ_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "key")));
             Assert.IsTrue(Constants.WRITE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("write", "key")));
-            Assert.IsTrue(Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("crypto", "key")));
+            Assert.IsTrue(Constants.CRYPTO_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("crypto", "key")));
             Assert.IsTrue(Constants.STORAGE_KEY_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "key")));
 
             Assert.IsTrue(Constants.READ_SECRET_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("read", "secret")));

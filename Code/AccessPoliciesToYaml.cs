@@ -153,6 +153,7 @@ namespace RBAC
         {
             List<string> missingInputs = getMissingInputs(vaultList);
             int numValid = Convert.ToInt32(missingInputs.Last());
+            missingInputs.RemoveAt(missingInputs.Count - 1);
             int numMissing = missingInputs.Count();
             JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
             if (numMissing == 0 && (aadDetails.Children().Count() != numValid))
