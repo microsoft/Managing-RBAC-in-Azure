@@ -14,7 +14,6 @@ namespace RBAC
         /// </summary>
         public void TestVerifyFileExtensions()
         {
-            // array loop
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             string[] args = { "file.json", "file.yml" };
             try
@@ -26,17 +25,6 @@ namespace RBAC
                 Assert.Fail();
             }
 
-            string[] nothing = { };
-            try
-            {
-                ap.verifyFileExtensions(nothing);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(e.Message, "Error: Missing 2 input files.");
-            }
-
             string[] invalidLength = { "file.json" };
             try
             {
@@ -45,18 +33,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: Missing 1 input file.");
-            }
-
-            string[] tooMany = { "file1.json", "file2.json", "file3.yml" };
-            try
-            {
-                ap.verifyFileExtensions(tooMany);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(e.Message, "Error: Too many input files. Maximum needed is 2.");
+                Assert.AreEqual(e.Message, "Error: Missing input file.");
             }
 
             string[] invalidJson = { "file.jsn", "file.yml" };
@@ -67,7 +44,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: The 1st argument is not a .json file.");
+                Assert.AreEqual(e.Message, "Error: The 1st argument is not a .json file");
             }
 
             string[] invalidYml = { "file.json", "file.yaml" };
@@ -78,7 +55,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual(e.Message, "Error: The 2nd argument is not a .yml file.");
+                Assert.AreEqual(e.Message, "Error: The 2nd argument is not a .yml file");
             }
         }
 
@@ -243,109 +220,6 @@ namespace RBAC
             }
         }
 
-        [TestMethod]
-        /// <summary>
-        /// This method verifies that invalid secrets are handled.
-        /// </summary>
-        public void TestGetSecrets()
-        {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var ret = ap.getSecrets(createExpectedJson());
-            Assert.AreEqual(4, ret.Count, $"Expected 4, was {ret.Count}");
-
-            var badVaultName = createExpectedJson();
-            badVaultName.AadAppKeyDetails.VaultName = "none";
-            try
-            {
-                ap.getSecrets(badVaultName);
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.IsTrue(e.Message != "Assert.Fail failed");
-            }
-
-            var badId = createExpectedJson();
-            badId.AadAppKeyDetails.ClientIdSecretName = "none";
-            try
-            {
-                ap.getSecrets(badId);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("clientIdSecret could not be found."));
-            }
-
-            var badKey = createExpectedJson();
-            badKey.AadAppKeyDetails.ClientKeySecretName = "none";
-            try
-            {
-                ap.getSecrets(badKey);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("clientKeySecret could not be found."));
-            }
-
-            var badTenant = createExpectedJson();
-            badTenant.AadAppKeyDetails.TenantIdSecretName = "none";
-            try
-            {
-                ap.getSecrets(badTenant);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("tenantIdSecret could not be found."));
-            }
-        }
-
-        [TestMethod]
-        /// <summary>
-        /// This method verifies that a kvm client is succesfully created.
-        /// </summary>
-        public void TestCreateKVMClient()
-        {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var sec = ap.getSecrets(createExpectedJson());
-            var kc = ap.createKVMClient(sec);
-            Assert.IsNotNull(kc);
-        }
-
-        [TestMethod]
-        /// <summary>
-        /// This method verifies that a graph client is succesfully created or handled if not.
-        /// </summary>
-        public void TestCreateGraphClient()
-        {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var sec = ap.getSecrets(createExpectedJson());
-            var gc = ap.createGraphClient(sec);
-            Assert.IsNotNull(gc);
-            sec["clientId"] = null;
-            try
-            {
-                gc = ap.createGraphClient(sec);
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.AreEqual("Error: No ClientId was specified.", e.Message);
-            }
-        }
-
-        [TestMethod]
-        /// <summary>
-        /// This method verifies that the code's output matches the expected output.
-        /// </summary>
-        public void TestSuccessfulRun()
-        {
-            string[] args = { "../../../input/TestActualVaults.json", "../../../output/ActualOutput.yml" };
-            AccessPoliciesToYamlProgram.Main(args);
-            Assert.AreEqual(System.IO.File.ReadAllText("../../../output/ActualOutput.yml"), System.IO.File.ReadAllText("../../../expected/ExpectedOutput.yml"));
-        }
 
         /// <summary>
         /// This method creates an expected json that is used for testing purposes.
@@ -356,11 +230,11 @@ namespace RBAC
             var exp = new JsonInput();
             exp.AadAppKeyDetails = new AadAppKey();
             exp.Resources = new List<Resource>();
-            exp.AadAppKeyDetails.AadAppName = "RBACAutomationApp";
-            exp.AadAppKeyDetails.ClientIdSecretName = "RBACClientId";
-            exp.AadAppKeyDetails.VaultName = "RBAC-KeyVault";
-            exp.AadAppKeyDetails.ClientKeySecretName = "RBACAppKey";
-            exp.AadAppKeyDetails.TenantIdSecretName = "RBACTenant";
+            exp.AadAppKeyDetails.AadAppName = "AppName";
+            exp.AadAppKeyDetails.ClientIdSecretName = "ClientId";
+            exp.AadAppKeyDetails.VaultName = "KeyVault";
+            exp.AadAppKeyDetails.ClientKeySecretName = "ClientKey";
+            exp.AadAppKeyDetails.TenantIdSecretName = "TenantId";
 
             var res1 = new Resource();
             res1.SubscriptionId = "sample1";
