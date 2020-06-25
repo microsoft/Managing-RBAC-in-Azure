@@ -690,36 +690,39 @@ namespace RBAC
         /// <param name="principalPermissions">The current PrincipalPermissions object</param>
         public void translateShorthands(PrincipalPermissions principalPermissions)
         {
-            principalPermissions.PermissionsToKeys = translateShorthand("all", "Key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
+            string[] updatedKeyPermissions = translateShorthand("all", "key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            principalPermissions.PermissionsToKeys = translateShorthand("read", "Key", principalPermissions.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
+            updatedKeyPermissions = translateShorthand("read", "key", principalPermissions.PermissionsToKeys, Constants.READ_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            principalPermissions.PermissionsToKeys = translateShorthand("write", "Key", principalPermissions.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
+            updatedKeyPermissions = translateShorthand("write", "key", principalPermissions.PermissionsToKeys, Constants.WRITE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            principalPermissions.PermissionsToKeys = translateShorthand("storage", "Key", principalPermissions.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
+            updatedKeyPermissions = translateShorthand("storage", "key", principalPermissions.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            principalPermissions.PermissionsToKeys = translateShorthand("crypto", "Key", principalPermissions.PermissionsToKeys, Constants.CRYPTO_KEY_PERMISSIONS,
+            updatedKeyPermissions = translateShorthand("crypto", "key", principalPermissions.PermissionsToKeys, Constants.CRYPTO_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            principalPermissions.PermissionsToKeys = updatedKeyPermissions;
 
-            principalPermissions.PermissionsToSecrets = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
+            string[] updatedSecretPermissions = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            principalPermissions.PermissionsToSecrets = translateShorthand("read", "secret", principalPermissions.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
+            updatedSecretPermissions = translateShorthand("read", "secret", principalPermissions.PermissionsToSecrets, Constants.READ_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            principalPermissions.PermissionsToSecrets = translateShorthand("write", "secret", principalPermissions.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
+            updatedSecretPermissions = translateShorthand("write", "secret", principalPermissions.PermissionsToSecrets, Constants.WRITE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
-            principalPermissions.PermissionsToSecrets = translateShorthand("storage", "secret", principalPermissions.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
+            updatedSecretPermissions = translateShorthand("storage", "secret", principalPermissions.PermissionsToSecrets, Constants.STORAGE_SECRET_PERMISSIONS,
                 Constants.VALID_SECRET_PERMISSIONS, Constants.SHORTHANDS_SECRETS);
+            principalPermissions.PermissionsToSecrets = updatedSecretPermissions;
 
-            principalPermissions.PermissionsToCertificates = translateShorthand("all", "certificate", principalPermissions.PermissionsToCertificates, 
+            string[] updatedCertifPermissions = translateShorthand("all", "certificate", principalPermissions.PermissionsToCertificates, 
                 Constants.ALL_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            principalPermissions.PermissionsToCertificates = translateShorthand("read", "certificate", principalPermissions.PermissionsToCertificates, 
+            updatedCertifPermissions = translateShorthand("read", "certificate", principalPermissions.PermissionsToCertificates, 
                 Constants.READ_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            principalPermissions.PermissionsToCertificates = translateShorthand("write", "certificate", principalPermissions.PermissionsToCertificates, 
+            updatedCertifPermissions = translateShorthand("write", "certificate", principalPermissions.PermissionsToCertificates, 
                 Constants.WRITE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            principalPermissions.PermissionsToCertificates = translateShorthand("storage", "certificate", principalPermissions.PermissionsToCertificates, 
+            updatedCertifPermissions = translateShorthand("storage", "certificate", principalPermissions.PermissionsToCertificates, 
                 Constants.STORAGE_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
-            principalPermissions.PermissionsToCertificates = translateShorthand("management", "certificate", principalPermissions.PermissionsToCertificates, 
+            updatedCertifPermissions = translateShorthand("management", "certificate", principalPermissions.PermissionsToCertificates, 
                 Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
+            principalPermissions.PermissionsToCertificates = updatedCertifPermissions;
         }
 
         /// <summary>
@@ -732,67 +735,67 @@ namespace RBAC
         /// <param name="validPermissions">The array of all valid permissions</param>
         /// <param name="shorthandWords">The valid shorthand keywords array</param>
         /// <returns>A string array that has replaced the shorthands with their respective permissions</returns>
-        public string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
-        {
-            var shorthandInstances = permissions.Where(val => val.Trim().ToLower().StartsWith(shorthand)).ToArray();
-            if (shorthandInstances.Length > 1)
-            {
-                throw new Exception($"{permissionType} '{shorthand}' permission is duplicated");
-            }
-            // Either contains 'shorthand' or 'shorthand -'
-            else if (shorthandInstances.Length == 1)
-            {
-                string inst = shorthandInstances[0].Trim().ToLower();
-                if (inst == shorthand)
-                {
-                    if (shorthand == "all" && permissions.Length != 1)
-                    {
-                        throw new Exception($"'All' permission removes need for other {permissionType} permissions");
-                    }
+         public string[] translateShorthand(string shorthand, string permissionType, string[] permissions, string[] shorthandPermissions, string[] validPermissions, string[] shorthandWords)
+         {
+             var shorthandInstances = permissions.Where(val => val.Trim().ToLower().StartsWith(shorthand)).ToArray();
+             if (shorthandInstances.Length > 1)
+             {
+                 throw new Exception($"{permissionType} '{shorthand}' permission is duplicated");
+             }
+             // Either contains 'shorthand' or 'shorthand -'
+             else if (shorthandInstances.Length == 1)
+             {
+                 string inst = shorthandInstances[0].Trim().ToLower();
+                 if (inst == shorthand)
+                 {
+                     if (shorthand == "all" && permissions.Length != 1)
+                     {
+                         throw new Exception($"'All' permission removes need for other {permissionType} permissions");
+                     }
 
-                    // Check for duplicates
-                    var common = permissions.Intersect(shorthandPermissions);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"{string.Join(", ", shorthandPermissions)} permissions are already included in {permissionType} '{shorthand}' permission");
-                    }
-                    return permissions.Concat(shorthandPermissions).Where(val => val != shorthand).ToArray();
-                }
-                // 'Shorthand -'
-                else
-                {
-                    const string minusLabel = "-";
-                    int minusLabelStart = inst.IndexOf(minusLabel);
-                    int start = minusLabelStart + minusLabel.Length;
+                     // Check for duplicates
+                     var common = permissions.Intersect(shorthandPermissions);
+                     if (common.Count() != 0)
+                     {
+                         throw new Exception($"{string.Join(", ", shorthandPermissions)} permissions are already included in {permissionType} '{shorthand}' permission");
+                     }
+                     return permissions.Concat(shorthandPermissions).Where(val => val != shorthand).ToArray();
+                 }
+                 // 'Shorthand -'
+                 else
+                 {
+                     const string minusLabel = "-";
+                     int minusLabelStart = inst.IndexOf(minusLabel);
+                     int start = minusLabelStart + minusLabel.Length;
 
-                    string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim().ToLower()).ToArray();
-                    foreach (string p in valuesToRemove)
-                    {
-                        if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && !shorthandPermissions.Contains(p)))
-                        {
-                            throw new Exception($"Remove values could not be recognized in {permissionType} permission '{shorthand} - <{p}>'");
-                        }
+                     string[] valuesToRemove = inst.Substring(start).Split(',').Select(p => p.Trim().ToLower()).ToArray();
+                     foreach (string p in valuesToRemove)
+                     {
+                         if (!validPermissions.Contains(p) || (!inst.StartsWith("all") && !shorthandPermissions.Contains(p)))
+                         {
+                             throw new Exception($"Remove values could not be recognized in {permissionType} permission '{shorthand} - <{p}>'");
+                         }
 
-                        // The remove value is a shorthand, then replace the shorthand with its permissions
-                        if (shorthandWords.Contains(p))
-                        {
-                            string[] valuesToReplace = getShorthandPermissions(p, permissionType);
-                            valuesToRemove = valuesToRemove.Concat(valuesToReplace).Where(val => val != p).ToArray();
-                        }
-                    }
-                    var permissionsToGrant = shorthandPermissions.Except(valuesToRemove);
+                         // The remove value is a shorthand, then replace the shorthand with its permissions
+                         if (shorthandWords.Contains(p))
+                         {
+                             string[] valuesToReplace = getShorthandPermissions(p, permissionType);
+                             valuesToRemove = valuesToRemove.Concat(valuesToReplace).Where(val => val != p).ToArray();
+                         }
+                     }
+                     var permissionsToGrant = shorthandPermissions.Except(valuesToRemove);
 
-                    // Check for duplicates
-                    var common = permissions.Intersect(permissionsToGrant);
-                    if (common.Count() != 0)
-                    {
-                        throw new Exception($"{string.Join(", ", valuesToRemove)} permissions are already included in {permissionType} '{shorthand}' permission");
-                    }
-                    return (permissions.Concat(permissionsToGrant).Where(val => val != inst).ToArray());
-                }
-            }
-            return permissions;
-        }
+                     // Check for duplicates
+                     var common = permissions.Intersect(permissionsToGrant);
+                     if (common.Count() != 0)
+                     {
+                         throw new Exception($"{string.Join(", ", valuesToRemove)} permissions are already included in {permissionType} '{shorthand}' permission");
+                     }
+                     return (permissions.Concat(permissionsToGrant).Where(val => val != inst).ToArray());
+                 }
+             }
+             return permissions;
+         }
 
         /// <summary>
         /// This method returns the shorthand permissions that correspond to the shorthand keyword.
@@ -808,7 +811,7 @@ namespace RBAC
             }
             else
             {
-                if (permissionType.ToLower() == "key")
+                if (permissionType == "key")
                 {
                     if (shorthand == "read")
                     {
@@ -827,7 +830,7 @@ namespace RBAC
                         return Constants.CRYPTO_KEY_PERMISSIONS;
                     }
                 }
-                else if (permissionType.ToLower() == "secret")
+                else if (permissionType == "secret")
                 {
                     if (shorthand == "read")
                     {
@@ -842,7 +845,7 @@ namespace RBAC
                         return Constants.STORAGE_SECRET_PERMISSIONS;
                     }
                 }
-                else if (permissionType.ToLower() == "certificate")
+                else if (permissionType == "certificate")
                 {
                     if (shorthand == "read")
                     {
