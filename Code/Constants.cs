@@ -23,14 +23,14 @@ namespace RBAC
         public const int MIN_NUM_USERS = 2;
         public const int MAX_NUM_CHANGES = 5;
 
-        //Defines the user types
+        // Defines the user types
         public enum USER_TYPES { User, Group, ServicePrincipal, Application }
         // Defines shorthands for keys
         public static readonly string[] ALL_KEY_PERMISSIONS = typeof(KeyPermissions).GetFields().Select(prop => prop.Name.ToLower()).ToArray();
         public enum READ_KEY_PERMISSIONS { get, list }
         public enum WRITE_KEY_PERMISSIONS { update, create, delete }
         public enum STORAGE_KEY_PERMISSIONS { import, recover, backup, restore }
-        public enum CRYPTOGRAPHIC_KEY_PERMISSIONS { decrypt, encrypt, unwrapkey, wrapkey, verify, sign }
+        public enum CRYPTO_KEY_PERMISSIONS { decrypt, encrypt, unwrapkey, wrapkey, verify, sign }
 
         // Defines shorthands for secrets
         public static readonly string[] ALL_SECRET_PERMISSIONS = typeof(SecretPermissions).GetFields().Select(prop => prop.Name.ToLower()).ToArray();

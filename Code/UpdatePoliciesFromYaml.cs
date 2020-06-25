@@ -695,7 +695,7 @@ namespace RBAC
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
             principalPermissions.PermissionsToKeys = translateShorthand("storage", "Key", principalPermissions.PermissionsToKeys, Constants.STORAGE_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-            principalPermissions.PermissionsToKeys = translateShorthand("crypto", "Key", principalPermissions.PermissionsToKeys, Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS,
+            principalPermissions.PermissionsToKeys = translateShorthand("crypto", "Key", principalPermissions.PermissionsToKeys, Constants.CRYPTO_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
 
             principalPermissions.PermissionsToSecrets = translateShorthand("all", "secret", principalPermissions.PermissionsToSecrets, Constants.ALL_SECRET_PERMISSIONS,
@@ -821,7 +821,7 @@ namespace RBAC
                     }
                     else if (shorthand == "crypto")
                     {
-                        return Constants.CRYPTOGRAPHIC_KEY_PERMISSIONS;
+                        return Constants.CRYPTO_KEY_PERMISSIONS;
                     }
                 }
                 else if (permissionType.ToLower() == "secret")
