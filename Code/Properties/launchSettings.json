@@ -2,7 +2,7 @@
   "profiles": {
     "Managing-RBAC-in-Azure": {
       "commandName": "Project",
-      "commandLineArgs": "..\\..\\..\\..\\Config\\MasterConfig.json ..\\..\\..\\..\\Config\\YamlOutput.yml"
+      "commandLineArgs": "..\\..\\..\\..\\Config\\Demo_MasterConfig.json ..\\..\\..\\..\\Config\\YamlOutput.yml"
     }
   }
 }

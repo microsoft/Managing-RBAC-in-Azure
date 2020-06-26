@@ -18,9 +18,6 @@ namespace RBAC
         public const int MIN_NUM_USERS = 2;
         public const int MAX_NUM_CHANGES = 5;
 
-        // Defines the user types
-        public enum USER_TYPES { User, Group, ServicePrincipal, Application }
-
         // Defines shorthands for keys
         public static readonly string[] ALL_KEY_PERMISSIONS = typeof(KeyPermissions).GetFields().Select(prop => prop.Name.ToLower()).ToArray();
         public static readonly string[] READ_KEY_PERMISSIONS = { "get", "list" };
