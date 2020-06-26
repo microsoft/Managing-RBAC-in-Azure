@@ -14,7 +14,7 @@ namespace RBAC
         /// This method verifies that the yaml is deserialized properly.
         /// </summary>
         //[TestMethod]
-        /*public void TestYamlDeserialization()
+        public void TestYamlDeserialization()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
@@ -27,7 +27,7 @@ namespace RBAC
         /// This method verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
-        [TestMethod]
+       /* [TestMethod]
         public void TestCheckVaultChanges()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
@@ -211,7 +211,7 @@ namespace RBAC
                 Assert.AreEqual($"Error: KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
             }
         }
-
+        */
         /// <summary>
         /// This method verifies that the program handles invalid KeyVaultProperties fields.
         /// </summary>
@@ -542,7 +542,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual("Invalid key permission 'getS'", e.Message);
+                Assert.AreEqual("Invalid key permission 'gets'", e.Message);
             }
 
             PrincipalPermissions invalid = sp;
@@ -888,6 +888,6 @@ namespace RBAC
 
             return exp;
         }
-    }*/
     }
 }
+

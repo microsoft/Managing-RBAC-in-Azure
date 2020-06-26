@@ -207,6 +207,7 @@ namespace RBAC
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <returns>The number of changes made</returns>
+
         public void checkVaultChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             try
@@ -332,12 +333,11 @@ namespace RBAC
                             {
                                 var portalPermissions = portalPolicy.First();
 
-                                // first we must validate the permissions and translate the shorthands, but before that check for 1:1 AP
                                 try
                                 {
                                     checkValidPermissions(principalPermissions);
                                 }
-                                catch (Exception e) 
+                                catch (Exception e)
                                 {
                                     log.Error("InvalidPermission");
                                     log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
@@ -355,12 +355,11 @@ namespace RBAC
                                         $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                                     Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                                 }
-                                
-                                //does this work with an empty permission block?
 
                                 string[] deletedKeys = portalPermissions.PermissionsToKeys.Except(principalPermissions.PermissionsToKeys).ToArray();
                                 string[] deletedSecrets = portalPermissions.PermissionsToSecrets.Except(principalPermissions.PermissionsToSecrets).ToArray();
                                 string[] deletedCertificates = portalPermissions.PermissionsToCertificates.Except(principalPermissions.PermissionsToCertificates).ToArray();
+
                                 if (!(deletedKeys.Length == 0 && deletedSecrets.Length == 0 && deletedCertificates.Length == 0))
                                 {
                                     deletedPolicies.Add(new PrincipalPermissions()
@@ -377,15 +376,18 @@ namespace RBAC
                         }
                     }
 
-                    deletedVaultPolicies.Add(new KeyVaultProperties()
+                    if (deletedPolicies.Count() != 0)
                     {
-                        VaultName = oldVault.VaultName,
-                        ResourceGroupName = oldVault.ResourceGroupName,
-                        SubscriptionId = oldVault.SubscriptionId,
-                        Location = oldVault.Location,
-                        TenantId = oldVault.TenantId,
-                        AccessPolicies = deletedPolicies
-                    });
+                        deletedVaultPolicies.Add(new KeyVaultProperties()
+                        {
+                            VaultName = oldVault.VaultName,
+                            ResourceGroupName = oldVault.ResourceGroupName,
+                            SubscriptionId = oldVault.SubscriptionId,
+                            Location = oldVault.Location,
+                            TenantId = oldVault.TenantId,
+                            AccessPolicies = deletedPolicies
+                        });
+                    }
                 }
             }
 
@@ -399,7 +401,6 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public void convertToYaml(List<KeyVaultProperties> deleted)
         {
-            Console.WriteLine("Generating DeletedPolicies.yml...");
             log.Info("Generating DeletedPolicies.yml...");
             try
             {
@@ -408,7 +409,6 @@ namespace RBAC
 
                 System.IO.File.WriteAllText(@"..\..\..\..\Config\DeletedPolicies.yml", yaml);
                 log.Info("DeletedPolicies.yml complete!");
-                Console.WriteLine("Finished!");
             }
             catch (Exception e)
             {
@@ -485,6 +485,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
+
         /*public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
@@ -549,7 +550,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
-        public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
+        public List<KeyVaultProperties> updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             checkVaultChanges(yamlVaults, vaultsRetrieved);
@@ -573,6 +574,7 @@ namespace RBAC
             else
             {
                 log.Info("The number of changes made was valid!");
+
                 log.Info("Updating vaults...");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
@@ -600,11 +602,11 @@ namespace RBAC
                 }
                 log.Info("Updates finished!");
             }
-            List<KeyVaultProperties> deletedPolicies = changed.Item1;
-            convertToYaml(deletedPolicies);
+            return (changed.Item1);
         }
 
         /// <summary>
+
         /// This method throws an error if any of the fields for a KeyVault have been changed in the Yaml, other than the AccessPolicies.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
@@ -1007,46 +1009,33 @@ namespace RBAC
             log.Info("Permissions exist!");
 
             log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
-            
 
-            var trimKeyPermissions = new string[principalPermissions.PermissionsToKeys.Length];
             foreach (string key in principalPermissions.PermissionsToKeys)
             {
-                var k = key.Trim().ToLower();
-                trimKeyPermissions[trimKeyPermissions.Count(val => val != null)] = k;
-                if (!Constants.VALID_KEY_PERMISSIONS.Contains(k.ToLower()) && (!k.ToLower().StartsWith("all -")) && (!k.ToLower().StartsWith("read -"))
-                    && (!k.ToLower().StartsWith("write -")) && (!k.ToLower().StartsWith("storage -")) && (!k.ToLower().StartsWith("crypto - ")))
+                if (!Constants.VALID_KEY_PERMISSIONS.Contains(key) && (!key.StartsWith("all -")) && (!key.StartsWith("read -"))
+                    && (!key.StartsWith("write -")) && (!key.StartsWith("storage -")) && (!key.StartsWith("crypto - ")))
                 {
                     throw new Exception($"Invalid key permission '{key}'");
                 }
             }
-            principalPermissions.PermissionsToKeys = trimKeyPermissions;
 
-            var trimSecPermissions = new string[principalPermissions.PermissionsToSecrets.Length];
             foreach (string secret in principalPermissions.PermissionsToSecrets)
             {
-                var se = secret.Trim().ToLower();
-                trimSecPermissions[trimSecPermissions.Count(val => val != null)] = se;
-                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(se.ToLower()) && (!se.ToLower().StartsWith("all -")) && (!se.ToLower().StartsWith("read -"))
-                    && (!se.ToLower().StartsWith("write -")) && (!se.ToLower().StartsWith("storage -")))
+                if (!Constants.VALID_KEY_PERMISSIONS.Contains(secret) && (!secret.StartsWith("all -")) && (!secret.StartsWith("read -"))
+                    && (!secret.StartsWith("write -")) && (!secret.StartsWith("storage -")))
                 {
                     throw new Exception($"Invalid secret permission '{secret}'");
                 }
             }
-            principalPermissions.PermissionsToSecrets = trimSecPermissions;
 
-            var trimCertifPermissions = new string[principalPermissions.PermissionsToCertificates.Length];
             foreach (string certif in principalPermissions.PermissionsToCertificates)
             {
-                var c = certif.Trim().ToLower();
-                trimCertifPermissions[trimCertifPermissions.Count(val => val != null)] = c;
-                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(c.ToLower()) && (!c.ToLower().StartsWith("all -")) && (!c.ToLower().StartsWith("read -"))
-                    && (!c.ToLower().StartsWith("write -")) && (!c.ToLower().StartsWith("storage -")) && (!c.ToLower().StartsWith("management -")))
+                if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(certif) && (!certif.StartsWith("all -")) && (!certif.StartsWith("read -"))
+                    && (!certif.StartsWith("write -")) && (!certif.StartsWith("storage -")) && (!certif.StartsWith("management -")))
                 {
                     throw new Exception($"Invalid certificate permission '{certif}'");
                 }
             }
-            principalPermissions.PermissionsToCertificates = trimCertifPermissions;
 
             if (principalPermissions.PermissionsToKeys.Distinct().Count() != principalPermissions.PermissionsToKeys.Count())
             {
