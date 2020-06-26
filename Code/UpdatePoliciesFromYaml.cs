@@ -5,9 +5,11 @@ using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Azure.Management.TrafficManager.Fluent.TrafficManagerEndpoint.Definition;
 using Microsoft.Graph;
+using Microsoft.Rest.ClientRuntime.Azure.Authentication.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Resources;
 using System.Security.Permissions;
 using YamlDotNet.Serialization;
@@ -210,6 +212,17 @@ namespace RBAC
             try
             {
                 log.Info("Checking for KeyVault changes...");
+                foreach (KeyVaultProperties kv in vaultsRetrieved)
+                {
+                    if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                    {
+                        log.Error($"VaultDeleted");
+                        log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
+                            $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
+                        throw new Exception($"KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                    }
+                }
+
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
                     var lookup = vaultsRetrieved.ToLookup(kv => kv.VaultName)[kv.VaultName];
@@ -247,20 +260,9 @@ namespace RBAC
                             log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
                             throw new Exception($"TenantId for KeyVault '{kv.VaultName}' was changed.");
                         }
+                        log.Info("Changes checked successfully!");
                     }
                 }
-
-                foreach (KeyVaultProperties kv in vaultsRetrieved)
-                {
-                    if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
-                    {
-                        log.Error($"VaultDeleted");
-                        log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
-                            $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
-                        throw new Exception($"KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
-                    }
-                }
-                log.Info("Changes checked successfully!");
             }
             catch (Exception e)
             {
@@ -278,15 +280,46 @@ namespace RBAC
                 {
                     var oldVault = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName].First();
                     List<PrincipalPermissions> portalPolicies = oldVault.AccessPolicies;
+
+                    // Check if the access policy was deleted
+                    foreach (PrincipalPermissions oldPolicy in portalPolicies)
+                    {
+                        IEnumerable<PrincipalPermissions> newPolicy;
+                        if (oldPolicy.Type.ToLower() == "user" || oldPolicy.Type.ToLower() == "group")
+                        {
+                            newPolicy = kv.AccessPolicies.ToLookup(pp => pp.Alias)[oldPolicy.Alias];
+                        }
+                        else
+                        {
+                            newPolicy = kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[oldPolicy.DisplayName];
+                        }
+                        if (newPolicy.Count() == 0)
+                        {
+                            changes++;
+                        }
+                    }
+
                     foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                     {
                         if (!portalPolicies.Contains(principalPermissions))
                         {
                             changes++;
+                            string type = principalPermissions.Type.ToLower().Trim();
+
+                            log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
+                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
+                                    (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
+                            {
+                                log.Error("AccessPolicyAlreadyDefined");
+                                log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
+                                    $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                            }
+                            log.Info("Access policies are 1:1!");
 
                             // Check if the access policy was added (count = 0) or updated (count > 0)
                             IEnumerable<PrincipalPermissions> portalPolicy;
-                            if (principalPermissions.Type.Trim().ToLower() == "user" || principalPermissions.Type.Trim().ToLower() == "group")
+                            if (type == "user" || type == "group")
                             {
                                 portalPolicy = portalPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias];
                             }
@@ -299,7 +332,30 @@ namespace RBAC
                             {
                                 var portalPermissions = portalPolicy.First();
 
-                                //trasnlate portalpermissions here
+                                // first we must validate the permissions and translate the shorthands, but before that check for 1:1 AP
+                                try
+                                {
+                                    checkValidPermissions(principalPermissions);
+                                }
+                                catch (Exception e) 
+                                {
+                                    log.Error("InvalidPermission");
+                                    log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
+                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                }
+
+                                try
+                                {
+                                    translateShorthands(principalPermissions);
+                                }
+                                catch (Exception e)
+                                {
+                                    log.Error("InvalidShorthand");
+                                    log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
+                                        $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                }
+                                
                                 //does this work with an empty permission block?
 
                                 string[] deletedKeys = portalPermissions.PermissionsToKeys.Except(principalPermissions.PermissionsToKeys).ToArray();
@@ -330,25 +386,6 @@ namespace RBAC
                         TenantId = oldVault.TenantId,
                         AccessPolicies = deletedPolicies
                     });
-
-                    // Check if the access policy was deleted
-                    foreach (PrincipalPermissions oldPolicy in portalPolicies)
-                    {
-                        IEnumerable<PrincipalPermissions> newPolicy;
-                        if (oldPolicy.Type.ToLower() == "user" || oldPolicy.Type.ToLower() == "group")
-                        {
-                            newPolicy = kv.AccessPolicies.ToLookup(pp => pp.Alias)[oldPolicy.Alias];
-                        }
-                        else
-                        {
-                            newPolicy = kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[oldPolicy.DisplayName];
-                        }
-
-                        if (newPolicy.Count() == 0)
-                        {
-                            changes++;
-                        }
-                    }
                 }
             }
 
@@ -516,7 +553,7 @@ namespace RBAC
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             checkVaultChanges(yamlVaults, vaultsRetrieved);
-            
+
             log.Info($"Checking the number of changes made...");
             Tuple<List<KeyVaultProperties>, int> changed = getChanges(yamlVaults, vaultsRetrieved);
             int numChanges = changed.Item2;
@@ -744,92 +781,19 @@ namespace RBAC
 
                 foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                 {
-                    try
+                    string type = principalPermissions.Type.ToLower().Trim();
+                    Dictionary<string, string> data = verifySecurityPrincipal(principalPermissions, type, graphClient);
+
+                    // Set security principal data
+                    if (data.ContainsKey("ObjectId"))
                     {
-                        log.Info($"Verifying that permissions exist for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
-                        int total = principalPermissions.PermissionsToCertificates.Length + principalPermissions.PermissionsToKeys.Length + principalPermissions.PermissionsToSecrets.Length;
-                        if (total != 0)
-                        {
-                            log.Info("Permissions exist!");
-                            string type = principalPermissions.Type.ToLower().Trim();
-                            log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
-                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
-                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
-                            {
-                                log.Error("AccessPolicyAlreadyDefined");
-                                log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
-                                    $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
-                            }
-                            log.Info("Access policies are 1:1!");
-
-                            Dictionary<string, string> data = verifySecurityPrincipal(principalPermissions, type, graphClient);
-                            if (data.ContainsKey("ObjectId"))
-                            {
-                                // Set security principal data
-                                principalPermissions.ObjectId = data["ObjectId"];
-                                if (type == "group")
-                                {
-                                    principalPermissions.Alias = data["Alias"];
-                                }
-                                else if (type == "application")
-                                {
-                                    principalPermissions.ApplicationId = data["ApplicationId"];
-                                }
-
-                                try
-                                {
-                                    //principalPermissions.PermissionsToKeys = principalPermissions.PermissionsToKeys.Select(key => key.ToLowerInvariant()).ToArray();
-                                    //principalPermissions.PermissionsToSecrets = principalPermissions.PermissionsToSecrets.Select(secret => secret.ToLowerInvariant()).ToArray();
-                                    //principalPermissions.PermissionsToCertificates = principalPermissions.PermissionsToCertificates.Select(certif => certif.ToLowerInvariant()).ToArray();
-
-                                    log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
-                                    checkValidPermissions(principalPermissions);
-                                    log.Info("Permissions are valid!");
-                                    log.Info("Translating shorthands...");
-                                    translateShorthands(principalPermissions);
-
-                                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
-                                            new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
-                                }
-                                catch (Exception e)
-                                {
-                                    // Errors caught for checkValidPermissions
-                                    if (e.Message.Contains("Invalid") || e.Message.Contains("repeated"))
-                                    {
-                                        log.Error("InvalidPermission");
-                                        log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
-                                    }
-                                    // Errors caught for translateShorthands
-                                    else
-                                    {
-                                        log.Error("InvalidShorthand");
-                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
-                                            $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                                    }
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
-                            log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
-                                $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
-                        }
+                        principalPermissions.ObjectId = data["ObjectId"];
                     }
-                    catch (Exception e)
-                    {
-                        if (Testing)
-                        {
-                            throw new Exception(e.Message);
-                        }
-                        log.Error("UnknownType: Skipped!");
-                        log.Debug(e.Message);
-                        ConsoleError($"Error: {e.Message} Skipped!");
-                    }
+
+                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
+                                           new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                 }
+
                 if (!Testing)
                 {
                     Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
@@ -844,10 +808,13 @@ namespace RBAC
                 if (Testing)
                 {
                     throw new Exception(e.Message);
+                } 
+                else
+                {
+                    log.Error("VaultNotFound", e);
+                    log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
+                    ConsoleError(e.Message);
                 }
-                log.Error("VaultNotFound", e);
-                log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
-                ConsoleError(e.Message);
             }
         }
 
@@ -918,7 +885,6 @@ namespace RBAC
                         throw new Exception($"The DisplayName '{principalPermissions.DisplayName}' is incorrect and cannot be recognized.");
                     }
                     data["ObjectId"] = group.Id;
-                    data["Alias"] = group.Mail;
                     log.Info($"Group verified!");
                 }
                 catch (Exception e)
@@ -952,7 +918,6 @@ namespace RBAC
                         throw new Exception($"The Alias '{principalPermissions.Alias}' should not be defined and cannot be recognized for {principalPermissions.DisplayName}.");
                     }
                     data["ObjectId"] = app.Id;
-                    data["ApplicationId"] = app.AppId;
                     log.Info($"Application verified!");
                 }
                 catch (Exception e)
@@ -1009,8 +974,17 @@ namespace RBAC
             }
             else
             {
-                throw new Exception($"'{principalPermissions.Type}' is not a valid type for {principalPermissions.DisplayName}. Valid types are 'User', 'Group', " +
+                try
+                {
+                    throw new Exception($"'{principalPermissions.Type}' is not a valid type for {principalPermissions.DisplayName}. Valid types are 'User', 'Group', " +
                     $"'Application', or 'Service Principal'.");
+                }
+                catch (Exception e)
+                {
+                    log.Error("UnknownType: Skipped!");
+                    log.Debug(e.Message);
+                    ConsoleError($"{e.Message} Skipped!");
+                }
             }
             return data;
         }
@@ -1021,6 +995,20 @@ namespace RBAC
         /// <param name="principalPermissions">The PrincipalPermissions for which we want to validate</param>
         public void checkValidPermissions(PrincipalPermissions principalPermissions)
         {
+            log.Info($"Verifying that permissions exist for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+            int total = principalPermissions.PermissionsToCertificates.Length + principalPermissions.PermissionsToKeys.Length + principalPermissions.PermissionsToSecrets.Length;
+            if (total == 0)
+            {
+                log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
+                log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
+                    $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
+                throw new Exception($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+            }
+            log.Info("Permissions exist!");
+
+            log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+            
+
             var trimKeyPermissions = new string[principalPermissions.PermissionsToKeys.Length];
             foreach (string key in principalPermissions.PermissionsToKeys)
             {
@@ -1075,6 +1063,8 @@ namespace RBAC
                 List<string> duplicates = findDuplicates(principalPermissions.PermissionsToCertificates);
                 throw new Exception($"Certificate permission(s) '{string.Join(", ", duplicates)}' repeated");
             }
+
+            log.Info("Permissions are valid!");
         }
 
         /// <summary>
@@ -1104,6 +1094,8 @@ namespace RBAC
         /// <param name="principalPermissions">The current PrincipalPermissions object</param>
         public void translateShorthands(PrincipalPermissions principalPermissions)
         {
+            log.Info("Translating shorthands...");
+
             string[] updatedKeyPermissions = translateShorthand("all", "key", principalPermissions.PermissionsToKeys, Constants.ALL_KEY_PERMISSIONS,
                 Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
             updatedKeyPermissions = translateShorthand("read", "key", updatedKeyPermissions, Constants.READ_KEY_PERMISSIONS,
@@ -1137,6 +1129,8 @@ namespace RBAC
             updatedCertifPermissions = translateShorthand("management", "certificate", updatedCertifPermissions,
                 Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS, Constants.VALID_CERTIFICATE_PERMISSIONS, Constants.SHORTHANDS_CERTIFICATES);
             principalPermissions.PermissionsToCertificates = updatedCertifPermissions;
+
+            log.Info("Shorthands translated!");
         }
 
 

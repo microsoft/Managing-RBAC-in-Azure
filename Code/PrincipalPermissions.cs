@@ -165,8 +165,6 @@ namespace RBAC
 
         [YamlIgnore]
         public string ObjectId { get; set; }
-        [YamlIgnore]
-        public string ApplicationId { get; set; }
         public string Type { get; set; }
         public string DisplayName { get; set; }
         public string Alias { get; set; }
