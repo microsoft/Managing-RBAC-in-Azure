@@ -475,7 +475,7 @@ namespace RBAC
                                 log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                                 log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                     $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                                ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                                ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                             }
                             else
                             {
@@ -498,7 +498,7 @@ namespace RBAC
                 {
                     log.Error($"VaultFieldsChanged: KeyVault '{kv.VaultName}' skipped!", e);
                     log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
-                    ConsoleError($"{e.Message} Vault Skipped.");
+                    ConsoleError($"Error: {e.Message} Vault Skipped.");
                 }
             }
             log.Info("Updates finished!");
@@ -548,7 +548,7 @@ namespace RBAC
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                            ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                         }
                         else
                         {
@@ -690,7 +690,7 @@ namespace RBAC
                             log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
                             log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
                                 $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+                            ConsoleError($"Error: Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
                         }
                     }
                     catch (Exception e)
@@ -816,7 +816,7 @@ namespace RBAC
                             log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
                             log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
                                 $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+                            ConsoleError($"Error: Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
                         }
                     }
                     catch (Exception e)
@@ -827,7 +827,7 @@ namespace RBAC
                         }
                         log.Error("UnknownType: Skipped!");
                         log.Debug(e.Message);
-                        ConsoleError($"Error: {e.Message} Skipped!");
+                        ConsoleError($"{e.Message} Skipped!");
                     }
                 }
                 if (!Testing)
@@ -889,7 +889,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        ConsoleError($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -928,7 +928,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
+                        ConsoleError($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
@@ -963,7 +963,7 @@ namespace RBAC
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+                        ConsoleError($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
                     }
                     else
                     {
@@ -997,7 +997,7 @@ namespace RBAC
                         log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
                             $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        ConsoleError($" Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
+                        ConsoleError($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
@@ -1309,7 +1309,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error: {message}");
+            Console.WriteLine(message);
             Console.ResetColor();
         }
 

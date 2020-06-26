@@ -601,7 +601,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error: {message}");
+            Console.WriteLine(message);
             Console.ResetColor();
         }
 
