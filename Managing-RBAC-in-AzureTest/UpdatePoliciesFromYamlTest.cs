@@ -27,42 +27,37 @@ namespace RBAC
         /// This method verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
-       /* [TestMethod]
+       [TestMethod]
         public void TestCheckVaultChanges()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            var validVaults = createExpectedYamlVaults();
+            var yamlVaults = createExpectedYamlVaults();
+            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
             try
             {
-                up.checkVaultChanges(validVaults, validVaults[0]);
+                up.checkVaultChanges(yamlVaults, yamlVaults);
             }
             catch
             {
                 Assert.Fail();
             }
 
-            var badName = new KeyVaultProperties { VaultName = "NotExist" };
+            yamlVaults[0].VaultName = "NotExist";
             try
             {
-                up.checkVaultChanges(validVaults, badName);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual("VaultName for KeyVault 'NotExist' was changed or added.", e.Message);
+                Assert.AreEqual("KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
             }
 
-            var badRGName = new KeyVaultProperties
-            {
-                VaultName = "RG1Test1",
-                ResourceGroupName = "RG",
-                SubscriptionId = "valid",
-                Location = "eastus",
-                TenantId = "valid"
-            };
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].ResourceGroupName = "BadRG";
             try
             {
-                up.checkVaultChanges(validVaults, badRGName);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -70,17 +65,11 @@ namespace RBAC
                 Assert.AreEqual("ResourceGroupName for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
-            var badSubId = new KeyVaultProperties
-            {
-                VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "bleep-bloop",
-                Location = "eastus",
-                TenantId = "valid"
-            };
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].SubscriptionId = "BadSi";
             try
             {
-                up.checkVaultChanges(validVaults, badSubId);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -88,17 +77,11 @@ namespace RBAC
                 Assert.AreEqual("SubscriptionId for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
-            var badLoc = new KeyVaultProperties
-            {
-                VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
-                Location = "nigeria",
-                TenantId = "valid"
-            };
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].Location = "BadLoc";
             try
             {
-                up.checkVaultChanges(validVaults, badLoc);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
@@ -106,54 +89,16 @@ namespace RBAC
                 Assert.AreEqual("Location for KeyVault 'RG1Test1' was changed.", e.Message);
             }
 
-            var badTen = new KeyVaultProperties
-            {
-                VaultName = "RG1Test1",
-                ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
-                Location = "eastus",
-                TenantId = "Landlord"
-            };
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].TenantId = "BadTen";
             try
             {
-                up.checkVaultChanges(validVaults, badTen);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
             {
                 Assert.AreEqual("TenantId for KeyVault 'RG1Test1' was changed.", e.Message);
-            }
-        }
-
-        /// <summary>
-        /// This method verifies how changes are counted and that the program handles the number of 
-        /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
-        /// </summary>
-        [TestMethod]
-        public void TestCheckChanges()
-        {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
-            List<KeyVaultProperties> vaultsRetrieved1 = createExpectedYamlVaults();
-            List<KeyVaultProperties> yamlVaults = vaultsRetrieved1;
-
-            // Check making 6 changes (first two only count as one change) 
-            yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[0].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[2].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[3].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[1].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
-            yamlVaults[1].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
-
-            try
-            {
-                up.checkChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
             }
 
             yamlVaults = createExpectedYamlVaults();
@@ -190,12 +135,12 @@ namespace RBAC
 
             try
             {
-                up.checkChanges(yamlVaults, vaultsRetrieved);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: KeyVault 'TestAddKV' in the YAML file was not found in the JSON file.", e.Message);
+                Assert.AreEqual($"KeyVault 'TestAddKV' in the YAML file was not found in the JSON file.", e.Message);
             }
             yamlVaults.RemoveAt(4);
 
@@ -203,15 +148,80 @@ namespace RBAC
             yamlVaults.RemoveAt(0);
             try
             {
-                up.checkChanges(yamlVaults, vaultsRetrieved);
+                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
                 Assert.Fail();
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
+                Assert.AreEqual($"KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
             }
         }
-        */
+
+        /// <summary>
+        /// This method verifies how changes are counted and that the program handles the number of 
+        /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
+        /// </summary>
+        [TestMethod]
+        public void TestGetChanges()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+            List<KeyVaultProperties> yamlVaults = createExpectedYamlVaults();
+
+            // Check making 6 changes (first two only count as one change) 
+            yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
+            yamlVaults[0].AccessPolicies[0].PermissionsToCertificates = new string[] { "get" };
+            yamlVaults[0].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
+            yamlVaults[0].AccessPolicies[2].PermissionsToCertificates = new string[] { "get" };
+            yamlVaults[0].AccessPolicies[3].PermissionsToCertificates = new string[] { "get" };
+            yamlVaults[1].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
+            yamlVaults[1].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
+
+            try
+            {
+                //Call getChanges in beginning
+                up.updateVaults(yamlVaults, vaultsRetrieved, null, null, null);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
+            }
+
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].AccessPolicies.Add(new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get" },
+                PermissionsToSecrets = new string[] { "get" },
+                PermissionsToCertificates = new string[] { "get" }
+            });
+            try
+            {
+                up.getChanges(yamlVaults, vaultsRetrieved);
+                Assert.Fail();
+            }
+            catch(Exception e)
+            {
+                Assert.AreEqual("Error: An access policy has already been defined for User A in KeyVault 'RG1Test1'.", e.Message);
+            }
+
+            yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
+            try
+            {
+                var del = up.getChanges(yamlVaults, vaultsRetrieved);
+                Assert.AreEqual(1, del.Item2);
+                Assert.AreEqual(1, del.Item1.Count);
+                Assert.AreEqual(8, del.Item1[0].AccessPolicies[0].PermissionsToKeys.Length);
+            }
+            catch(Exception e)
+            {
+                Assert.Fail(e.Message);
+            }
+        }
         /// <summary>
         /// This method verifies that the program handles invalid KeyVaultProperties fields.
         /// </summary>
@@ -475,14 +485,15 @@ namespace RBAC
         public void TestUsersContained()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-
-            KeyVaultProperties kv = new KeyVaultProperties()
+            var vaultsRetrieved = createExpectedYamlVaults();
+            var yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0] = new KeyVaultProperties()
             {
-                VaultName = "RG1Test2",
-                ResourceGroupName = "RBAC",
-                SubscriptionId = "subid",
+                VaultName = "RG1Test1",
+                ResourceGroupName = "RG1",
+                SubscriptionId = "valid",
                 Location = "eastus",
-                TenantId = "tenant",
+                TenantId = "valid",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -509,11 +520,11 @@ namespace RBAC
             // Check UsersContained less than 2 error
             try
             {
-                up.updateVaults(new List<KeyVaultProperties>() { kv }, new List<KeyVaultProperties> { }, null, null, null);
+                up.updateVaults(yamlVaults, vaultsRetrieved, null, null, null);
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"KeyVault 'RG1Test2' does not contain at least two users. Skipped.", e.Message);
+                Assert.AreEqual($"KeyVault 'RG1Test1' does not contain at least two users. Skipped.", e.Message);
             }
         }
 

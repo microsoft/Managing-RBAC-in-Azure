@@ -671,7 +671,7 @@ namespace RBAC
 
             foreach (string secret in principalPermissions.PermissionsToSecrets)
             {
-                if (!Constants.VALID_KEY_PERMISSIONS.Contains(secret) && (!secret.StartsWith("all -")) && (!secret.StartsWith("read -"))
+                if (!Constants.VALID_SECRET_PERMISSIONS.Contains(secret) && (!secret.StartsWith("all -")) && (!secret.StartsWith("read -"))
                     && (!secret.StartsWith("write -")) && (!secret.StartsWith("storage -")))
                 {
                     throw new Exception($"Invalid secret permission '{secret}'");
