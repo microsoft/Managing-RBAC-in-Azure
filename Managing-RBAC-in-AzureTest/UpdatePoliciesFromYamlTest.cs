@@ -13,8 +13,8 @@ namespace RBAC
         /// <summary>
         /// This method verifies that the yaml is deserialized properly.
         /// </summary>
-        [TestMethod]
-        public void TestYamlDeserialization()
+        //[TestMethod]
+        /*public void TestYamlDeserialization()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
@@ -888,5 +888,6 @@ namespace RBAC
 
             return exp;
         }
+    }*/
     }
 }

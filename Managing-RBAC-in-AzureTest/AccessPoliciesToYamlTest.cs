@@ -24,16 +24,36 @@ namespace RBAC
             {
                 Assert.Fail();
             }
-
-            string[] invalidLength = { "file.json" };
+            string[] noLength = new string[] {};
             try
             {
-                ap.verifyFileExtensions(invalidLength);
+                ap.verifyFileExtensions(noLength);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual(e.Message, "Error: Missing 2 input files.");
+            }
+            string[] oneLength = { "file.json" };
+            try
+            {
+                ap.verifyFileExtensions(oneLength);
                 Assert.Fail();
             }
             catch(Exception e)
             {
                 Assert.AreEqual(e.Message, "Error: Missing 1 input file.");
+            }
+
+            string[] moreThanTwoLength = new string[] { "file1.json", "file2.json", "yaml.json" };
+            try
+            {
+                ap.verifyFileExtensions(moreThanTwoLength);
+                Assert.Fail();
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual(e.Message, "Error: Too many input files. Maximum needed is 2.");
             }
 
             string[] invalidJson = { "file.jsn", "file.yml" };
