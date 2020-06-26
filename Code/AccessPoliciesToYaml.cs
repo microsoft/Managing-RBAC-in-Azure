@@ -151,22 +151,23 @@ namespace RBAC
         /// <param name="configVaults">The Json object formed from parsing the MasterConfig.json file</param>
         public void checkMissingAadFields(JsonInput vaultList, JObject configVaults)
         {
-            List<string> missingInputs = getMissingInputs(vaultList);
-            int numValid = Convert.ToInt32(missingInputs.Last());
-            missingInputs.RemoveAt(missingInputs.Count - 1);
+            Tuple<List<string>, int> missing = getMissingInputs(vaultList);
+            List<string> missingInputs = missing.Item1;
+            int numValid = missing.Item2;
             int numMissing = missingInputs.Count();
+
             JToken aadDetails = configVaults.SelectToken($".AadAppKeyDetails");
-            if (numMissing == 1 && (aadDetails.Children().Count() != numValid))
+            if (numMissing == 0 && (aadDetails.Children().Count() != numValid))
             {
                 throw new Exception($"Invalid fields for AadAppKeyDetails were defined. " +
                     $"Valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
             }
-            else if (numMissing != 1 && aadDetails.Children().Count() != numValid)
+            else if (numMissing != 0 && aadDetails.Children().Count() != numValid)
             {
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails. Invalid fields were defined; " +
                     $"valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.");
             }
-            else if (numMissing > 1)
+            else if (numMissing > 0)
             {
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} for AadAppKeyDetails.");
             }
@@ -177,7 +178,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultList">The KeyVault information obtained from MasterConfig.json file</param>
         /// <returns>A list of missing inputs from AadAppKeyDetails</returns>
-        public List<string> getMissingInputs(JsonInput vaultList)
+        public Tuple<List<string>, int> getMissingInputs(JsonInput vaultList)
         {
             List<string> missingInputs = new List<string>();
             int numValid = 0;
@@ -225,8 +226,7 @@ namespace RBAC
             {
                 missingInputs.Add("TenantIdSecretName");
             }
-            missingInputs.Add(numValid.ToString());
-            return missingInputs;
+            return new Tuple<List<string>, int>(missingInputs, numValid);
         }
 
         /// <summary>

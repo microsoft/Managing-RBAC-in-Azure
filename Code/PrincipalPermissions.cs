@@ -123,7 +123,7 @@ namespace RBAC
         {
             if (permissions != null && permissions.Count != 0)
             {
-                return permissions.ToArray();
+                return permissions.Select(val => val.Trim().ToLowerInvariant()).ToArray();
             }
             return new string[] { };
         }
@@ -178,7 +178,7 @@ namespace RBAC
             {
                 if (value != null)
                 {
-                    KeyPermissions = value;
+                    KeyPermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 }
                 else
                 {
@@ -195,7 +195,7 @@ namespace RBAC
             {
                 if (value != null)
                 {
-                    SecretsPermissions = value;
+                    SecretsPermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 }
                 else
                 {
@@ -212,7 +212,7 @@ namespace RBAC
             {
                 if (value != null) 
                 { 
-                    CertificatePermissions = value; 
+                    CertificatePermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 } 
                 else 
                 { 
