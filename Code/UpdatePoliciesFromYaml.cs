@@ -151,66 +151,134 @@ namespace RBAC
             return changes;
         }*/
 
+        /* /// <summary>
+         /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
+         /// </summary>
+         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
+         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+         /// <returns>The number of changes made</returns>
+         public int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+         {
+             log.Info("Checking for KeyVault additions or deletions...");
+             foreach (KeyVaultProperties kv in yamlVaults)
+             {
+                 if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                 {
+                     log.Error($"VaultAdded");
+                     log.Debug($"KeyVault '{kv.VaultName}' was not specified in the .json file and was added to the .yml file! Please remove this KeyVault.");
+                     Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
+                 }
+             }
+             foreach (KeyVaultProperties kv in vaultsRetrieved)
+             {
+                 if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                 {
+                     log.Error($"VaultDeleted");
+                     log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
+                         $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
+                     Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                 }
+             }
+             log.Info("Checked successfully!");
+
+             log.Info($"Checking the number of changes made...");
+             Tuple<List<KeyVaultProperties>, int> changed = getChanges(yamlVaults, vaultsRetrieved);
+             int numChanges = changed.Item2;
+
+             if (numChanges > Constants.MAX_NUM_CHANGES)
+             {
+                 log.Error("ChangesExceedLimit");
+                 log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
+                     $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
+                     $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                 Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+             }
+             log.Info("The number of changes made was valid!");
+
+             convertToYaml(changed.Item1);
+             return numChanges;
+         }*/
+
         /// <summary>
         /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
         /// </summary>
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <returns>The number of changes made</returns>
-        public int checkChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
+        public void checkVaultChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
-            log.Info("Checking for KeyVault additions or deletions...");
-            foreach (KeyVaultProperties kv in yamlVaults)
+            try
             {
-                if (vaultsRetrieved.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                log.Info("Checking for KeyVault changes...");
+                foreach (KeyVaultProperties kv in yamlVaults)
                 {
-                    log.Error($"VaultAdded");
-                    log.Debug($"KeyVault '{kv.VaultName}' was not specified in the .json file and was added to the .yml file! Please remove this KeyVault.");
-                    Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
+                    var lookup = vaultsRetrieved.ToLookup(kv => kv.VaultName)[kv.VaultName];
+                    if (lookup.Count() == 0)
+                    {
+                        log.Error($"VaultAdded");
+                        log.Debug($"KeyVault '{kv.VaultName}' was not specified in the JSON file and was added to the YAML file! " +
+                            $"Check if the 'VaultName' for KeyVault '{kv.VaultName}' has been changed, or, if you added this KeyVault, please remove it before trying again.");
+                        throw new Exception($"KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
+                    }
+                    else
+                    {
+                        KeyVaultProperties originalVault = lookup.First();
+                        if (originalVault.ResourceGroupName != kv.ResourceGroupName.Trim())
+                        {
+                            log.Error($"VaultFieldsChanged");
+                            log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
+                            throw new Exception($"ResourceGroupName for KeyVault '{kv.VaultName}' was changed.");
+                        }
+                        if (originalVault.SubscriptionId != kv.SubscriptionId.Trim())
+                        {
+                            log.Error($"VaultFieldsChanged");
+                            log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
+                            throw new Exception($"SubscriptionId for KeyVault '{kv.VaultName}' was changed.");
+                        }
+                        if (originalVault.Location != kv.Location.Trim())
+                        {
+                            log.Error($"VaultFieldsChanged");
+                            log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
+                            throw new Exception($"Location for KeyVault '{kv.VaultName}' was changed.");
+                        }
+                        if (originalVault.TenantId != kv.TenantId.Trim())
+                        {
+                            log.Error($"VaultFieldsChanged");
+                            log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
+                            throw new Exception($"TenantId for KeyVault '{kv.VaultName}' was changed.");
+                        }
+                    }
                 }
-            }
-            foreach (KeyVaultProperties kv in vaultsRetrieved)
-            {
-                if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+
+                foreach (KeyVaultProperties kv in vaultsRetrieved)
                 {
-                    log.Error($"VaultDeleted");
-                    log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
-                        $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
-                    Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                    if (yamlVaults.ToLookup(v => v.VaultName)[kv.VaultName].Count() == 0)
+                    {
+                        log.Error($"VaultDeleted");
+                        log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
+                            $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
+                        throw new Exception($"KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                    }
                 }
+                log.Info("Changes checked successfully!");
             }
-            log.Info("Checked successfully!");
-
-            log.Info($"Checking the number of changes made...");
-            Tuple<List<KeyVaultProperties>, int> changed = getChanges(yamlVaults, vaultsRetrieved);
-            int numChanges = changed.Item2;
-
-            if (numChanges > Constants.MAX_NUM_CHANGES)
+            catch (Exception e)
             {
-                log.Error("ChangesExceedLimit");
-                log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
-                    $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
-                    $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+                Exit(e.Message);
             }
-            log.Info("The number of changes made was valid!");
-
-            convertToYaml(changed.Item1);
-            return numChanges;
         }
-
         public Tuple<List<KeyVaultProperties>, int> getChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             List<KeyVaultProperties> deletedVaultPolicies = new List<KeyVaultProperties>();
             int changes = 0;
             foreach (KeyVaultProperties kv in yamlVaults)
             {
-                List<PrincipalPermissions> deletedPolicies = new List<PrincipalPermissions>(); //every KV, create new list of policies
+                List<PrincipalPermissions> deletedPolicies = new List<PrincipalPermissions>();
                 if (!vaultsRetrieved.Contains(kv))
                 {
                     var oldVault = vaultsRetrieved.ToLookup(k => k.VaultName)[kv.VaultName].First();
                     List<PrincipalPermissions> portalPolicies = oldVault.AccessPolicies;
-                    foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies) //parses thru the new policies
+                    foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                     {
                         if (!portalPolicies.Contains(principalPermissions))
                         {
@@ -233,6 +301,7 @@ namespace RBAC
 
                                 //trasnlate portalpermissions here
                                 //does this work with an empty permission block?
+
                                 string[] deletedKeys = portalPermissions.PermissionsToKeys.Except(principalPermissions.PermissionsToKeys).ToArray();
                                 string[] deletedSecrets = portalPermissions.PermissionsToSecrets.Except(principalPermissions.PermissionsToSecrets).ToArray();
                                 string[] deletedCertificates = portalPermissions.PermissionsToCertificates.Except(principalPermissions.PermissionsToCertificates).ToArray();
@@ -293,14 +362,16 @@ namespace RBAC
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
         public void convertToYaml(List<KeyVaultProperties> deleted)
         {
-            log.Info("Converting to DeletedPolicies YAML...");
+            Console.WriteLine("Generating DeletedPolicies.yml...");
+            log.Info("Generating DeletedPolicies.yml...");
             try
             {
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(deleted);
 
                 System.IO.File.WriteAllText(@"..\..\..\..\Config\DeletedPolicies.yml", yaml);
-                log.Info("DeletedPolicies YAML created!");
+                log.Info("DeletedPolicies.yml complete!");
+                Console.WriteLine("Finished!");
             }
             catch (Exception e)
             {
@@ -377,7 +448,7 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
-        public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
+        /*public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
             log.Info("Updating vaults...");
@@ -385,11 +456,14 @@ namespace RBAC
             {
                 try
                 {
-                    log.Info($"Verifying that only 'AccessPolicies' has been changed for KeyVault '{kv.VaultName}'...");
-                    checkVaultChanges(vaultsRetrieved, kv);
-                    log.Info("Vault changes verified!");
+                    //log.Info($"Verifying that only 'AccessPolicies' has been changed for KeyVault '{kv.VaultName}'...");
+                    //checkVaultChanges(vaultsRetrieved, kv);
+                    //log.Info("Vault changes verified!");
 
-                    int changes = checkChanges(yamlVaults, vaultsRetrieved);
+                    //method that checks additions or deletions
+                    //then get channges method
+
+                    //int changes = checkChanges(yamlVaults, vaultsRetrieved);
                     if (changes != 0)
                     {
                         log.Info("Verifying the number of access policies for type 'User'...");
@@ -428,6 +502,69 @@ namespace RBAC
                 }
             }
             log.Info("Updates finished!");
+        }*/
+
+        /// <summary>
+        /// This method updates the access policies for each KeyVault in the yamlVaults list.
+        /// </summary>
+        /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+        /// <param name="kvmClient">The KeyManagementClient</param>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
+        public void updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
+            Dictionary<string, string> secrets, GraphServiceClient graphClient)
+        {
+            checkVaultChanges(yamlVaults, vaultsRetrieved);
+            
+            log.Info($"Checking the number of changes made...");
+            Tuple<List<KeyVaultProperties>, int> changed = getChanges(yamlVaults, vaultsRetrieved);
+            int numChanges = changed.Item2;
+            if (numChanges == 0)
+            {
+                log.Info("There is no difference between the YAML and the Key Vaults. No changes made.");
+                Console.WriteLine("There is no difference between the YAML and the Key Vaults. No changes made.");
+            }
+            else if (numChanges > Constants.MAX_NUM_CHANGES)
+            {
+                log.Error("ChangesExceedLimit");
+                log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
+                    $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
+                    $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+            }
+            else
+            {
+                log.Info("The number of changes made was valid!");
+                log.Info("Updating vaults...");
+                foreach (KeyVaultProperties kv in yamlVaults)
+                {
+                    log.Info("Verifying the number of access policies for type 'User'...");
+                    if (!vaultsRetrieved.Contains(kv))
+                    {
+                        int numUsers = kv.usersContained();
+                        if (numUsers < Constants.MIN_NUM_USERS)
+                        {
+                            log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
+                            log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
+                                $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
+                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                        }
+                        else
+                        {
+                            log.Info("User access policies verified!");
+                            log.Info($"Updating KeyVault '{kv.VaultName}'...");
+                            Console.WriteLine($"Updating {kv.VaultName}...");
+                            updateVault(kv, kvmClient, secrets, graphClient);
+                            log.Info($"KeyVault '{kv.VaultName}' successfully updated!");
+                            Console.WriteLine($"{kv.VaultName} successfully updated!");
+                        }
+                    }
+                }
+                log.Info("Updates finished!");
+            }
+            List<KeyVaultProperties> deletedPolicies = changed.Item1;
+            convertToYaml(deletedPolicies);
         }
 
         /// <summary>
@@ -435,7 +572,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
         /// <param name="kv">The current KeyVault</param>
-        public void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
+       /* public void checkVaultChanges(List<KeyVaultProperties> vaultsRetrieved, KeyVaultProperties kv)
         {
             var lookupName = vaultsRetrieved.ToLookup(kv => kv.VaultName);
             if (lookupName[kv.VaultName].ToList().Count != 1)
@@ -460,7 +597,133 @@ namespace RBAC
             {
                 throw new Exception($"TenantId for KeyVault '{kv.VaultName}' was changed.");
             }
-        }
+        }*/
+
+        /// <summary>
+        /// This method updates the access policies of the specified KeyVault in Azure.
+        /// </summary>
+        /// <param name="kv">The KeyVault you want to update</param>
+        /// <param name="kvmClient">The KeyManagementClient</param>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="graphClient">The GraphServiceClient to obtain the service principal's data</param>
+        /*public void updateVault(KeyVaultProperties kv, KeyVaultManagementClient kvmClient, Dictionary<string, string> secrets,
+            GraphServiceClient graphClient)
+        {
+            try
+            {
+                kvmClient.SubscriptionId = kv.SubscriptionId;
+
+                VaultProperties properties = kvmClient.Vaults.GetAsync(kv.ResourceGroupName, kv.VaultName).Result.Properties;
+                properties.AccessPolicies = new List<AccessPolicyEntry>();
+
+                foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
+                {
+                    try
+                    {
+                        log.Info($"Verifying that permissions exist for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+                        int total = principalPermissions.PermissionsToCertificates.Length + principalPermissions.PermissionsToKeys.Length + principalPermissions.PermissionsToSecrets.Length;
+                        if (total != 0)
+                        {
+                            log.Info("Permissions exist!");
+                            string type = principalPermissions.Type.ToLower().Trim();
+                            log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
+                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
+                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
+                            {
+                                log.Error("AccessPolicyAlreadyDefined");
+                                log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
+                                    $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                            }
+                            log.Info("Access policies are 1:1!");
+
+                            Dictionary<string, string> data = verifySecurityPrincipal(principalPermissions, type, graphClient);
+                            if (data.ContainsKey("ObjectId"))
+                            {
+                                // Set security principal data
+                                principalPermissions.ObjectId = data["ObjectId"];
+                                if (type == "group")
+                                {
+                                    principalPermissions.Alias = data["Alias"];
+                                }
+                                else if (type == "application")
+                                {
+                                    principalPermissions.ApplicationId = data["ApplicationId"];
+                                }
+
+                                try
+                                {
+                                    //principalPermissions.PermissionsToKeys = principalPermissions.PermissionsToKeys.Select(key => key.ToLowerInvariant()).ToArray();
+                                    //principalPermissions.PermissionsToSecrets = principalPermissions.PermissionsToSecrets.Select(secret => secret.ToLowerInvariant()).ToArray();
+                                    //principalPermissions.PermissionsToCertificates = principalPermissions.PermissionsToCertificates.Select(certif => certif.ToLowerInvariant()).ToArray();
+
+                                    log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
+                                    checkValidPermissions(principalPermissions);
+                                    log.Info("Permissions are valid!");
+                                    log.Info("Translating shorthands...");
+                                    translateShorthands(principalPermissions);
+
+                                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
+                                            new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
+                                }
+                                catch (Exception e)
+                                {
+                                    // Errors caught for checkValidPermissions
+                                    if (e.Message.Contains("Invalid") || e.Message.Contains("repeated"))
+                                    {
+                                        log.Error("InvalidPermission");
+                                        log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
+                                    }
+                                    // Errors caught for translateShorthands
+                                    else
+                                    {
+                                        log.Error("InvalidShorthand");
+                                        log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
+                                            $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                                    }
+                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
+                            log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
+                                $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
+                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (Testing)
+                        {
+                            throw new Exception(e.Message);
+                        }
+                        log.Error("UnknownType: Skipped!");
+                        log.Debug(e.Message);
+                        ConsoleError($"Error: {e.Message} Skipped!");
+                    }
+                }
+                if (!Testing)
+                {
+                    Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                }
+                else
+                {
+                    Changed.Add(kv);
+                }
+            }
+            catch (Exception e)
+            {
+                if (Testing)
+                {
+                    throw new Exception(e.Message);
+                }
+                log.Error("VaultNotFound", e);
+                log.Debug($"Please verify that the ResourceGroupName '{kv.ResourceGroupName}' and the VaultName '{kv.VaultName}' are correct.");
+                ConsoleError(e.Message);
+            }
+        }*/
 
         /// <summary>
         /// This method updates the access policies of the specified KeyVault in Azure.
