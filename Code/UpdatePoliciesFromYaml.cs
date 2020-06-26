@@ -191,7 +191,7 @@ namespace RBAC
                             log.Error("AccessPolicyAlreadyDefined");
                             log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
                                 $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                            Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                            Exit($"An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
                         }
                         log.Info("Access policies are 1:1!");
 
@@ -203,7 +203,7 @@ namespace RBAC
                         {
                             log.Error("InvalidPermission");
                             log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
-                            Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                            Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                         }
 
                         try
@@ -215,7 +215,7 @@ namespace RBAC
                             log.Error("InvalidShorthand");
                             log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
                                 $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                            Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                            Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                         }
 
                         if (!portalPolicies.Contains(principalPermissions))
@@ -275,10 +275,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method serializes the list of Vault objects and outputs the YAML.
+        /// This method serializes the list of Vault objects and outputs the DeletedPolicies yaml.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
-        /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
+        /// <param name="yamlDirectory"> The directory of the outputted yaml file</param>
         public void convertToYaml(List<KeyVaultProperties> deleted)
         {
             log.Info("Generating DeletedPolicies.yml...");
@@ -365,7 +365,6 @@ namespace RBAC
         /// <param name="kvmClient">The KeyManagementClient</param>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
-        /// <returns>The list of KeyVaultProperties to write to DeletedPolicies.yml</returns>
         public List<KeyVaultProperties> updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
         {
@@ -385,7 +384,7 @@ namespace RBAC
                 log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
                     $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
                     $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+                Exit($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
             }
             else
             {
@@ -403,7 +402,7 @@ namespace RBAC
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                            ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                         }
                         else
                         {
@@ -449,8 +448,8 @@ namespace RBAC
                         principalPermissions.ObjectId = data["ObjectId"];
                     }
 
-                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
-                                           new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
+                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId, 
+                        new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                 }
 
                 if (!Testing)
@@ -515,7 +514,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        ConsoleError($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -553,7 +552,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        ConsoleError($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
+                        ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
@@ -587,7 +586,7 @@ namespace RBAC
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        ConsoleError($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+                        ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
                     }
                     else
                     {
@@ -621,7 +620,7 @@ namespace RBAC
                         log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
                             $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        ConsoleError($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
+                        ConsoleError($"Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
@@ -946,7 +945,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
+            Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
 
