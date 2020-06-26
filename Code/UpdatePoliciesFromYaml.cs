@@ -1,17 +1,11 @@
 ﻿using log4net.Util;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Azure.Management.TrafficManager.Fluent.TrafficManagerEndpoint.Definition;
 using Microsoft.Graph;
-using Microsoft.Rest.ClientRuntime.Azure.Authentication.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Resources;
-using System.Security.Permissions;
 using YamlDotNet.Serialization;
 
 namespace RBAC
