@@ -54,7 +54,7 @@ namespace RBAC
             List<KeyVaultProperties> deletedPolicies = up.updateVaults(yamlVaults, vaultsRetrieved, kvmClient, secrets, graphClient);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("Generating DeletedPolicies.yml...");
+            Console.WriteLine("Generating DeletedPolicies yaml...");
             up.convertToYaml(deletedPolicies);
             Console.WriteLine("Finished!");
 

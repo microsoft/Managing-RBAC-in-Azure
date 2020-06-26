@@ -1,17 +1,11 @@
 ﻿using log4net.Util;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Azure.Management.TrafficManager.Fluent.TrafficManagerEndpoint.Definition;
 using Microsoft.Graph;
-using Microsoft.Rest.ClientRuntime.Azure.Authentication.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Resources;
-using System.Security.Permissions;
 using YamlDotNet.Serialization;
 
 namespace RBAC
@@ -70,18 +64,17 @@ namespace RBAC
                 log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' " +
                     "should be defined for each KeyVault. For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the " +
                     "'Editing the Access Policies' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
             }
             log.Info("Fields validated!");
             return yamlVaults;
         }
 
         /// <summary>
-        /// This method checks that the amount of changes made do not exceed the maximum number of changes defined in the Constants file.
+        /// This method checks for KeyVault additions or deletions as well as any fields in the KeyVaults that have changed, other than the AccessPolicies.
         /// </summary>
         /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
-        /// <returns>The number of changes made</returns>
         public void checkVaultChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             try
@@ -135,15 +128,23 @@ namespace RBAC
                             log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
                             throw new Exception($"TenantId for KeyVault '{kv.VaultName}' was changed.");
                         }
-                        log.Info("Changes checked successfully!");
                     }
                 }
+                log.Info("Changes checked successfully!");
             }
             catch (Exception e)
             {
                 Exit(e.Message);
             }
         }
+
+        /// <summary>
+        /// This method gets the number of edits made in the Yaml, verifies that only one access policy exists for each principal per KeyVault, 
+        /// validates a security principal's permissions, and translates the shorthand keywords.
+        /// </summary>
+        /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
+        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+        /// <returns>A Tuple with the first item being the list of KeyVaultProperties to write to the DeletedPolicies.yml and the second item being the number of changes made</returns>
         public Tuple<List<KeyVaultProperties>, int> getChanges(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved)
         {
             List<KeyVaultProperties> deletedVaultPolicies = new List<KeyVaultProperties>();
@@ -176,21 +177,44 @@ namespace RBAC
 
                     foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                     {
+                        string type = principalPermissions.Type.ToLower().Trim();
+                        log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
+                        if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
+                                (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
+                        {
+                            log.Error("AccessPolicyAlreadyDefined");
+                            log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
+                                $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
+                            Exit($"An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                        }
+                        log.Info("Access policies are 1:1!");
+
+                        try
+                        {
+                            checkValidPermissions(principalPermissions);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error("InvalidPermission");
+                            log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
+                            Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                        }
+
+                        try
+                        {
+                            translateShorthands(principalPermissions);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error("InvalidShorthand");
+                            log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
+                                $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                            Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                        }
+
                         if (!portalPolicies.Contains(principalPermissions))
                         {
                             changes++;
-                            string type = principalPermissions.Type.ToLower().Trim();
-
-                            log.Info($"Verifying that the access policy for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' is unique...");
-                            if (((type == "user" || type == "group") && kv.AccessPolicies.ToLookup(pp => pp.Alias)[principalPermissions.Alias].Count() > 1) ||
-                                    (type != "user" && type != "group" && kv.AccessPolicies.ToLookup(pp => pp.DisplayName)[principalPermissions.DisplayName].Count() > 1))
-                            {
-                                log.Error("AccessPolicyAlreadyDefined");
-                                log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
-                                    $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
-                            }
-                            log.Info("Access policies are 1:1!");
 
                             // Check if the access policy was added (count = 0) or updated (count > 0)
                             IEnumerable<PrincipalPermissions> portalPolicy;
@@ -207,33 +231,9 @@ namespace RBAC
                             {
                                 var portalPermissions = portalPolicy.First();
 
-                                try
-                                {
-                                    checkValidPermissions(principalPermissions);
-                                }
-                                catch (Exception e)
-                                {
-                                    log.Error("InvalidPermission");
-                                    log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
-                                }
-
-                                try
-                                {
-                                    translateShorthands(principalPermissions);
-                                }
-                                catch (Exception e)
-                                {
-                                    log.Error("InvalidShorthand");
-                                    log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
-                                        $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
-                                }
-
                                 string[] deletedKeys = portalPermissions.PermissionsToKeys.Except(principalPermissions.PermissionsToKeys).ToArray();
                                 string[] deletedSecrets = portalPermissions.PermissionsToSecrets.Except(principalPermissions.PermissionsToSecrets).ToArray();
                                 string[] deletedCertificates = portalPermissions.PermissionsToCertificates.Except(principalPermissions.PermissionsToCertificates).ToArray();
-
                                 if (!(deletedKeys.Length == 0 && deletedSecrets.Length == 0 && deletedCertificates.Length == 0))
                                 {
                                     deletedPolicies.Add(new PrincipalPermissions()
@@ -269,10 +269,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method serializes the list of Vault objects and outputs the YAML.
+        /// This method serializes the list of Vault objects and outputs the DeletedPolicies yaml.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
-        /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
+        /// <param name="yamlDirectory"> The directory of the outputted yaml file</param>
         public void convertToYaml(List<KeyVaultProperties> deleted)
         {
             log.Info("Generating DeletedPolicies.yml...");
@@ -378,7 +378,7 @@ namespace RBAC
                 log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
                     $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
                     $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+                Exit($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
             }
             else
             {
@@ -387,16 +387,16 @@ namespace RBAC
                 log.Info("Updating vaults...");
                 foreach (KeyVaultProperties kv in yamlVaults)
                 {
-                    log.Info("Verifying the number of access policies for type 'User'...");
                     if (!vaultsRetrieved.Contains(kv))
                     {
+                        log.Info("Verifying the number of access policies for type 'User'...");
                         int numUsers = kv.usersContained();
                         if (numUsers < Constants.MIN_NUM_USERS)
                         {
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                            ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                         }
                         else
                         {
@@ -442,8 +442,8 @@ namespace RBAC
                         principalPermissions.ObjectId = data["ObjectId"];
                     }
 
-                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
-                                           new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
+                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId, 
+                        new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                 }
 
                 if (!Testing)
@@ -508,7 +508,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        ConsoleError($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -546,7 +546,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        ConsoleError($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
+                        ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
@@ -580,7 +580,7 @@ namespace RBAC
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        ConsoleError($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+                        ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
                     }
                     else
                     {
@@ -614,7 +614,7 @@ namespace RBAC
                         log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
                             $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        ConsoleError($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
+                        ConsoleError($"Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
@@ -659,7 +659,6 @@ namespace RBAC
             log.Info("Permissions exist!");
 
             log.Info($"Validating the permissions for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}'...");
-
             foreach (string key in principalPermissions.PermissionsToKeys)
             {
                 if (!Constants.VALID_KEY_PERMISSIONS.Contains(key) && (!key.StartsWith("all -")) && (!key.StartsWith("read -"))
@@ -668,7 +667,6 @@ namespace RBAC
                     throw new Exception($"Invalid key permission '{key}'");
                 }
             }
-
             foreach (string secret in principalPermissions.PermissionsToSecrets)
             {
                 if (!Constants.VALID_SECRET_PERMISSIONS.Contains(secret) && (!secret.StartsWith("all -")) && (!secret.StartsWith("read -"))
@@ -677,7 +675,6 @@ namespace RBAC
                     throw new Exception($"Invalid secret permission '{secret}'");
                 }
             }
-
             foreach (string certif in principalPermissions.PermissionsToCertificates)
             {
                 if (!Constants.VALID_CERTIFICATE_PERMISSIONS.Contains(certif) && (!certif.StartsWith("all -")) && (!certif.StartsWith("read -"))
@@ -942,7 +939,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
+            Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
 

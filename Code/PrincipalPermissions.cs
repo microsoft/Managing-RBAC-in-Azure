@@ -154,8 +154,9 @@ namespace RBAC
                 {
                     aliasIsSame = true;
                 }
+
                 return (this.DisplayName.Trim().ToLower() == spp.DisplayName.Trim().ToLower()) && aliasIsSame && this.PermissionsToKeys.Length == spp.PermissionsToKeys.Length
-                    && (this.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).Contains)) && 
+                    && (this.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).Contains)) &&
                     (this.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).Contains))
                     && this.PermissionsToSecrets.Length == spp.PermissionsToSecrets.Length
                     && (this.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).Contains))

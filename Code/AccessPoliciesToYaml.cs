@@ -68,7 +68,7 @@ namespace RBAC
                 log.Error("InvalidArgs", e);
                 log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
                     "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
             }
         }
 
@@ -96,7 +96,7 @@ namespace RBAC
             {
                 log.Error("DeserializationFail", e);
                 log.Debug("Refer to https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/Config/MasterConfigExample.jsonfor for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
                 return null;
             }
         }
@@ -314,7 +314,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error($"AppName was NOT retrieved.", e);
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
             }
             log.Info("Secrets retrieved!");
             return secrets;
@@ -341,12 +341,12 @@ namespace RBAC
                 if (e.Message.Contains("404"))
                 {
                     log.Error($"{key}Secret could not be found");
-                    Exit($"Error: {key}Secret could not be found.");
+                    Exit($"{key}Secret could not be found.");
                 }
                 else
                 {
                     log.Error($"{key}Secret was not retrieved. {e.Message}.");
-                    Exit($"Error: {key}Secret {e.Message}.");
+                    Exit($"{key}Secret {e.Message}.");
                 }
             }
         }
@@ -371,7 +371,7 @@ namespace RBAC
             {
                 log.Error("KVM Client NOT Created", e);
                 log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultMananagentClient class");
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
                 return null;
             }
         }
@@ -408,7 +408,7 @@ namespace RBAC
             {
                 log.Error("Graph Client NOT created", e);
                 log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a graph client");
-                Exit($"Error: {e.Message}");   
+                Exit(e.Message);   
                 return null;
             } 
         }
@@ -601,7 +601,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
+            Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
 
