@@ -70,7 +70,7 @@ namespace RBAC
                 log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' " +
                     "should be defined for each KeyVault. For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the " +
                     "'Editing the Access Policies' section: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: {e.Message}");
+                Exit(e.Message);
             }
             log.Info("Fields validated!");
             return yamlVaults;
@@ -91,7 +91,7 @@ namespace RBAC
                 {
                     log.Error($"VaultAdded");
                     log.Debug($"KeyVault '{kv.VaultName}' was not specified in the .json file and was added to the .yml file! Please remove this KeyVault.");
-                    Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
+                    Exit($"KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
                 }
             }
             foreach (KeyVaultProperties kv in vaultsRetrieved)
@@ -101,7 +101,7 @@ namespace RBAC
                     log.Error($"VaultDeleted");
                     log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
                         $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
-                    Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                    Exit($"KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
                 }
             }
             log.Info("Checked successfully!");
@@ -147,7 +147,7 @@ namespace RBAC
                 log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {changes} policies. " +
                     $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
                     $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
+                Exit($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {changes} policies.");
             }
             log.Info("The number of changes made was valid!");
             return changes;
@@ -168,7 +168,7 @@ namespace RBAC
                  {
                      log.Error($"VaultAdded");
                      log.Debug($"KeyVault '{kv.VaultName}' was not specified in the .json file and was added to the .yml file! Please remove this KeyVault.");
-                     Exit($"Error: KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
+                     Exit($"KeyVault '{kv.VaultName}' in the YAML file was not found in the JSON file.");
                  }
              }
              foreach (KeyVaultProperties kv in vaultsRetrieved)
@@ -178,7 +178,7 @@ namespace RBAC
                      log.Error($"VaultDeleted");
                      log.Debug($"KeyVault '{kv.VaultName}' specified in the .json file was deleted from the .yml file! Please re-add this KeyVault or re-run " +
                          $"AccessPoliciesToYamlProgram.cs to retrieve the full list of KeyVaults.");
-                     Exit($"Error: KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
+                     Exit($"KeyVault '{kv.VaultName}' specified in the JSON file was not found in the YAML file.");
                  }
              }
              log.Info("Checked successfully!");
@@ -193,7 +193,7 @@ namespace RBAC
                  log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
                      $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
                      $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                 Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+                 Exit($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
              }
              log.Info("The number of changes made was valid!");
 
@@ -313,7 +313,7 @@ namespace RBAC
                                 log.Error("AccessPolicyAlreadyDefined");
                                 log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
                                     $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                                Exit($"An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
                             log.Info("Access policies are 1:1!");
 
@@ -341,7 +341,7 @@ namespace RBAC
                                 {
                                     log.Error("InvalidPermission");
                                     log.Debug($"{e.Message}. Refer to Constants.cs to see the list of valid permission values.");
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                    Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                                 }
 
                                 try
@@ -353,7 +353,7 @@ namespace RBAC
                                     log.Error("InvalidShorthand");
                                     log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
                                         $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                    Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                                 }
                                 
                                 //does this work with an empty permission block?
@@ -512,7 +512,7 @@ namespace RBAC
                                 log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                                 log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                     $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                                ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                                ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                             }
                             else
                             {
@@ -535,7 +535,7 @@ namespace RBAC
                 {
                     log.Error($"VaultFieldsChanged: KeyVault '{kv.VaultName}' skipped!", e);
                     log.Debug("Changes made to any fields other than the 'AccessPolicies' field are prohibited. Please modify the specified field.");
-                    ConsoleError($"Error: {e.Message} Vault Skipped.");
+                    ConsoleError($"{e.Message} Vault Skipped.");
                 }
             }
             log.Info("Updates finished!");
@@ -568,7 +568,7 @@ namespace RBAC
                 log.Debug($"Too many AccessPolicies have been changed; the maximum is {Constants.MAX_NUM_CHANGES} changes, but you have changed {numChanges} policies. " +
                     $"Refer to the 'Global Constants and Considerations' section for more information on how changes are defined: " +
                     $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
-                Exit($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
+                Exit($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed {numChanges} policies.");
             }
             else
             {
@@ -585,7 +585,7 @@ namespace RBAC
                             log.Error($"TooFewUserPolicies: KeyVault '{kv.VaultName}' skipped!");
                             log.Debug($"KeyVault '{kv.VaultName}' contains only {numUsers} Users, but each KeyVault must contain access policies for at " +
                                 $"least {Constants.MIN_NUM_USERS} Users. Please modify the AccessPolicies to reflect this.");
-                            ConsoleError($"Error: KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
+                            ConsoleError($"KeyVault '{kv.VaultName}' does not contain at least two users. Skipped.");
                         }
                         else
                         {
@@ -670,7 +670,7 @@ namespace RBAC
                                 log.Error("AccessPolicyAlreadyDefined");
                                 log.Debug($"An access policy has already been defined for {principalPermissions.DisplayName} with Alias '{principalPermissions.Alias}' in " +
                                     $"KeyVault '{kv.VaultName}'. Please remove one of these access policies.");
-                                Exit($"Error: An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
+                                Exit($"An access policy has already been defined for {principalPermissions.DisplayName} in KeyVault '{kv.VaultName}'.");
                             }
                             log.Info("Access policies are 1:1!");
 
@@ -718,7 +718,7 @@ namespace RBAC
                                         log.Debug($"{e.Message}. For more information regarding shorthands, refer to the 'Use of Shorthands' section: " +
                                             $"https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
                                     }
-                                    Exit($"Error: {e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
+                                    Exit($"{e.Message} for {principalPermissions.DisplayName} in {kv.VaultName}.");
                                 }
                             }
                         }
@@ -727,7 +727,7 @@ namespace RBAC
                             log.Error($"UndefinedAccessPolicies: {principalPermissions.DisplayName} skipped!");
                             log.Debug($"'{principalPermissions.DisplayName}' of Type '{principalPermissions.Type}' does not have any permissions specified. " +
                                 $"Grant the {principalPermissions.Type} at least one permission or delete the {principalPermissions.Type} entirely to remove all of their permissions.");
-                            ConsoleError($"Error: Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
+                            ConsoleError($"Skipped {principalPermissions.Type}, '{principalPermissions.DisplayName}'. Does not have any permissions specified.");
                         }
                     }
                     catch (Exception e)
@@ -738,7 +738,7 @@ namespace RBAC
                         }
                         log.Error("UnknownType: Skipped!");
                         log.Debug(e.Message);
-                        ConsoleError($"Error: {e.Message} Skipped!");
+                        ConsoleError($"{e.Message} Skipped!");
                     }
                 }
                 if (!Testing)
@@ -856,7 +856,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: User with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The User with Alias '{principalPermissions.Alias}' could not be found. Please verify that this User exists in your Azure Active Directory. " +
                             $"For more information on adding Users to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-users-azure-active-directory");
-                        ConsoleError($"Error: Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
+                        ConsoleError($"Could not find User with Alias '{principalPermissions.Alias}'. User skipped.");
                     }
                     else
                     {
@@ -894,7 +894,7 @@ namespace RBAC
                         log.Error($"ResourceNotFound: Group with Alias '{principalPermissions.Alias}' skipped!", e);
                         log.Debug($"The Group with Alias '{principalPermissions.Alias}' could not be found. Please verify that this Group exists in your Azure Active Directory. " +
                             $"For more information on adding Groups to AAD, visit https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal");
-                        ConsoleError($"Error: Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
+                        ConsoleError($"Could not find Group with DisplayName '{principalPermissions.DisplayName}'. Group skipped.");
                     }
                     else
                     {
@@ -928,7 +928,7 @@ namespace RBAC
                         log.Debug($"The Application with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Application exists in your Azure Active Directory. " +
                             $"For more information on creating an Application in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application");
-                        ConsoleError($"Error: Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
+                        ConsoleError($"Could not find Application with DisplayName '{principalPermissions.DisplayName}'. Application skipped.");
                     }
                     else
                     {
@@ -962,7 +962,7 @@ namespace RBAC
                         log.Debug($"The ServicePrincipal with DisplayName '{principalPermissions.DisplayName}' could not be found. Please verify that this Service Principal " +
                             $"exists in your Azure Active Directory. For more information on creating a ServicePrincipal in AAD, visit " +
                             $"https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal");
-                        ConsoleError($"Error: Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
+                        ConsoleError($"Could not find ServicePrincipal with DisplayName '{principalPermissions.DisplayName}'. Service Principal skipped.");
                     }
                     else
                     {
@@ -1303,7 +1303,7 @@ namespace RBAC
         private void ConsoleError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
+            Console.WriteLine($"Error: {message}");
             Console.ResetColor();
         }
 
