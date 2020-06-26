@@ -185,7 +185,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                Assert.AreEqual($"Error: You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
+                Assert.AreEqual($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
             }
 
             yamlVaults = createExpectedYamlVaults();
@@ -205,7 +205,7 @@ namespace RBAC
             }
             catch(Exception e)
             {
-                Assert.AreEqual("Error: An access policy has already been defined for User A in KeyVault 'RG1Test1'.", e.Message);
+                Assert.AreEqual("An access policy has already been defined for User A in KeyVault 'RG1Test1'.", e.Message);
             }
 
             yamlVaults = createExpectedYamlVaults();
