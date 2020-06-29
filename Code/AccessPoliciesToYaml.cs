@@ -41,7 +41,7 @@ namespace RBAC
             log.Info("Checking file extensions...");
             try 
             {
-                if (args.Length == 0)
+                if (args.Length == 0 || args == null)
                 {
                     throw new Exception("Missing 2 input files.");
                 }

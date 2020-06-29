@@ -1,6 +1,9 @@
+using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using NSubstitute.Routing.AutoValues;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace RBAC
@@ -8,74 +11,72 @@ namespace RBAC
     [TestClass]
     public class AccessPoliciesToYamlTest
     {
+        public class MainArgs
+        {
+            public string[] extensions { get; set; }
+            public string error { get; set; }
+
+            public MainArgs(string[] extensions, string error = null)
+            {
+                this.extensions = extensions;
+                this.error = error;
+            }
+
+        }
         [TestMethod]
         /// <summary>
-        /// This method verifies that the the file arguments are of the correct type.
+        /// This method verifies that the negative/invalid Main Args are handeled
         /// </summary>
-        public void TestVerifyFileExtensions()
+        public void TestVerifyFileExtensionsNegative()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            string[] args = { "file.json", "file.yml" };
-            try
+            List<MainArgs> negativeTestCases = new List<MainArgs>()
             {
-                ap.verifyFileExtensions(args);
-            }
-            catch
-            {
-                Assert.Fail();
-            }
-            string[] noLength = new string[] {};
-            try
-            {
-                ap.verifyFileExtensions(noLength);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(e.Message, "Missing 2 input files.");
-            }
-            string[] oneLength = { "file.json" };
-            try
-            {
-                ap.verifyFileExtensions(oneLength);
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.AreEqual(e.Message, "Missing 1 input file.");
-            }
+                new MainArgs(new string[] {}, "Missing 2 input files."),
+                new MainArgs(new string[] { "file.json" }, "Missing 1 input file."),
+                new MainArgs(new string[] { "file1.json", "file2.json", "yaml.json" }, "Too many input files. Maximum needed is 2."),
+                new MainArgs(new string[] { "file.jsn", "file.yml" }, "The 1st argument is not a .json file."),
+                new MainArgs(new string[] { "file.json", "file.yaml" }, "The 2nd argument is not a .yml file.")
+            };
 
-            string[] moreThanTwoLength = new string[] { "file1.json", "file2.json", "yaml.json" };
-            try
+            
+            foreach (MainArgs args in negativeTestCases)
             {
-                ap.verifyFileExtensions(moreThanTwoLength);
-                Assert.Fail();
+                try
+                {
+                    ap.verifyFileExtensions(args.extensions);
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(args.error, e.Message);
+                }
             }
-            catch (Exception e)
+        }
+        [TestMethod]
+         /// <summary>
+        /// This method verifies that the the positive Main Args work
+        /// </summary>
+        public void TestVerifyFileExtensionsPositive()
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            List<MainArgs> positiveTestCases = new List<MainArgs>()
             {
-                Assert.AreEqual(e.Message, "Too many input files. Maximum needed is 2.");
-            }
+                new MainArgs(new string[] { "file.json", "file.yml" })
 
-            string[] invalidJson = { "file.jsn", "file.yml" };
-            try
-            {
-                ap.verifyFileExtensions(invalidJson);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(e.Message, "The 1st argument is not a .json file.");
-            }
 
-            string[] invalidYml = { "file.json", "file.yaml" };
-            try
+            };
+
+
+            foreach (MainArgs args in positiveTestCases)
             {
-                ap.verifyFileExtensions(invalidYml);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(e.Message, "The 2nd argument is not a .yml file.");
+                try
+                {
+                    ap.verifyFileExtensions(args.extensions);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
         }
 
@@ -284,3 +285,4 @@ namespace RBAC
         }
     }
 }
+
