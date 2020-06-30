@@ -54,6 +54,13 @@ namespace RBAC
                     checkVaultInvalidFields(kv);
                     foreach (PrincipalPermissions principalPermissions in kv.AccessPolicies)
                     {
+                        if (principalPermissions.Type.ToLower() == "unknown")
+                        {
+                            log.Error($"UnknownPrincipal");
+                            log.Debug($"There is a policy of type 'Unknown' within KeyVault '{kv.VaultName}', meaning that this principal has recently been deleted from the Tenant. " +
+                                $"Please remove this policy and re-run.");
+                            Exit($"Principal policy of Type 'Unknown' was found in KeyVault '{kv.VaultName}'.");
+                        }
                         checkPPInvalidFields(kv.VaultName, principalPermissions);
                     }
                 }
