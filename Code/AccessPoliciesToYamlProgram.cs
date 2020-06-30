@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using log4net;
+using Microsoft.Azure.Management.KeyVault;
+using Microsoft.Azure.Management.KeyVault.Models;
 
 namespace RBAC
 {
@@ -28,17 +30,19 @@ namespace RBAC
             var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("Creating KeyVaultManagementClient and GraphServiceClient...");
+            Console.WriteLine("Creating KeyVaultManagementClient, GraphServiceClient, and AzureClient...");
             var kvmClient = ap.createKVMClient(secrets);
             var graphClient = ap.createGraphClient(secrets);
-            Console.WriteLine("Finished!");
+            var azureClient = ap.createAzureClient(secrets);
+            Console.WriteLine("Finished!");;
 
-            Console.WriteLine("Retrieving key vaults...");
+            Console.WriteLine("Checking access and retrieving key vaults...");
+            ap.checkAccess(vaultList, azureClient);
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Generating YAML output...");
-            ap.convertToYaml(vaultsRetrieved, args[1]);
+            ap.convertToYaml(vaultsRetrieved, args[1], graphClient);
             Console.WriteLine("Finished!");
         }
     }
