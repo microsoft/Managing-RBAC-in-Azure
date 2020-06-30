@@ -13,7 +13,7 @@ namespace RBAC
         /// <summary>
         /// This method verifies that the yaml is deserialized properly.
         /// </summary>
-        //[TestMethod]
+        [TestMethod]
         public void TestYamlDeserialization()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
