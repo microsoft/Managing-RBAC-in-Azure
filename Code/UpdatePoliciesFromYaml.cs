@@ -449,7 +449,7 @@ namespace RBAC
                         principalPermissions.ObjectId = data["ObjectId"];
                     }
 
-                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId, 
+                    properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
                         new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                 }
 
@@ -467,7 +467,7 @@ namespace RBAC
                 if (Testing)
                 {
                     throw new Exception(e.Message);
-                } 
+                }
                 else
                 {
                     log.Error("VaultNotFound", e);
@@ -831,6 +831,10 @@ namespace RBAC
                         // The remove value is a shorthand, then replace the shorthand with its permissions
                         if (shorthandWords.Contains(p))
                         {
+                            if (p == "all")
+                            {
+                                throw new Exception("Cannot remove 'all' from a permission");
+                            }
                             string[] valuesToReplace = getShorthandPermissions(p, permissionType);
                             valuesToRemove = valuesToRemove.Concat(valuesToReplace).Where(val => val != p).ToArray();
                         }
@@ -857,64 +861,69 @@ namespace RBAC
         /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
         public string[] getShorthandPermissions(string shorthand, string permissionType)
         {
-            if (shorthand == "all")
+            if (permissionType == "key")
             {
-                throw new Exception("Cannot remove 'all' from a permission");
+                if (shorthand == "all")
+                {
+                    return Constants.ALL_KEY_PERMISSIONS;
+                }
+                else if (shorthand == "read")
+                {
+                    return Constants.READ_KEY_PERMISSIONS;
+                }
+                else if (shorthand == "write")
+                {
+                    return Constants.WRITE_KEY_PERMISSIONS;
+                }
+                else if (shorthand == "storage")
+                {
+                    return Constants.STORAGE_KEY_PERMISSIONS;
+                }
+                else if (shorthand == "crypto")
+                {
+                    return Constants.CRYPTO_KEY_PERMISSIONS;
+                }
             }
-            else
+            else if (permissionType == "secret")
             {
-                if (permissionType == "key")
+                if (shorthand == "all")
                 {
-                    if (shorthand == "read")
-                    {
-                        return Constants.READ_KEY_PERMISSIONS;
-                    }
-                    else if (shorthand == "write")
-                    {
-                        return Constants.WRITE_KEY_PERMISSIONS;
-                    }
-                    else if (shorthand == "storage")
-                    {
-                        return Constants.STORAGE_KEY_PERMISSIONS;
-                    }
-                    else if (shorthand == "crypto")
-                    {
-                        return Constants.CRYPTO_KEY_PERMISSIONS;
-                    }
+                    return Constants.ALL_SECRET_PERMISSIONS;
                 }
-                else if (permissionType == "secret")
+                else if (shorthand == "read")
                 {
-                    if (shorthand == "read")
-                    {
-                        return Constants.READ_SECRET_PERMISSIONS;
-                    }
-                    else if (shorthand == "write")
-                    {
-                        return Constants.WRITE_SECRET_PERMISSIONS;
-                    }
-                    else if (shorthand == "storage")
-                    {
-                        return Constants.STORAGE_SECRET_PERMISSIONS;
-                    }
+                    return Constants.READ_SECRET_PERMISSIONS;
                 }
-                else if (permissionType == "certificate")
+                else if (shorthand == "write")
                 {
-                    if (shorthand == "read")
-                    {
-                        return Constants.READ_CERTIFICATE_PERMISSIONS;
-                    }
-                    else if (shorthand == "write")
-                    {
-                        return Constants.WRITE_CERTIFICATE_PERMISSIONS;
-                    }
-                    else if (shorthand == "storage")
-                    {
-                        return Constants.STORAGE_CERTIFICATE_PERMISSIONS;
-                    }
-                    else if (shorthand == "management")
-                    {
-                        return Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS;
-                    }
+                    return Constants.WRITE_SECRET_PERMISSIONS;
+                }
+                else if (shorthand == "storage")
+                {
+                    return Constants.STORAGE_SECRET_PERMISSIONS;
+                }
+            }
+            else if (permissionType == "certificate")
+            {
+                if (shorthand == "all")
+                {
+                    return Constants.ALL_CERTIFICATE_PERMISSIONS;
+                }
+                else if (shorthand == "read")
+                {
+                    return Constants.READ_CERTIFICATE_PERMISSIONS;
+                }
+                else if (shorthand == "write")
+                {
+                    return Constants.WRITE_CERTIFICATE_PERMISSIONS;
+                }
+                else if (shorthand == "storage")
+                {
+                    return Constants.STORAGE_CERTIFICATE_PERMISSIONS;
+                }
+                else if (shorthand == "management")
+                {
+                    return Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS;
                 }
             }
             return null;
