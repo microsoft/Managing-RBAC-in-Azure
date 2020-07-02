@@ -1,8 +1,8 @@
 - VaultName: RG1Test1
   ResourceGroupName: RG1
-  SubscriptionId: valid
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: valid
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: Group
     DisplayName: g1
@@ -114,9 +114,9 @@
     - DeleteIssuers
 - VaultName: RG1Test2
   ResourceGroupName: RG1
-  SubscriptionId: valid
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: valid
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: Service Principal
     DisplayName: SP1
@@ -216,13 +216,13 @@
     - DeleteIssuers
 - VaultName: RG2Test1
   ResourceGroupName: RG2
-  SubscriptionId: valid
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: valid
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
-  - Type: Group
-    DisplayName: g1
-    Alias: g1@valid.com
+  - Type: Application
+    DisplayName: a1
+    Alias: ''
     PermissionsToKeys:
     - Get
     - List
@@ -279,9 +279,9 @@
     - List
 - VaultName: RG2Test2
   ResourceGroupName: RG2
-  SubscriptionId: valid
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: valid
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: User
     DisplayName: User A

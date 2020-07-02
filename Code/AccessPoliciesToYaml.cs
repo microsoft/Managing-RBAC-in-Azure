@@ -15,6 +15,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Reflection;
+using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using Serilog;
 
 namespace RBAC
 {
@@ -39,7 +43,7 @@ namespace RBAC
         public void verifyFileExtensions(string[] args)
         {
             log.Info("Checking file extensions...");
-            try 
+            try
             {
                 if (args.Length == 0 || args == null)
                 {
@@ -63,7 +67,7 @@ namespace RBAC
                 }
                 log.Info("File extensions verified!");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
                 log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
@@ -84,13 +88,13 @@ namespace RBAC
             {
                 string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
                 JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
-                
+
                 JObject configVaults = JObject.Parse(masterConfig);
                 checkJsonFields(vaultList, configVaults);
                 checkMissingAadFields(vaultList, configVaults);
                 checkMissingResourceFields(vaultList, configVaults);
                 log.Info("Json file read!");
-                return vaultList; 
+                return vaultList;
             }
             catch (Exception e)
             {
@@ -237,7 +241,7 @@ namespace RBAC
         public void checkMissingResourceFields(JsonInput vaultList, JObject configVaults)
         {
             JEnumerable<JToken> resourceList = configVaults.SelectToken($".Resources").Children();
-                
+
             int i = 0;
             foreach (Resource res in vaultList.Resources)
             {
@@ -310,7 +314,7 @@ namespace RBAC
                 getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
                 getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
 
-            } 
+            }
             catch (Exception e)
             {
                 log.Error($"AppName was NOT retrieved.", e);
@@ -361,15 +365,15 @@ namespace RBAC
             log.Info("Creating KVM Client...");
             try
             {
-                AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"], 
+                AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"],
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
                 var kvmClient = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
                 log.Info("KVM Client created!");
                 return kvmClient;
-            } 
+            }
             catch (Exception e)
             {
-                log.Error("KVM Client NOT Created", e);
+                log.Error("KVMClientFail", e);
                 log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultMananagentClient class");
                 Exit(e.Message);
                 return null;
@@ -406,13 +410,119 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error("Graph Client NOT created", e);
+                log.Error("GraphClientFail", e);
                 log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a graph client");
-                Exit(e.Message);   
+                Exit(e.Message);
                 return null;
-            } 
+            }
         }
 
+        /// <summary>
+        /// This method creates and returns an azure client.
+        /// </summary>
+        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <returns>The azure client created using the secret information</returns>
+        public Microsoft.Azure.Management.Fluent.Azure.IAuthenticated createAzureClient(Dictionary<string, string> secrets)
+        {
+            log.Info("Creating Azure Client...");
+            try
+            {
+                AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"],
+                   secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
+                var azureClient = Microsoft.Azure.Management.Fluent.Azure
+                    .Configure()
+                    .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
+                    .Authenticate(credentials);
+
+                log.Info("Azure Client created!");
+                return azureClient;
+            }
+            catch (Exception e)
+            {
+                log.Error("AzureClientFail", e);
+                log.Debug($"Azure client was unable to be created due to a failure with the AzureCredentials. Please verify that the ClientId, ClientKey, and TenantId secrets are correct.");
+                Exit(e.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// This method verifies that the Contributor permission has been granted on sufficient scopes to retrieve the key vaults.
+        /// </summary>
+        /// <param name="vaultList">The data obtained from deserializing json file</param>
+        /// <param name="azureClient">The IAzure client used to access role assignments</param>
+        public void checkAccess(JsonInput vaultList, Microsoft.Azure.Management.Fluent.Azure.IAuthenticated azureClient)
+        {
+            log.Info("Verifying access to Vaults...");
+            List<string> accessNeeded = new List<string>();
+            IRoleAssignments accessControl = azureClient.RoleAssignments;
+            foreach (Resource res in vaultList.Resources)
+            {
+                try
+                {
+                    string subsPath = Constants.SUBS_PATH + res.SubscriptionId;
+                    var roleAssignments = accessControl.ListByScope(subsPath).ToLookup(r => r.Inner.Scope);
+
+                    var subsAccess = roleAssignments[subsPath].Count();
+                    if (subsAccess == 0)
+                    {
+                        // At Subscription scope
+                        if (res.ResourceGroups.Count == 0)
+                        {
+                            accessNeeded.Add(subsPath);
+                        }
+                        else
+                        {
+                            foreach (ResourceGroup resGroup in res.ResourceGroups)
+                            {
+                                string resGroupPath = subsPath + Constants.RESGROUP_PATH + resGroup.ResourceGroupName;
+                                var resGroupAccess = roleAssignments[resGroupPath].Count();
+                                if (resGroupAccess == 0)
+                                {
+                                    // At ResourceGroup scope
+                                    if (resGroup.KeyVaults.Count == 0)
+                                    {
+                                        accessNeeded.Add(subsPath);
+                                    }
+                                    else
+                                    {
+                                        // At Vault scope
+                                        foreach (string vaultName in resGroup.KeyVaults)
+                                        {
+                                            string vaultPath = resGroupPath + Constants.VAULT_PATH + vaultName;
+                                            var vaultAccess = roleAssignments[vaultPath].Count();
+                                            if (vaultAccess == 0)
+                                            {
+                                                accessNeeded.Add(vaultPath);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (CloudException e)
+                {
+                    log.Error("SubscriptionNotFound");
+                    log.Debug($"{e.Message}. Please verify that your SubscriptionId is valid.");
+                    Exit(e.Message);
+                }
+            }
+
+            if (accessNeeded.Count() != 0)
+            {
+                log.Error("AuthorizationFail");
+                log.Debug($"Contributor access is needed on the following scope(s): \n{string.Join("\n", accessNeeded)}. \nEnsure that your ResourceGroup and KeyVault names are spelled correctly " +
+                    $"before proceeding. Note that if you are retrieving specific KeyVaults, your AAD must be granted access at either the KeyVault, ResourceGroup, Subscription level. " +
+                    $"If you are retrieving all of the KeyVaults from a ResourceGroup, your AAD must be granted access at either the ResourceGroup or Subscription level. " +
+                    $"If you are retrieving all of the KeyVaults from a SubscriptionId, your AAD must be granted access at the Subscription level. " +
+                    $"Refer to the 'Granting Access to the AAD Application' section for more information on granting this access: https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/README.md");
+                Exit($"Contributor access is needed on the following scope(s): \n{string.Join("\n", accessNeeded)}");
+            }
+            log.Info("Access verified!");
+        }
+        
         /// <summary>
         /// This method retrieves each of the KeyVaults specified in the vaultList.
         /// </summary>
@@ -420,28 +530,28 @@ namespace RBAC
         /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
         /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
-        public List<KeyVaultProperties> getVaults(JsonInput vaultList, 
+        public List<KeyVaultProperties> getVaults(JsonInput vaultList,
             Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             log.Info("Getting Vaults...");
             List<Vault> vaultsRetrieved = new List<Vault>();
+
             foreach (Resource res in vaultList.Resources)
             {
                 log.Info($"Entering SubscriptionID: {res.SubscriptionId}");
-                
 
                 // Associates the client with the subscription
                 kvmClient.SubscriptionId = res.SubscriptionId;
-               
+
                 // Retrieves all KeyVaults at the Subscription scope
                 if (res.ResourceGroups.Count == 0)
-                { 
+                {
                     vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved);
                 }
                 else
                 {
                     bool notFound = false;
-                    foreach (ResourceGroup resGroup in res.ResourceGroups) 
+                    foreach (ResourceGroup resGroup in res.ResourceGroups)
                     {
                         log.Info($"Entering ResourceGroup: {resGroup.ResourceGroupName}");
                         // If the Subscription is not found, then do not continue looking for vaults in this subscription
@@ -451,20 +561,20 @@ namespace RBAC
                         }
 
                         // Retrieves all KeyVaults at the ResourceGroup scope
-                        if (resGroup.KeyVaults.Count == 0) 
-                        { 
+                        if (resGroup.KeyVaults.Count == 0)
+                        {
                             vaultsRetrieved = getVaultsAllPages(kvmClient, vaultsRetrieved, resGroup.ResourceGroupName);
                         }
                         // Retrieves all KeyVaults at the Resource scope
                         else
                         {
-                            foreach (string vaultName in resGroup.KeyVaults) 
+                            foreach (string vaultName in resGroup.KeyVaults)
                             {
                                 log.Info($"Entering VaultName: {vaultName}");
                                 try
                                 {
-                                    vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName)); 
-                                } 
+                                    vaultsRetrieved.Add(kvmClient.Vaults.Get(resGroup.ResourceGroupName, vaultName));
+                                }
                                 catch (CloudException e)
                                 {
                                     log.Error(e.Message);
@@ -481,13 +591,11 @@ namespace RBAC
                 }
             }
             List<KeyVaultProperties> keyVaultsRetrieved = new List<KeyVaultProperties>();
-            foreach (Vault curVault in vaultsRetrieved) 
+            foreach (Vault curVault in vaultsRetrieved)
             {
                 keyVaultsRetrieved.Add(new KeyVaultProperties(curVault, graphClient));
             }
-            // log.Info("TESTTESTEST");
-            // log.Info(keyVaultsRetrieved[0]);
-            log.Info("Vaults Retrieved!");
+            log.Info("Vaults retrieved!");
             return keyVaultsRetrieved;
         }
 
@@ -498,13 +606,13 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
-        public List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, 
+        public List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient,
             List<Vault> vaultsRetrieved, string resourceGroup = "")
         {
             IPage<Vault> vaultsCurPg = null;
             // Retrieves the first page of KeyVaults at the Subscription scope
-            if (resourceGroup.Length == 0) 
-            { 
+            if (resourceGroup.Length == 0)
+            {
                 try
                 {
                     vaultsCurPg = kvmClient.Vaults.ListBySubscription();
@@ -517,7 +625,7 @@ namespace RBAC
             }
             // Retrieves the first page of KeyVaults at the ResourceGroup scope
             else
-            { 
+            {
                 try
                 {
                     vaultsCurPg = kvmClient.Vaults.ListByResourceGroup(resourceGroup);
@@ -528,7 +636,7 @@ namespace RBAC
                     ConsoleError(e.Message);
                 }
             }
-            
+
             // Get remaining pages if vaults were found
             if (vaultsCurPg != null)
             {
@@ -554,11 +662,11 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method serializes the list of Vault objects and outputs the YAML.
+        /// This method converts the Vault objects to KeyVaultProperties objects, serializes the list of objects, and outputs the YAML.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
-        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
+        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory, GraphServiceClient graphClient)
         {
             log.Info("Converting to YAML...");
             try

@@ -14,6 +14,9 @@ namespace RBAC
         public const string AZURE_URL = ".vault.azure.net";
         public const string MICROSOFT_LOGIN = "https://login.microsoftonline.com/";
         public const string GRAPHCLIENT_URL = "https://graph.microsoft.com/.default";
+        public const string SUBS_PATH = "/subscriptions/";
+        public const string RESGROUP_PATH = "/resourceGroups/";
+        public const string VAULT_PATH = "/providers/Microsoft.KeyVault/vaults/";
 
         public const int MIN_NUM_USERS = 2;
         public const int MAX_NUM_CHANGES = 5;

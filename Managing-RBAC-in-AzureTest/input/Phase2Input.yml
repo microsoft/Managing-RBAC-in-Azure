@@ -1,12 +1,12 @@
 - VaultName: RG1Test1
-  ResourceGroupName: RBAC-KeyVaultUnitTests
-  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: Group
-    DisplayName: 1ES Site Reliability Engineering
-    Alias: 1essre@microsoft.com
+    DisplayName: g1
+    Alias: g1@valid.com
     PermissionsToKeys:
     - Get
     - List
@@ -42,8 +42,8 @@
     - SetIssuers
     - DeleteIssuers
   - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
+    DisplayName: User A
+    Alias: ua@valid.com
     PermissionsToKeys: []
     PermissionsToSecrets: []
     PermissionsToCertificates:
@@ -63,8 +63,8 @@
     - SetIssuers
     - DeleteIssuers
   - Type: User
-    DisplayName: Mazin Shaaeldin
-    Alias: t-mashaa@microsoft.com
+    DisplayName: User B
+    Alias: ub@valid.com
     PermissionsToKeys: []
     PermissionsToSecrets:
     - Get
@@ -76,8 +76,8 @@
     - Restore
     PermissionsToCertificates: []
   - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+    DisplayName: User C
+    Alias: uc@valid.com
     PermissionsToKeys:
     - Get
     - List
@@ -113,36 +113,14 @@
     - SetIssuers
     - DeleteIssuers
 - VaultName: RG1Test2
-  ResourceGroupName: RBAC-KeyVaultUnitTests
-  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
-  - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
-    PermissionsToKeys:
-    - Get
-    - List
-    - Update
-    - Create
-    - Import
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToSecrets:
-    - Get
-    - List
-    - Set
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToCertificates: []
-  - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+  - Type: Service Principal
+    DisplayName: SP1
+    Alias: ''
     PermissionsToKeys:
     - Get
     - List
@@ -177,15 +155,74 @@
     - ListIssuers
     - SetIssuers
     - DeleteIssuers
-- VaultName: PremiumRBACTest
-  ResourceGroupName: RBACTest
-  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG2Test1
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
-  - Type: Group
-    DisplayName: RBACKeyVault
-    Alias: RBACKeyVault@service.microsoft.com
+  - Type: Application
+    DisplayName: a1
+    Alias: ''
     PermissionsToKeys:
     - Get
     - List
@@ -207,8 +244,8 @@
     - Get
     PermissionsToCertificates: []
   - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
+    DisplayName: User A
+    Alias: ua@valid.com
     PermissionsToKeys:
     - Get
     - List
@@ -222,8 +259,8 @@
     - SetIssuers
     - DeleteIssuers
   - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+    DisplayName: User B
+    Alias: ub@valid.com
     PermissionsToKeys:
     - Decrypt
     - Encrypt
@@ -240,15 +277,15 @@
     PermissionsToCertificates:
     - Get
     - List
-- VaultName: RBACTestVault1
-  ResourceGroupName: RBACTest
-  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+- VaultName: RG2Test2
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: User
-    DisplayName: Mazin Shaaeldin
-    Alias: t-mashaa@microsoft.com
+    DisplayName: User A
+    Alias: ua@valid.com
     PermissionsToKeys: []
     PermissionsToSecrets:
     - Get
@@ -276,16 +313,23 @@
     - DeleteIssuers
     - Purge
   - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
-    PermissionsToKeys:
-    - all
-    PermissionsToSecrets: []
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
     PermissionsToCertificates:
     - Get
     - List
   - Type: Service Principal
-    DisplayName: RBACAutomationApp
+    DisplayName: SP1
     Alias: ''
     PermissionsToKeys:
     - Get
@@ -307,24 +351,26 @@
     - Restore
     PermissionsToCertificates: []
   - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+    DisplayName: User C
+    Alias: uc@valid.com
     PermissionsToKeys:
-    - read
-    - write
-    - crypto
-    - storage
-    - purge
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
     PermissionsToSecrets:
-    - write - delete
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
     PermissionsToCertificates:
-    - management - ManageIssuers
-  - Type: Group
-    DisplayName: 1ES Site Reliability Engineering
-    Alias: 1essre@microsoft.com
-    PermissionsToKeys:
-    - All
-    PermissionsToSecrets:
-    - All
-    PermissionsToCertificates:
-    - All
+    - Get
+    - List

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Azure;
+﻿using Microsoft.Azure.Management.KeyVault.Models;
+using Microsoft.Extensions.Azure;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -35,12 +36,14 @@ namespace RBAC
             var secrets = ap.getSecrets(vaultList);
             Console.WriteLine("Finished!");
 
-            Console.WriteLine("Creating KeyVaultManagementClient and GraphServiceClient...");
+            Console.WriteLine("Creating KeyVaultManagementClient, GraphServiceClient, and AzureClient...");
             var kvmClient = ap.createKVMClient(secrets);
             var graphClient = ap.createGraphClient(secrets);
-            Console.WriteLine("Finished!");
+            var azureClient = ap.createAzureClient(secrets);
+            Console.WriteLine("Finished!"); ;
 
-            Console.WriteLine("Retrieving key vaults...");
+            Console.WriteLine("Checking access and retrieving key vaults...");
+            ap.checkAccess(vaultList, azureClient);
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Finished!");
 
