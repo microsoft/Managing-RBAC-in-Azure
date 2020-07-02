@@ -514,7 +514,7 @@ namespace RBAC
 
             List<Testing<List<KeyVaultProperties>>> vaults = new List<Testing<List<KeyVaultProperties>>>()
             {
-                new Testing<List<KeyVaultProperties>> (test, $"KeyVault 'RG1Test1' does not contain at least two users. Skipped.")
+                new Testing<List<KeyVaultProperties>> (test, "KeyVault 'RG1Test1' does not contain at least two users. Skipped.")
             };
 
             foreach (Testing<List<KeyVaultProperties>> testCase in vaults)
