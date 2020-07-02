@@ -629,7 +629,7 @@ namespace RBAC
         /// Verifies that the shorthands are translated to their respective 
         /// </summary>
         [TestMethod]
-        public void TestTranslateShorthands()
+        public void TestTranslateShorthandsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             var pp = new PrincipalPermissions
