@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Management.AppService.Fluent.Models;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
-using Microsoft.Azure.Management.KeyVault.Models;
+﻿using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
@@ -10,15 +8,15 @@ using YamlDotNet.Serialization;
 namespace RBAC
 {
     /// <summary>
-    /// This class stores the AccessPolicies of a Service Principal.
+    /// This class stores the AccessPolicies of a security principal.
     /// </summary>
-    class ServicePrincipalPermissions
+    public class PrincipalPermissions
     {
-        public ServicePrincipalPermissions() 
+        public PrincipalPermissions() 
         {
             this.Alias = "";
         }
-        public ServicePrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
+        public PrincipalPermissions(AccessPolicyEntry accessPol, GraphServiceClient graphClient)
         {
             Dictionary<string,string> typeAndName = getTypeAndName(accessPol, graphClient);
 
@@ -32,7 +30,7 @@ namespace RBAC
 
 
         /// <summary>
-        /// This method gets the Type, DisplayName, and Alias of the ServicePrincipal using the GraphServiceClient.
+        /// This method gets the Type, DisplayName, and Alias of the security principal using the GraphServiceClient.
         /// </summary>
         /// <param name="accessPol">The current AccessPolicyEntry</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
@@ -89,10 +87,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method gets the DisplayName of the ServicePrincipal.
+        /// This method gets the DisplayName of the security principal.
         /// </summary>
         /// <param name="typeAndName">The string array holding the Type, DisplayName, and Alias</param>
-        /// <returns>The DisplayName of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        /// <returns>The DisplayName of the security principal if one exists. Otherwise, returns an empty string.</returns>
         private string getDisplayName(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 1)
@@ -103,10 +101,10 @@ namespace RBAC
         }
 
         /// <summary>
-        ///  This method gets the Alias of the ServicePrincipal.
+        ///  This method gets the Alias of the security principal.
         /// </summary>
         /// <param name="typeAndName">A string array holding the Type, DisplayName, and Alias if applicable</param>
-        /// <returns>The Alias of the Service Principal if one exists. Otherwise, returns an empty string.</returns>
+        /// <returns>The Alias of the security principal if one exists. Otherwise, returns an empty string.</returns>
         private string getAlias(Dictionary<string,string> typeAndName)
         {
             if (typeAndName.Count() > 2)
@@ -117,24 +115,24 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method returns a string array of the permissions.Null if there were no granted permissions. Otherwise, returns the string array. 
+        /// This method gets a string array of the permissions.
         /// </summary>
         /// <param name="permissions">The list of Key, Secret, or Certificate permissions</param>
-        /// <returns>The string array of permissions</returns>
+        /// <returns>Null if there were no granted permissions. Otherwise, returns the string array of permissions</returns>
         private string[] getPermissions(IList<string> permissions)
         {
             if (permissions != null && permissions.Count != 0)
             {
-                return permissions.ToArray();
+                return permissions.Select(val => val.Trim().ToLowerInvariant()).ToArray();
             }
             return new string[] { };
         }
 
         /// <summary>
-        /// This method overrides the Equals operator to allow comparison between two ServicePrincipalPermissions objects.
+        /// This method overrides the Equals operator to allow comparison between two PrincipalPermissions objects.
         /// </summary>
         /// <param name="rhs">The object to compare against</param>
-        /// <returns>True if rhs is of type ServicePrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
+        /// <returns>True if rhs is of type PrincipalPermissions and the Key, Secret, and Certificate permissions are all the same. Otherwise, returns false.</returns>
         public override bool Equals(Object rhs)
         {
             if ((rhs == null) || !this.GetType().Equals(rhs.GetType()))
@@ -143,27 +141,31 @@ namespace RBAC
             }
             else
             {
-                var spp = (ServicePrincipalPermissions)rhs;
-                if ((spp.PermissionsToKeys == null && this.PermissionsToKeys != null) || (this.PermissionsToKeys == null && spp.PermissionsToKeys != null))
+                var spp = (PrincipalPermissions)rhs;
+
+                string type = this.Type.Trim().ToLower();
+                string rhsType = spp.Type.Trim().ToLower();
+                bool aliasIsSame = false;
+                if (rhsType == "user" || rhsType == "group")
                 {
-                    return false;
+                    aliasIsSame = (this.Alias == spp.Alias);
                 }
-                if ((spp.PermissionsToSecrets == null && this.PermissionsToSecrets != null) || (this.PermissionsToSecrets == null && spp.PermissionsToSecrets != null))
+                else
                 {
-                    return false;
+                    aliasIsSame = true;
                 }
-                if ((spp.PermissionsToCertificates == null && this.PermissionsToCertificates != null) || (this.PermissionsToCertificates == null && spp.PermissionsToCertificates != null))
-                {
-                    return false;
-                }
-                return (this.ObjectId == spp.ObjectId) && (this.PermissionsToKeys == null || this.PermissionsToKeys.SequenceEqual(spp.PermissionsToKeys)) && (this.PermissionsToSecrets == null || this.PermissionsToSecrets.SequenceEqual(spp.PermissionsToSecrets)) && (this.PermissionsToCertificates == null || this.PermissionsToCertificates.SequenceEqual(spp.PermissionsToCertificates));
+
+                return (this.DisplayName.Trim().ToLower() == spp.DisplayName.Trim().ToLower()) && aliasIsSame && this.PermissionsToKeys.Length == spp.PermissionsToKeys.Length
+                    && (this.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToKeys.ToList().ConvertAll(p => p.ToLower()).Contains)) &&
+                    (this.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToSecrets.ToList().ConvertAll(p => p.ToLower()).Contains))
+                    && this.PermissionsToSecrets.Length == spp.PermissionsToSecrets.Length
+                    && (this.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).All(spp.PermissionsToCertificates.ToList().ConvertAll(p => p.ToLower()).Contains))
+                    && this.PermissionsToCertificates.Length == spp.PermissionsToCertificates.Length;
             }
         }
 
         [YamlIgnore]
         public string ObjectId { get; set; }
-        [YamlIgnore]
-        public string ApplicationId { get; set; }
         public string Type { get; set; }
         public string DisplayName { get; set; }
         public string Alias { get; set; }
@@ -175,7 +177,7 @@ namespace RBAC
             {
                 if (value != null)
                 {
-                    KeyPermissions = value;
+                    KeyPermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 }
                 else
                 {
@@ -192,7 +194,7 @@ namespace RBAC
             {
                 if (value != null)
                 {
-                    SecretsPermissions = value;
+                    SecretsPermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 }
                 else
                 {
@@ -209,7 +211,7 @@ namespace RBAC
             {
                 if (value != null) 
                 { 
-                    CertificatePermissions = value; 
+                    CertificatePermissions = value.Select(val => val.Trim().ToLowerInvariant()).ToArray();
                 } 
                 else 
                 { 
@@ -217,11 +219,5 @@ namespace RBAC
                 }
             }
         }
-
-        public static string[] allKeyPermissions = { "get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"};
-        public static string[] allSecretPermissions = { "get", "list", "set", "delete", "recover", "backup", "restore", "purge" };
-        public static string[] allCertificatePermissions = {"get", "list", "update", "create", "import", "delete", "recover",
-            "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers", "purge"};
     }
 }

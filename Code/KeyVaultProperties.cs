@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
-using YamlDotNet.Serialization;
 
 namespace RBAC
 {
     /// <summary>
     /// This class gets and sets the properties of an Azure KeyVault.
     /// </summary>
-    class KeyVaultProperties
+    public class KeyVaultProperties
     {
         public KeyVaultProperties() { }
         public KeyVaultProperties(Vault vault, GraphServiceClient graphClient)
@@ -44,7 +43,6 @@ namespace RBAC
             {
                 resourceGroupsValue = resourceGroupsValue.Substring(0, resourceGroupsValueEnd);
             }
-
             return resourceGroupsValue;
         }
 
@@ -69,7 +67,6 @@ namespace RBAC
             {
                 subscriptionValue = subscriptionValue.Substring(0, subscriptionValueEnd);
             }
-
             return subscriptionValue;
         }
 
@@ -79,14 +76,14 @@ namespace RBAC
         /// <param name="accessPolicies">The list of AccessPolicyEntrys</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient with permissions to obtain the DisplayName</param>
         /// <returns>The list of ServicePrincipal objects</returns>
-        private List<ServicePrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
+        private List<PrincipalPermissions> getAccessPolicies(IList<AccessPolicyEntry> accessPolicies, GraphServiceClient graphClient)
         {
-            List<ServicePrincipalPermissions> policies = new List<ServicePrincipalPermissions>();
+            List<PrincipalPermissions> policies = new List<PrincipalPermissions>();
 
             var policiesEnum = accessPolicies.GetEnumerator();
             while (policiesEnum.MoveNext())
             {
-                policies.Add(new ServicePrincipalPermissions(policiesEnum.Current, graphClient));
+                policies.Add(new PrincipalPermissions(policiesEnum.Current, graphClient));
             }
             return policies;
         }
@@ -105,8 +102,25 @@ namespace RBAC
             else
             {
                 var kvp = (KeyVaultProperties)rhs;
-                return (this.VaultName == kvp.VaultName) && (this.AccessPolicies.SequenceEqual(kvp.AccessPolicies));
+                return (this.VaultName == kvp.VaultName) && (this.AccessPolicies.All(kvp.AccessPolicies.Contains)) && this.AccessPolicies.Count == kvp.AccessPolicies.Count();
             }
+        }
+
+        /// <summary>
+        /// This method counts the amount of users contained in the KeyVault.
+        /// </summary>
+        /// <returns>The number of users with access policies</returns>
+        public int usersContained()
+        {
+            int count = 0;
+            foreach(PrincipalPermissions principalPermissions in AccessPolicies)
+            {
+                if (principalPermissions.Type.Trim().ToLower() == "user")
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         public string VaultName { get; set; }
@@ -114,6 +128,6 @@ namespace RBAC
         public string SubscriptionId { get; set; }
         public string Location { get; set; }
         public string TenantId { get; set; }
-        public List<ServicePrincipalPermissions> AccessPolicies { get; set; }
+        public List<PrincipalPermissions> AccessPolicies { get; set; }
     }
 }
