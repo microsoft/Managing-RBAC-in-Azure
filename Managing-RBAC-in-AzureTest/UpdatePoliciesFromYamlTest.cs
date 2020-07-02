@@ -684,7 +684,7 @@ namespace RBAC
         /// Verifies that the correct permissions are being identified by the shorthand keyword.
         /// </summary>
         [TestMethod]
-        public void TestGetShorthandPermissionsInvalid()
+        public void TestGetShorthandPermissionsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
