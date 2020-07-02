@@ -59,7 +59,7 @@ namespace RBAC
         /// Verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
-        public void TestVaultChangesValid()
+        public void TestCheckVaultChangesValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
