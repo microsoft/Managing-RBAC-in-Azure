@@ -720,7 +720,7 @@ namespace RBAC
         /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>
         /// <returns>The list of KeyVaultProperties from the deserialized yaml</returns>
-        private List<KeyVaultProperties> createExpectedYamlVaults()
+        public static List<KeyVaultProperties> createExpectedYamlVaults()
         {
             var exp = new List<KeyVaultProperties>();
 

@@ -1,3 +1,5 @@
+using Managing_RBAC_in_AzureTest;
+using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -5,6 +7,7 @@ using NSubstitute.Routing.AutoValues;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RBAC
 {
@@ -240,8 +243,33 @@ namespace RBAC
                 Assert.AreEqual("Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.", e.Message);
             }
         }
+        [TestMethod]
+        public void TestGetVaults()
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            var json = ap.readJsonFile("../../../input/TestActualVaults.json");
+            var ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
+            Assert.AreEqual(4, ret.Count);
 
-
+            json.Resources[0].ResourceGroups.Add(new ResourceGroup
+            {
+                ResourceGroupName = "RG1",
+                KeyVaults = new string[] { "RG1Test1" }.ToList()
+            }) ;
+            json.Resources[0].ResourceGroups.Add(new ResourceGroup
+            {
+                ResourceGroupName = "RG2"
+            });
+            ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
+            Assert.AreEqual(3, ret.Count);
+        }
+        [TestMethod]
+        public void TestConvertToYaml()
+        {
+            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+            var vaults = UpdatePoliciesFromYamlTest.createExpectedYamlVaults();
+            ap.convertToYaml(vaults, "../../../output/ActualOutput.yml");
+        }
         /// <summary>
         /// This method creates an expected json that is used for testing purposes.
         /// </summary>
