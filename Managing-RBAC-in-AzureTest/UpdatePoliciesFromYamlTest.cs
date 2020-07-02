@@ -665,7 +665,7 @@ namespace RBAC
         /// Verifies that "all" shorthand cannot be repeated.
         /// </summary>
         [TestMethod]
-        public void TestTranslateShorthand()
+        public void TestTranslateShorthandInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
@@ -684,7 +684,7 @@ namespace RBAC
         /// Verifies that the correct permissions are being identified by the shorthand keyword.
         /// </summary>
         [TestMethod]
-        public void TestGetShorthandPermissions()
+        public void TestGetShorthandPermissionsInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
