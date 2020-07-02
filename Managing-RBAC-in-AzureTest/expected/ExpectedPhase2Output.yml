@@ -1,34 +1,12 @@
-- VaultName: RG1Test2
-  ResourceGroupName: RBAC-KeyVaultUnitTests
-  SubscriptionId: 82bf28a8-6374-4908-b89c-5d1ab5495c5e
+- VaultName: RG1Test1
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
-  - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
-    PermissionsToKeys:
-    - Get
-    - List
-    - Update
-    - Create
-    - Import
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToSecrets:
-    - Get
-    - List
-    - Set
-    - Delete
-    - Recover
-    - Backup
-    - Restore
-    PermissionsToCertificates: []
-  - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+  - Type: Group
+    DisplayName: g1
+    Alias: g1@valid.com
     PermissionsToKeys:
     - Get
     - List
@@ -63,15 +41,251 @@
     - ListIssuers
     - SetIssuers
     - DeleteIssuers
-- VaultName: RBACTestVault1
-  ResourceGroupName: RBACTest
-  SubscriptionId: 6b94a915-57a9-4023-8fe8-3792e113ddff
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets: []
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User C
+    Alias: uc@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG1Test2
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
   Location: eastus
-  TenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: Service Principal
+    DisplayName: SP1
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG2Test1
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: Application
+    DisplayName: a1
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Purge
+    PermissionsToCertificates:
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys:
+    - Decrypt
+    - Encrypt
+    - WrapKey
+    - UnwrapKey
+    - Verify
+    - Sign
+    PermissionsToSecrets:
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+- VaultName: RG2Test2
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
   AccessPolicies:
   - Type: User
-    DisplayName: Mazin Shaaeldin
-    Alias: t-mashaa@microsoft.com
+    DisplayName: User A
+    Alias: ua@valid.com
     PermissionsToKeys: []
     PermissionsToSecrets:
     - Get
@@ -99,31 +313,23 @@
     - DeleteIssuers
     - Purge
   - Type: User
-    DisplayName: Katie Helman
-    Alias: t-kahelm@microsoft.com
-    PermissionsToKeys:
-    - get
-    - list
-    - update
-    - create
-    - import
-    - delete
-    - recover
-    - backup
-    - restore
-    - decrypt
-    - encrypt
-    - unwrapkey
-    - wrapkey
-    - verify
-    - sign
-    - purge
-    PermissionsToSecrets: []
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
     PermissionsToCertificates:
     - Get
     - List
   - Type: Service Principal
-    DisplayName: RBACAutomationApp
+    DisplayName: SP1
     Alias: ''
     PermissionsToKeys:
     - Get
@@ -145,76 +351,26 @@
     - Restore
     PermissionsToCertificates: []
   - Type: User
-    DisplayName: Opeyemi Olaoluwa
-    Alias: t-opolao@microsoft.com
+    DisplayName: User C
+    Alias: uc@valid.com
     PermissionsToKeys:
-    - get
-    - list
-    - update
-    - create
-    - import
-    - delete
-    - recover
-    - backup
-    - restore
-    - decrypt
-    - encrypt
-    - unwrapkey
-    - wrapkey
-    - verify
-    - sign
-    - purge
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
     PermissionsToSecrets:
-    - set
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
     PermissionsToCertificates:
-    - managecontacts
-    - getissuers
-    - listissuers
-    - setissuers
-    - deleteissuers
-  - Type: Group
-    DisplayName: 1ES Site Reliability Engineering
-    Alias: 1essre@microsoft.com
-    PermissionsToKeys:
-    - get
-    - list
-    - update
-    - create
-    - import
-    - delete
-    - recover
-    - backup
-    - restore
-    - decrypt
-    - encrypt
-    - unwrapkey
-    - wrapkey
-    - verify
-    - sign
-    - purge
-    PermissionsToSecrets:
-    - get
-    - list
-    - set
-    - delete
-    - recover
-    - backup
-    - restore
-    - purge
-    PermissionsToCertificates:
-    - get
-    - list
-    - update
-    - create
-    - import
-    - delete
-    - recover
-    - backup
-    - restore
-    - managecontacts
-    - manageissuers
-    - getissuers
-    - listissuers
-    - setissuers
-    - deleteissuers
-    - purge
+    - Get
+    - List

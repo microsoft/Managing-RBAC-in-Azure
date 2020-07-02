@@ -1,4 +1,5 @@
 
+using Managing_RBAC_in_AzureTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -491,9 +492,9 @@ namespace RBAC
             {
                 VaultName = "RG1Test1",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -727,9 +728,9 @@ namespace RBAC
             {
                 VaultName = "RG1Test1",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -775,9 +776,9 @@ namespace RBAC
             {
                 VaultName = "RG1Test2",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -814,16 +815,16 @@ namespace RBAC
             {
                 VaultName = "RG2Test1",
                 ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
-                        Type = "Group",
-                        DisplayName = "g1",
-                        Alias = "g1@valid.com",
+                        Type = "Application",
+                        DisplayName = "a1",
+                        Alias = "",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"},
                         PermissionsToSecrets = new string[] {  "get" },
                         PermissionsToCertificates = new string[] { }
@@ -853,9 +854,9 @@ namespace RBAC
             {
                 VaultName = "RG2Test2",
                 ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()

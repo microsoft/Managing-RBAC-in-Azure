@@ -2,6 +2,7 @@
 using Microsoft.Identity.Client;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace RBAC
@@ -11,6 +12,10 @@ namespace RBAC
     /// </summary>
     public class MsalAuthenticationProvider : IAuthenticationProvider
     {
+        public MsalAuthenticationProvider()
+        {
+
+        }
         public MsalAuthenticationProvider(IConfidentialClientApplication clientApp, string[] scopes)
         {
             this.clientApp = clientApp;
