@@ -104,19 +104,19 @@ namespace RBAC
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
 
             List<KeyVaultProperties> changedVaultName = createExpectedYamlVaults();
-            changedVaultName[0].VaultName = "NotExist";
+            changedVaultName[0].VaultName = "vaultNameChanged";
 
             List<KeyVaultProperties> changedResourceGroupName = createExpectedYamlVaults();
-            changedResourceGroupName[0].ResourceGroupName = "BadRG";
+            changedResourceGroupName[0].ResourceGroupName = "RgNameChanged";
 
             List<KeyVaultProperties> changedSubscriptionId = createExpectedYamlVaults();
-            changedSubscriptionId[0].SubscriptionId = "BadSubId";
+            changedSubscriptionId[0].SubscriptionId = "SubIdChanged";
 
             List<KeyVaultProperties> changedLocation = createExpectedYamlVaults();
-            changedLocation[0].Location = "BadLoc";
+            changedLocation[0].Location = "LocChanged";
 
             List<KeyVaultProperties> changedTenantId = createExpectedYamlVaults();
-            changedTenantId[0].TenantId = "BadTen";
+            changedTenantId[0].TenantId = "TenIdChanged";
 
             List<KeyVaultProperties> addedKv = createExpectedYamlVaults();
             addedKv.Add(new KeyVaultProperties
