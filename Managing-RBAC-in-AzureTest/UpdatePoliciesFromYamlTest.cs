@@ -307,7 +307,7 @@ namespace RBAC
                 new Testing<KeyVaultProperties> (locationNull, $"Missing 'Location' for KeyVault '{locationNull.VaultName}'" ),
                 new Testing<KeyVaultProperties> (locationEmpty, $"Missing 'Location' for KeyVault '{locationEmpty.VaultName}'" ),
                 new Testing<KeyVaultProperties> (tenantIdNull, $"Missing 'TenantId' for KeyVault '{tenantIdNull.VaultName}'" ),
-                new Testing<KeyVaultProperties> (tenantIdNull, $"Missing 'TenantId' for KeyVault '{tenantIdEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (tenantIdEmpty, $"Missing 'TenantId' for KeyVault '{tenantIdEmpty.VaultName}'" ),
 
             };
 
