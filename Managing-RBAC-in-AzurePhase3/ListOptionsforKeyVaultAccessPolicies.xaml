@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
         mc:Ignorable="d"
-        Title="ListOptionsforKeyVaultAccessPolicies" Height="450" Width="800" Background="#FFE8C1C1">
+        Title="ListOptionsforKeyVaultAccessPolicies" Height="450" Width="800" Background="WhiteSmoke">
 
     <Window.Resources>
         <Style x:Key="ComboBoxStyle" TargetType="{x:Type ComboBox}">
@@ -39,7 +39,7 @@
 
         <Style x:Key="PopupTranslationStyle" TargetType="{x:Type Popup}">
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
         </Style>
 
@@ -53,7 +53,7 @@
             <Setter Property="Width" Value="30"/>
             <Setter Property="Padding" Value="10, 0, 10, 0"/>
             <Setter Property="Foreground" Value="DimGray"/>
-            <Setter Property="Background" Value="WhiteSmoke"/>
+            <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="{x:Null}"/>
         </Style>
 
@@ -69,27 +69,29 @@
     </Window.Resources>
 
     <Grid>
-
         <TextBlock Name="Title" Text="Listing Options for KeyVault Access Policies" Style="{StaticResource TitleStyle}" Margin="15,10,0,0"  Width="350"/>
 
+        <!-- Shorthand List Option-->
         <TextBlock Name="ShorthandList" Text="1. List the Permissions by Shorthand" Style="{StaticResource FiltersStyle}" Margin="15,35,0,0"  Width="250"/>
-        <Label Name="ShorthandScopeLabel" Content="Choose your permission block:" Style="{StaticResource LabelStyle}" Margin="10,50,0,0" Width="165"/>
-        <ComboBox Name="ShorthandScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,70,0,0" Width="160" SelectionChanged="ShorthandScopeDropdown_SelectionChanged">
+        <Label Name="ShorthandBlockLabel" Content="Choose your permission block:" Style="{StaticResource LabelStyle}" Margin="10,50,0,0" Width="165"/>
+        <ComboBox Name="ShorthandBlockDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,70,0,0" Width="160" SelectionChanged="ShorthandBlockDropdown_SelectionChanged">
             <ComboBoxItem Content="PermissionsToKeys"/>
             <ComboBoxItem Content="PermissionsToSecrets"/>
             <ComboBoxItem Content="PermissionsToCertificates"/>
         </ComboBox>
 
-        <Label Name="ShorthandDropdownLabel" Content="Choose your shorthand:" Style="{StaticResource LabelStyle}" Margin="200,35,0,0" Width="130" Visibility="Hidden"/>
-        <ComboBox Name="ShorthandDropdown" Style="{StaticResource ComboBoxStyle}" Margin="205,50,0,0" Width="125" Visibility="Hidden" SelectionChanged="ShorthandDropdown_SelectionChanged"/>
+        <Label Name="ShorthandDropdownLabel" Content="Choose your shorthand:" Style="{StaticResource LabelStyle}" Margin="200,50,0,0" Width="130" Visibility="Hidden"/>
+        <ComboBox Name="ShorthandDropdown" Style="{StaticResource ComboBoxStyle}" Margin="205,70,0,0" Width="125" Visibility="Hidden" SelectionChanged="ShorthandDropdown_SelectionChanged"/>
 
         <Popup Name="ShorthandTranslation" Style="{StaticResource PopupTranslationStyle}">
-            <StackPanel Name="ShorthandTranslationStackPanel" Height="250" Width="400" Background="WhiteSmoke">
-                <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="ClosePopUp_Click"/>
-            </StackPanel>
+            <Border  BorderThickness="0.3" Height="100" Width="500" BorderBrush="#FFE0E0E0">
+                <StackPanel Name="ShorthandTranslationStackPanel" Height="100" Width="500" Background="White">
+                    <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="ClosePopUp_Click"/>
+                </StackPanel>
+            </Border>
         </Popup>
 
-        <!-- rest of other 5-->
+        <!-- Principal List Option-->
         <TextBlock Name="PrincipalList" Text="2. List by Security Principal" Style="{StaticResource FiltersStyle}" Margin="15,100,0,0" Width="303"/>
         <Label Name="PrincipalScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyle}" Margin="10,115,0,0" Width="105"/>
         <ComboBox Name="PrincipalScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,135,0,0" Width="100">
@@ -99,7 +101,8 @@
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
 
-        <TextBlock Name="PermissionList" Text="3. List by Permissions" Style="{StaticResource FiltersStyle}" Margin="15,165,0,0" Width="303"/>
+        <!-- Permission List Option-->
+        <TextBlock Name="PermissionList" Text="3. List by Permission" Style="{StaticResource FiltersStyle}" Margin="15,165,0,0" Width="303"/>
         <Label Name="PermissionListScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyle}" Margin="10,180,0,0" Width="105"/>
         <ComboBox Name="PermissionListScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,200,0,0" Width="100">
             <ComboBoxItem Content="YAML"/>
@@ -108,6 +111,7 @@
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
 
+        <!-- Permission Usage Breakdown Option-->
         <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Permission Usage by Percentage" Style="{StaticResource FiltersStyle}" Margin="15,230,0,0" Width="303"/>
         <Label Name="BreakdownScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyle}" Margin="10,245,0,0" Width="105"/>
         <ComboBox Name="BreakdownScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,265,0,0" Width="100">
@@ -117,6 +121,7 @@
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
 
+        <!-- Most Accessed KeyVaults List Option-->
         <TextBlock Name="MostAccessed" Text="5. Most Accesssed KeyVaults" Style="{StaticResource FiltersStyle}" Margin="15,295,0,0" Width="303"/>
         <Label Name="MostAccessedScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyle}" Margin="10,310,0,0" Width="105"/>
         <ComboBox Name="MostAccessedScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,330,0,0" Width="100">
@@ -126,6 +131,7 @@
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
 
+        <!-- Ranked Principal List Option-->
         <TextBlock Name="PrincipalAccess" Text="6. Ranked Security Principals by Access" Style="{StaticResource FiltersStyle}" Margin="15,360,0,0" Width="303"/>
         <Label Name="PrincpalAccessScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyle}" Margin="10,375,0,0" Width="105"/>
         <ComboBox Name="PrincpalAccessScopeDropdown" Style="{StaticResource ComboBoxStyle}" Margin="15,395,0,0" Width="100">
@@ -134,6 +140,5 @@
             <ComboBoxItem Content="ResourceGroup"/>
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
-
     </Grid>
 </Window>

@@ -1,20 +1,7 @@
 ﻿using RBAC;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -28,28 +15,40 @@ namespace Managing_RBAC_in_AzureListOptions
             InitializeComponent();
         }
 
-        private void ShorthandScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// This method populates the "Choose your shorthand:" dropdown and makes it visible upon a selection.
+        /// </summary>
+        /// <param name="sender">The shorthand permission block dropdown</param>
+        /// <param name="e">The event that occurs when a selection changes</param>
+        private void ShorthandBlockDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBox scopeDropdown = (ComboBox)sender;
-            ComboBoxItem selectedScope = (ComboBoxItem)scopeDropdown.SelectedItem;
-            string val = (string)selectedScope.Content;
+            ComboBox blockDropdown = (ComboBox)sender;
+            if (blockDropdown.SelectedIndex != -1)
+            {
+                ComboBoxItem selectedScope = (ComboBoxItem)blockDropdown.SelectedItem;
+                string val = (string)selectedScope.Content;
 
-            if (val == "PermissionsToKeys")
-            {
-                populateShorthandDropdown(Constants.SHORTHANDS_KEYS);
+                if (val == "PermissionsToKeys")
+                {
+                    populateShorthandDropdown(Constants.SHORTHANDS_KEYS);
+                }
+                else if (val == "PermissionsToSecrets")
+                {
+                    populateShorthandDropdown(Constants.SHORTHANDS_SECRETS);
+                }
+                else if (val == "PermissionsToCertificates")
+                {
+                    populateShorthandDropdown(Constants.SHORTHANDS_CERTIFICATES);
+                }
+                ShorthandDropdownLabel.Visibility = Visibility.Visible;
+                ShorthandDropdown.Visibility = Visibility.Visible;
             }
-            else if (val == "PermissionsToSecrets")
-            {
-                populateShorthandDropdown(Constants.SHORTHANDS_SECRETS);
-            }
-            else if (val == "PermissionsToCertificates")
-            {
-                populateShorthandDropdown(Constants.SHORTHANDS_CERTIFICATES);
-            }
-            ShorthandDropdownLabel.Visibility = Visibility.Visible;
-            ShorthandDropdown.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// This method populates the "Choose your shorthand:" dropdown.
+        /// </summary>
+        /// <param name="permissions">The permissions with which to populate the dropdown</param>
         private void populateShorthandDropdown(string[] permissions)
         {
             ShorthandDropdown.Items.Clear();
@@ -60,6 +59,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 ShorthandDropdown.Items.Add(item);
             }
         }
+
+        /// <summary>
+        /// This method translates the shorthand to its respective permissions and makes the popup with this information visable.
+        /// </summary>
+        /// <param name="sender">The shorthand dropdown</param>
+        /// <param name="e">The event that occurs when a selection changes</param>
         private void ShorthandDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ShorthandTranslation.IsOpen = false;
@@ -70,12 +75,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 ShorthandTranslationStackPanel.Children.RemoveAt(1);
             }
 
-            ComboBoxItem selectedBlock = (ComboBoxItem)ShorthandScopeDropdown.SelectedItem;
+            ComboBoxItem selectedBlock = (ComboBoxItem)ShorthandBlockDropdown.SelectedItem;
             string block = (string)selectedBlock.Content;
 
             // Wait for selection in second dropdown if the first has changed
             ComboBox shorthandDropdown = (ComboBox)sender;
-            if (shorthandDropdown.IsDropDownOpen) 
+            if (shorthandDropdown.IsDropDownOpen)
             {
                 ComboBoxItem selectedShorthand = (ComboBoxItem)shorthandDropdown.SelectedItem;
                 string shorthand = (string)selectedShorthand.Content;
@@ -107,11 +112,20 @@ namespace Managing_RBAC_in_AzureListOptions
                 ShorthandTranslation.IsOpen = true;
             }
         }
-       private void ClosePopUp_Click(object sender, RoutedEventArgs e)
-       {
+
+        /// <summary>
+        /// This method closes the popup.
+        /// </summary>
+        /// <param name="sender">The close popup button</param>
+        /// <param name="e">The event that occurs when the button is clicked</param>
+        private void ClosePopUp_Click(object sender, RoutedEventArgs e)
+        {
             ShorthandTranslation.IsOpen = false;
+
+            // Reset block dropdown and hide shorthand dropdown
+            ShorthandBlockDropdown.SelectedIndex = -1;
             ShorthandDropdownLabel.Visibility = Visibility.Hidden;
             ShorthandDropdown.Visibility = Visibility.Hidden;
-       }
+        }
     }
 }
