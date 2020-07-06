@@ -42,7 +42,7 @@ namespace RBAC
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Generating YAML output...");
-            ap.convertToYaml(vaultsRetrieved, args[1], graphClient);
+            ap.convertToYaml(vaultsRetrieved, args[1]);
             Console.WriteLine("Finished!");
         }
     }

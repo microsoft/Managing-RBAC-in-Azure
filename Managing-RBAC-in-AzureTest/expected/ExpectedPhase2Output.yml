@@ -1,0 +1,376 @@
+- VaultName: RG1Test1
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: Group
+    DisplayName: g1
+    Alias: g1@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets: []
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User C
+    Alias: uc@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG1Test2
+  ResourceGroupName: RG1
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: Service Principal
+    DisplayName: SP1
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+- VaultName: RG2Test1
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: Application
+    DisplayName: a1
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Decrypt
+    - Encrypt
+    - UnwrapKey
+    - WrapKey
+    - Verify
+    - Sign
+    - Purge
+    PermissionsToSecrets:
+    - Get
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    PermissionsToSecrets:
+    - Purge
+    PermissionsToCertificates:
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys:
+    - Decrypt
+    - Encrypt
+    - WrapKey
+    - UnwrapKey
+    - Verify
+    - Sign
+    PermissionsToSecrets:
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+- VaultName: RG2Test2
+  ResourceGroupName: RG2
+  SubscriptionId: 00000000-0000-0000-0000-000000000000
+  Location: eastus
+  TenantId: 00000000-0000-0000-0000-000000000000
+  AccessPolicies:
+  - Type: User
+    DisplayName: User A
+    Alias: ua@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - ManageContacts
+    - ManageIssuers
+    - GetIssuers
+    - ListIssuers
+    - SetIssuers
+    - DeleteIssuers
+    - Purge
+  - Type: User
+    DisplayName: User B
+    Alias: ub@valid.com
+    PermissionsToKeys: []
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    - Purge
+    PermissionsToCertificates:
+    - Get
+    - List
+  - Type: Service Principal
+    DisplayName: SP1
+    Alias: ''
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates: []
+  - Type: User
+    DisplayName: User C
+    Alias: uc@valid.com
+    PermissionsToKeys:
+    - Get
+    - List
+    - Update
+    - Create
+    - Import
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToSecrets:
+    - Get
+    - List
+    - Set
+    - Delete
+    - Recover
+    - Backup
+    - Restore
+    PermissionsToCertificates:
+    - Get
+    - List

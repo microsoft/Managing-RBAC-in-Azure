@@ -1,0 +1,14 @@
+{
+  "AadAppKeyDetails": {
+    "AadAppName": "AppName",
+    "VaultName": "KeyVault",
+    "ClientIdSecretName": "ClientId",
+    "ClientKeySecretName": "ClientKey",
+    "TenantIdSecretName": "TenantId"
+  },
+  "Resources": [
+    {
+      "SubscriptionId": "00000000-0000-0000-0000-000000000000",
+    }
+  ]
+}

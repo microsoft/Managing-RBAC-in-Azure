@@ -666,7 +666,7 @@ namespace RBAC
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
         /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
-        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory, GraphServiceClient graphClient)
+        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
         {
             log.Info("Converting to YAML...");
             try

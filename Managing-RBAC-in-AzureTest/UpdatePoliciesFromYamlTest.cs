@@ -8,102 +8,85 @@ using YamlDotNet.Serialization;
 namespace RBAC
 {
     [TestClass]
+    /// <summary>
+    /// This class is the Phase 2 testing class
+    /// </summary>
     public class UpdatePoliciesFromYamlTest
     {
         /// <summary>
-        /// This method verifies that the yaml is deserialized properly.
+        /// This is a wrapper class that is used for testing purposes
         /// </summary>
+        public class Testing<T>
+        {
+            public T testObject { get; set; }
+            public string error { get; set; }
+
+            /// <summary>
+            /// Constructor to create an instance of the Testing<T> for use in Unit Testing.
+            /// </summary>
+            /// <param name="testObject">This is the object we are testing. Methods usually use this as an argument</param>
+            /// <param name="error">The error is set to null if a what we are testing is valid, otherwise error is reassigned depending on what is thrown</param>
+            public Testing(T testObject, string error = null)
+            {
+                this.testObject = testObject;
+                this.error = error;
+            }
+        }
+
         [TestMethod]
-        public void TestYamlDeserialization()
+        /// <summary>
+        /// This method verifies that a valid yaml is able to deserialize properly
+        /// </summary>
+        public void TestYamlDeserializationValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
-
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
             Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
-       [TestMethod]
-        public void TestCheckVaultChanges()
+        public void TestCheckVaultChangesValid()
+        {
+           UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+           var expectedYamlVaults = createExpectedYamlVaults();
+           List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+           try
+           {
+                up.checkVaultChanges(expectedYamlVaults, vaultsRetrieved);
+           }
+           catch
+           {
+                Assert.Fail();
+           }
+        }
+
+        [TestMethod]
+        /// <summary>
+        /// This method verifies that the program handles if there are invalid fields 
+        /// or changes made in the yaml other than those in the AccessPolicies.
+        /// </summary>
+        public void TestCheckVaultChangesInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            var yamlVaults = createExpectedYamlVaults();
-            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
-            try
-            {
-                up.checkVaultChanges(yamlVaults, yamlVaults);
-            }
-            catch
-            {
-                Assert.Fail();
-            }
+            List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
 
-            yamlVaults[0].VaultName = "NotExist";
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0].ResourceGroupName = "BadRG";
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("ResourceGroupName for KeyVault 'RG1Test1' was changed.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0].SubscriptionId = "BadSi";
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("SubscriptionId for KeyVault 'RG1Test1' was changed.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0].Location = "BadLoc";
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("Location for KeyVault 'RG1Test1' was changed.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0].TenantId = "BadTen";
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("TenantId for KeyVault 'RG1Test1' was changed.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            // Add an entire KV
-            yamlVaults.Add(new KeyVaultProperties
+            List<KeyVaultProperties> changedVaultName = createExpectedYamlVaults();
+            changedVaultName[0].VaultName = "vaultNameChanged";
+            List<KeyVaultProperties> changedResourceGroupName = createExpectedYamlVaults();
+            changedResourceGroupName[0].ResourceGroupName = "RgNameChanged";
+            List<KeyVaultProperties> changedSubscriptionId = createExpectedYamlVaults();
+            changedSubscriptionId[0].SubscriptionId = "SubIdChanged";
+            List<KeyVaultProperties> changedLocation = createExpectedYamlVaults();
+            changedLocation[0].Location = "LocChanged";
+            List<KeyVaultProperties> changedTenantId = createExpectedYamlVaults();
+            changedTenantId[0].TenantId = "TenIdChanged";
+            List<KeyVaultProperties> addedKv = createExpectedYamlVaults();
+            addedKv.Add(new KeyVaultProperties
             {
                 VaultName = "TestAddKV",
                 ResourceGroupName = "RBAC",
@@ -132,83 +115,44 @@ namespace RBAC
                     }
                 }
             });
+            List<KeyVaultProperties> removedKv = createExpectedYamlVaults();
+            removedKv.RemoveAt(0);
 
-            try
+            List<Testing<List<KeyVaultProperties>>> testCasesInvalid = new List<Testing<List<KeyVaultProperties>>>()
             {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
+                new Testing<List<KeyVaultProperties>> (changedVaultName, "KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file."),
+                new Testing<List<KeyVaultProperties>> (changedResourceGroupName, "ResourceGroupName for KeyVault 'RG1Test1' was changed."),
+                new Testing<List<KeyVaultProperties>> (changedSubscriptionId, "SubscriptionId for KeyVault 'RG1Test1' was changed."),
+                new Testing<List<KeyVaultProperties>> (changedLocation, "Location for KeyVault 'RG1Test1' was changed."),
+                new Testing<List<KeyVaultProperties>> (changedTenantId, "TenantId for KeyVault 'RG1Test1' was changed."),
+                new Testing<List<KeyVaultProperties>> (addedKv, "KeyVault 'TestAddKV' in the YAML file was not found in the JSON file."),
+                new Testing<List<KeyVaultProperties>> (removedKv, "KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.")
+            };
+            foreach (Testing<List<KeyVaultProperties>> testCase in testCasesInvalid)
             {
-                Assert.AreEqual($"KeyVault 'TestAddKV' in the YAML file was not found in the JSON file.", e.Message);
-            }
-            yamlVaults.RemoveAt(4);
-
-            // Remove an entire KV
-            yamlVaults.RemoveAt(0);
-            try
-            {
-                up.checkVaultChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.", e.Message);
+                try
+                {
+                    up.checkVaultChanges(testCase.testObject, expectedYamlVaults);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
             }
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies how changes are counted and that the program handles the number of 
         /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
         /// </summary>
-        [TestMethod]
-        public void TestGetChanges()
+        public void TestGetChangesValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+
             List<KeyVaultProperties> yamlVaults = createExpectedYamlVaults();
-
-            // Check making 6 changes (first two only count as one change) 
-            yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[0].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[2].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[0].AccessPolicies[3].PermissionsToCertificates = new string[] { "get" };
-            yamlVaults[1].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
-            yamlVaults[1].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
-
-            try
-            {
-                //Call getChanges in beginning
-                up.updateVaults(yamlVaults, vaultsRetrieved, null, null, null);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0].AccessPolicies.Add(new PrincipalPermissions()
-            {
-                Type = "User",
-                DisplayName = "User A",
-                Alias = "ua@valid.com",
-                PermissionsToKeys = new string[] { "get" },
-                PermissionsToSecrets = new string[] { "get" },
-                PermissionsToCertificates = new string[] { "get" }
-            });
-            try
-            {
-                up.getChanges(yamlVaults, vaultsRetrieved);
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.AreEqual("An access policy has already been defined for User A in KeyVault 'RG1Test1'.", e.Message);
-            }
-
-            yamlVaults = createExpectedYamlVaults();
             yamlVaults[0].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
             try
             {
@@ -217,153 +161,136 @@ namespace RBAC
                 Assert.AreEqual(1, del.Item1.Count);
                 Assert.AreEqual(8, del.Item1[0].AccessPolicies[0].PermissionsToKeys.Length);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.Fail(e.Message);
             }
         }
+
+        [TestMethod]
+        /// <summary>
+        /// This method verifies how changes are counted and that the program handles the number of 
+        /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
+        /// </summary>
+        public void TestGetChangesInvalid()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+
+            // Check making 6 changes (first two only count as one change)
+            List<KeyVaultProperties> changedSixPermissions = createExpectedYamlVaults();
+            changedSixPermissions[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "get" };
+            changedSixPermissions[0].AccessPolicies[0].PermissionsToCertificates = new string[] { "get" };
+            changedSixPermissions[0].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
+            changedSixPermissions[0].AccessPolicies[2].PermissionsToCertificates = new string[] { "get" };
+            changedSixPermissions[0].AccessPolicies[3].PermissionsToCertificates = new string[] { "get" };
+            changedSixPermissions[1].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
+            changedSixPermissions[1].AccessPolicies[1].PermissionsToCertificates = new string[] { "get" };
+
+            List<Testing<List<KeyVaultProperties>>> changes = new List<Testing<List<KeyVaultProperties>>>()
+            {
+                new Testing<List<KeyVaultProperties>> (changedSixPermissions, $"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.")
+            };
+            foreach (Testing<List<KeyVaultProperties>> testCase in changes)
+            {
+                try
+                {
+                    //Call getChanges in beginning
+                    up.updateVaults(changedSixPermissions, vaultsRetrieved, null, null, null);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
+            }
+
+            List<KeyVaultProperties> alreadyDefinedAccessPolicy = createExpectedYamlVaults();
+            alreadyDefinedAccessPolicy[0].AccessPolicies.Add(new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get" },
+                PermissionsToSecrets = new string[] { "get" },
+                PermissionsToCertificates = new string[] { "get" }
+            });
+            List<Testing<List<KeyVaultProperties>>> listAlreadyDefinedAccessPolicies = new List<Testing<List<KeyVaultProperties>>>()
+            {
+                new Testing<List<KeyVaultProperties>> (alreadyDefinedAccessPolicy,"An access policy has already been defined for User A in KeyVault 'RG1Test1'." )
+            };
+            foreach (Testing<List<KeyVaultProperties>> testCase in listAlreadyDefinedAccessPolicies)
+            {
+                try
+                {
+                    //Call getChanges in beginning
+                    up.getChanges(testCase.testObject, vaultsRetrieved);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
+            }
+        }
+
+        [TestMethod]
         /// <summary>
         /// This method verifies that the program handles invalid KeyVaultProperties fields.
         /// </summary>
-        [TestMethod]
-        public void TestCheckVaultInvalidFields()
+        public void TestCheckVaultInvalidFieldsInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
 
-            // Vault Name null
-            KeyVaultProperties kv = new KeyVaultProperties();
-            kv.VaultName = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'VaultName' for KeyVault '{kv.VaultName}'", e.Message);
-            }
+            KeyVaultProperties vaultNameNull = new KeyVaultProperties() { VaultName = null };
+            KeyVaultProperties vaultNameEmpty = new KeyVaultProperties() { VaultName = "" };
+            KeyVaultProperties resourceGroupNameNull = new KeyVaultProperties() { ResourceGroupName = null, VaultName = "KeyVault" };
+            KeyVaultProperties resourceGroupNameEmpty = new KeyVaultProperties() { ResourceGroupName = "", VaultName = "KeyVault" };
+            KeyVaultProperties subscriptionIdNull = new KeyVaultProperties() { SubscriptionId = null, VaultName = "VaultName", ResourceGroupName = "RgName" };
+            KeyVaultProperties subscriptionIdEmpty = new KeyVaultProperties() { SubscriptionId = "", VaultName = "VaultName", ResourceGroupName = "RgName" };
+            KeyVaultProperties locationNull = new KeyVaultProperties() { Location = null, VaultName = "VaultName", ResourceGroupName = "RGName", SubscriptionId = "SubId" };
+            KeyVaultProperties locationEmpty = new KeyVaultProperties() { Location = "", VaultName = "VaultName", ResourceGroupName = "RGName", SubscriptionId = "SubId" };
+            KeyVaultProperties tenantIdNull = new KeyVaultProperties() { TenantId = null, VaultName = "VaultName", ResourceGroupName = "RGName", SubscriptionId = "SubId", Location = "Loc" };
+            KeyVaultProperties tenantIdEmpty = new KeyVaultProperties() { TenantId = "", VaultName = "VaultName", ResourceGroupName = "RGName", SubscriptionId = "SubId", Location = "Loc" };
 
-            // Vault Name empty
-            kv.VaultName = "";
-            try
+            List<Testing<KeyVaultProperties>> vaults = new List<Testing<KeyVaultProperties>>()
             {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'VaultName' for KeyVault '{kv.VaultName}'", e.Message);
-            }
+                new Testing<KeyVaultProperties> (vaultNameNull, $"Missing 'VaultName' for KeyVault '{vaultNameNull.VaultName}'" ),
+                new Testing<KeyVaultProperties> (vaultNameEmpty, $"Missing 'VaultName' for KeyVault '{vaultNameEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (resourceGroupNameNull, $"Missing 'ResourceGroupName' for KeyVault '{resourceGroupNameNull.VaultName}'"),
+                new Testing<KeyVaultProperties> (resourceGroupNameEmpty, $"Missing 'ResourceGroupName' for KeyVault '{resourceGroupNameEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (subscriptionIdNull, $"Missing 'SubscriptionId' for KeyVault '{subscriptionIdEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (subscriptionIdEmpty, $"Missing 'SubscriptionId' for KeyVault '{subscriptionIdEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (locationNull, $"Missing 'Location' for KeyVault '{locationNull.VaultName}'" ),
+                new Testing<KeyVaultProperties> (locationEmpty, $"Missing 'Location' for KeyVault '{locationEmpty.VaultName}'" ),
+                new Testing<KeyVaultProperties> (tenantIdNull, $"Missing 'TenantId' for KeyVault '{tenantIdNull.VaultName}'" ),
+                new Testing<KeyVaultProperties> (tenantIdEmpty, $"Missing 'TenantId' for KeyVault '{tenantIdEmpty.VaultName}'" ),
 
-            // Resource Group name null
-            kv.VaultName = "Vault Name";
-            kv.ResourceGroupName = null;
-            try
+            };
+            foreach (Testing<KeyVaultProperties> testCase in vaults)
             {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'ResourceGroupName' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Resource group name empty
-            kv.ResourceGroupName = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'ResourceGroupName' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Subscription id null
-            kv.ResourceGroupName = "Resource Group Name";
-            kv.SubscriptionId = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'SubscriptionId' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Subscription id empty
-            kv.SubscriptionId = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'SubscriptionId' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Location null 
-            kv.SubscriptionId = "SubscriptionId";
-            kv.Location = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'Location' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Location empty
-            kv.Location = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'Location' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Tenant id null
-            kv.Location = "Location";
-            kv.TenantId = null;
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'TenantId' for KeyVault '{kv.VaultName}'", e.Message);
-            }
-
-            // Tenant id empty
-            kv.TenantId = "";
-            try
-            {
-                up.checkVaultInvalidFields(kv);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing 'TenantId' for KeyVault '{kv.VaultName}'", e.Message);
+                try
+                {
+                    up.checkVaultInvalidFields(testCase.testObject);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
             }
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies that the program handles invalid PrincipalPermissions fields.
         /// </summary>
-        [TestMethod]
-        public void TestCheckPPFields()
+        public void TestCheckPPFieldsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            PrincipalPermissions sp = new PrincipalPermissions()
+            string vaultName = "vaultName";
+
+            PrincipalPermissions regular = new PrincipalPermissions()
             {
                 Type = "User",
                 DisplayName = "User A",
@@ -372,128 +299,138 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
-            PrincipalPermissions sp1 = new PrincipalPermissions()
+            PrincipalPermissions keysNull = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = null,
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions secretsNull = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = null,
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions certificatesNull = new PrincipalPermissions()
             {
                 Type = "User",
                 DisplayName = "User A",
                 Alias = "ua@valid.com",
                 PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
-                PermissionsToCertificates = new string[] { "get", "list" }
+                PermissionsToCertificates = null
             };
-
-            string name = "vaultName";
-
-            try
+            List<Testing<PrincipalPermissions>> vaults = new List<Testing<PrincipalPermissions>>()
             {
-                up.checkPPInvalidFields(name, sp);
-            }
-            catch
+                new Testing<PrincipalPermissions> (regular),
+                new Testing<PrincipalPermissions> (keysNull),
+                new Testing<PrincipalPermissions> (secretsNull),
+                new Testing<PrincipalPermissions> (certificatesNull)
+            };
+            foreach (Testing<PrincipalPermissions> testCase in vaults)
             {
-                Assert.Fail();
-            }
-
-            PrincipalPermissions incomplete = sp1;
-            incomplete.Type = null;
-            try
-            {
-                up.checkPPInvalidFields(name, incomplete);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing Type for {name}", e.Message);
-            }
-
-            incomplete.Type = "  ";
-            try
-            {
-                up.checkPPInvalidFields(name, incomplete);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing Type for {name}", e.Message);
-            }
-
-            incomplete.Type = sp.Type;
-            incomplete.DisplayName = null;
-            try
-
-            {
-                up.checkPPInvalidFields(name, incomplete);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
-            }
-
-            incomplete.DisplayName = " ";
-            try
-            {
-                up.checkPPInvalidFields(name, incomplete);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Missing DisplayName for {name}", e.Message);
-            }
-
-            incomplete.DisplayName = sp.DisplayName;
-            incomplete.PermissionsToKeys = null;
-            try
-            {
-                up.checkPPInvalidFields(name, incomplete);
-            }
-            catch
-            {
-                Assert.Fail();
-            }
-
-            incomplete.PermissionsToKeys = sp.PermissionsToKeys;
-            incomplete.PermissionsToSecrets = null;
-            try
-
-            {
-                up.checkPPInvalidFields(name, incomplete);
-            }
-            catch
-            {
-                Assert.Fail();
-            }
-
-            incomplete.PermissionsToSecrets = sp.PermissionsToSecrets;
-            incomplete.PermissionsToCertificates = null;
-            try
-
-            {
-                up.checkPPInvalidFields(name, incomplete);
-            }
-            catch
-            {
-                Assert.Fail();
+                try
+                {
+                    up.checkPPInvalidFields(vaultName, testCase.testObject);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
         }
 
+        [TestMethod]
+        /// <summary>
+        /// This method verifies that the program handles invalid PrincipalPermissions fields.
+        /// </summary>
+        public void TestCheckPPFieldsInvalid()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            string vaultName = "vaultName";
+
+            PrincipalPermissions typeNull = new PrincipalPermissions() {
+                Type = null,
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions typeEmpty = new PrincipalPermissions()
+            {
+                Type = "",
+                DisplayName = null,
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions displayNameNull = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = null,
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            PrincipalPermissions displayNameEmpty = new PrincipalPermissions()
+            {
+                Type = "User",
+                DisplayName = "",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore" },
+                PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
+                PermissionsToCertificates = new string[] { "get", "list" }
+            };
+            // Please Note: Alias can be null or empty
+            List<Testing<PrincipalPermissions>> ppList = new List<Testing<PrincipalPermissions>>()
+            {
+                new Testing<PrincipalPermissions> (typeNull, $"Missing Type for {vaultName}"),
+                new Testing<PrincipalPermissions> (typeEmpty, $"Missing Type for {vaultName}"),
+                new Testing<PrincipalPermissions> (displayNameNull, $"Missing DisplayName for {vaultName}"),
+                new Testing<PrincipalPermissions> (displayNameEmpty, $"Missing DisplayName for {vaultName}"),
+            };
+            foreach (Testing<PrincipalPermissions> testCase in ppList)
+            {
+                try
+                {
+                    up.checkPPInvalidFields(vaultName, testCase.testObject);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
+            }
+        }
+
+        [TestMethod]
         /// <summary>
         /// This method verifies that the number of users in a KeyVault's AccessPolicies are being counted properly and 
         /// that the program handles if the KeyVault does not contain the minimum number of users defined in Constants.cs.
         /// </summary>
-        [TestMethod]
-        public void TestUsersContained()
+        public void TestUsersContainedInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            var vaultsRetrieved = createExpectedYamlVaults();
-            var yamlVaults = createExpectedYamlVaults();
-            yamlVaults[0] = new KeyVaultProperties()
+            List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+
+            // Check UsersContained less than 2 error
+            List<KeyVaultProperties> test = createExpectedYamlVaults();
+            test[0] = new KeyVaultProperties()
             {
                 VaultName = "RG1Test1",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -516,26 +453,17 @@ namespace RBAC
                     }
                 }
             };
-
-            // Check UsersContained less than 2 error
-            try
-            {
-                up.updateVaults(yamlVaults, vaultsRetrieved, null, null, null);
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"KeyVault 'RG1Test1' does not contain at least two users. Skipped.", e.Message);
-            }
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies that the program handles invalid or repeated permissions.
         /// </summary>
-        [TestMethod]
-        public void TestCheckValidPermissions()
+        public void TestCheckValidPermissionsInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            PrincipalPermissions sp = new PrincipalPermissions
+
+            PrincipalPermissions keyPermissionInvalid = new PrincipalPermissions
             {
                 Type = "User",
                 DisplayName = "User A",
@@ -544,90 +472,79 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
             };
-
-            // Check invalid key permission
-            try
+            PrincipalPermissions secretPermissionInvalid = new PrincipalPermissions
             {
-                up.checkValidPermissions(sp);
-                Assert.Fail();
-            }
-            catch (Exception e)
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { },
+                PermissionsToSecrets = new string[] { "managecontacts", "list" },
+                PermissionsToCertificates = new string[] { }
+            };
+            PrincipalPermissions certificatePermissionInvalid = new PrincipalPermissions
             {
-                Assert.AreEqual("Invalid key permission 'gets'", e.Message);
-            }
-
-            PrincipalPermissions invalid = sp;
-            // Check invalid secret permission
-            invalid.PermissionsToKeys = new string[] { };
-            invalid.PermissionsToSecrets = new string[] { "managecontacts", "list" };
-            try
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { },
+                PermissionsToSecrets = new string[] {},
+                PermissionsToCertificates = new string[] { "managecontactz", "managecontactz" }
+            };
+            PrincipalPermissions keyPermissionRepeated = new PrincipalPermissions
             {
-                up.checkValidPermissions(invalid);
-                Assert.Fail();
-            }
-            catch (Exception e)
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { "read", "read", "purge", "purge" },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { }
+            };
+            PrincipalPermissions secretPermissionRepeatedWithSpacing = new PrincipalPermissions
             {
-                Assert.AreEqual("Invalid secret permission 'managecontacts'", e.Message);
-            }
-
-            // Check invalid certificate permission
-            invalid.PermissionsToSecrets = new string[] { };
-            invalid.PermissionsToCertificates = new string[] { "managecontactz", "managecontactz" };
-            try
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { },
+                PermissionsToSecrets = new string[] { "get", "      get" },
+                PermissionsToCertificates = new string[] { }
+            };
+            PrincipalPermissions certificatePermissionRepeatedDisregardingCase = new PrincipalPermissions
             {
-                up.checkValidPermissions(invalid);
-                Assert.Fail();
-            }
-            catch (Exception e)
+                Type = "User",
+                DisplayName = "User A",
+                Alias = "ua@valid.com",
+                PermissionsToKeys = new string[] { },
+                PermissionsToSecrets = new string[] { },
+                PermissionsToCertificates = new string[] { "all - PURGE", "all - purge" }
+        };
+            List<Testing<PrincipalPermissions>> ppList = new List<Testing<PrincipalPermissions>>()
             {
-                Assert.AreEqual("Invalid certificate permission 'managecontactz'", e.Message);
-            }
-
-            // Check repeated key permissions
-            invalid.PermissionsToCertificates = new string[] { };
-            invalid.PermissionsToKeys = new string[] { "read", "read", "purge", "purge" };
-            try
+                new Testing<PrincipalPermissions> (keyPermissionInvalid, "Invalid key permission 'gets'"),
+                new Testing<PrincipalPermissions> (secretPermissionInvalid, "Invalid secret permission 'managecontacts'"),
+                new Testing<PrincipalPermissions> (certificatePermissionInvalid, "Invalid certificate permission 'managecontactz'"),
+                new Testing<PrincipalPermissions> (keyPermissionRepeated, "Key permission(s) 'read, purge' repeated"),
+                new Testing<PrincipalPermissions> (secretPermissionRepeatedWithSpacing, "Secret permission(s) 'get' repeated"),
+                new Testing<PrincipalPermissions> (certificatePermissionRepeatedDisregardingCase, "Certificate permission(s) 'all - purge' repeated")
+            };
+            foreach (Testing<PrincipalPermissions> testCase in ppList)
             {
-                up.checkValidPermissions(invalid);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Key permission(s) 'read, purge' repeated", e.Message);
-            }
-
-            // Check repeated secret permissions, with different spacing
-            invalid.PermissionsToKeys = new string[] { };
-            invalid.PermissionsToSecrets = new string[] { "get", "      get" };
-            try
-            {
-                up.checkValidPermissions(invalid);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual("Secret permission(s) 'get' repeated", e.Message);
-            }
-
-            // Check repeated certificate permissions, disregarding case
-            invalid.PermissionsToSecrets = new string[] { };
-            invalid.PermissionsToCertificates = new string[] { "all - PURGE", "all - purge" };
-            try
-            {
-                up.checkValidPermissions(invalid);
-                Assert.Fail();
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual($"Certificate permission(s) 'all - purge' repeated", e.Message);
+                try
+                {
+                    up.checkValidPermissions(testCase.testObject);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    Assert.AreEqual(testCase.error, e.Message);
+                }
             }
         }
 
-        /// <summary>
-        /// This method verifies that the shorthands are translated to their respective permissions properly.
-        /// </summary>
         [TestMethod]
-        public void TestTranslateShorthands()
+        /// <summary>
+        /// This method verifies that the shorthands are translated to their respective 
+        /// </summary>
+        public void TestTranslateShorthandsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             var pp = new PrincipalPermissions
@@ -659,11 +576,11 @@ namespace RBAC
             Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains) && pp.PermissionsToCertificates.Length == Constants.ALL_CERTIFICATE_PERMISSIONS.Length);
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies that "all" shorthand cannot be repeated.
         /// </summary>
-        [TestMethod]
-        public void TestTranslateShorthand()
+        public void TestTranslateShorthandInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
@@ -678,11 +595,11 @@ namespace RBAC
             }
         }
 
+        [TestMethod]
         /// <summary>
         /// This method verifies that the correct permissions are being identified by the shorthand keyword.
         /// </summary>
-        [TestMethod]
-        public void TestGetShorthandPermissions()
+        public void TestGetShorthandPermissionsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
@@ -719,17 +636,17 @@ namespace RBAC
         /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>
         /// <returns>The list of KeyVaultProperties from the deserialized yaml</returns>
-        private List<KeyVaultProperties> createExpectedYamlVaults()
+        public static List<KeyVaultProperties> createExpectedYamlVaults()
         {
-            var exp = new List<KeyVaultProperties>();
+            var expectedYamlVaults = new List<KeyVaultProperties>();
 
-            exp.Add(new KeyVaultProperties
+            expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG1Test1",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -770,14 +687,13 @@ namespace RBAC
                     }
                 }
             });
-
-            exp.Add(new KeyVaultProperties
+            expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG1Test2",
                 ResourceGroupName = "RG1",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -809,21 +725,20 @@ namespace RBAC
                     }
                 }
             });
-
-            exp.Add(new KeyVaultProperties
+            expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG2Test1",
                 ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
                     {
-                        Type = "Group",
-                        DisplayName = "g1",
-                        Alias = "g1@valid.com",
+                        Type = "Application",
+                        DisplayName = "a1",
+                        Alias = "",
                         PermissionsToKeys = new string[] {  "get", "list", "update", "create", "import", "delete", "recover", "backup", "restore", "decrypt", "encrypt", "unwrapkey", "wrapkey", "verify", "sign", "purge"},
                         PermissionsToSecrets = new string[] {  "get" },
                         PermissionsToCertificates = new string[] { }
@@ -848,14 +763,13 @@ namespace RBAC
                     }
                 }
             });
-
-            exp.Add(new KeyVaultProperties
+            expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG2Test2",
                 ResourceGroupName = "RG2",
-                SubscriptionId = "valid",
+                SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Location = "eastus",
-                TenantId = "valid",
+                TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = new List<PrincipalPermissions>()
                 {
                     new PrincipalPermissions()
@@ -896,8 +810,7 @@ namespace RBAC
                     }
                 }
             });
-
-            return exp;
+            return expectedYamlVaults;
         }
     }
 }
