@@ -41,7 +41,16 @@ namespace RBAC
             // User
             try
             {
-                var user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                User user = null;
+                if (graphClient.GetType() == typeof(TestGraphClient))
+                {
+                    var client = (TestGraphClient)graphClient;
+                    user = (client.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
+                else
+                {
+                    user = (graphClient.Users.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
                 data["Type"] = "User";
                 data["DisplayName"] = user.DisplayName;
                 data["Alias"] = user.UserPrincipalName;
@@ -52,7 +61,16 @@ namespace RBAC
             // Group
             try
             {
-                var group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                Group group = null;
+                if(graphClient.GetType() == typeof(TestGraphClient))
+                {
+                    var client = (TestGraphClient)graphClient;
+                    group = (client.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
+                else
+                {
+                    group = (graphClient.Groups.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
                 data["Type"] = "Group";
                 data["DisplayName"] = group.DisplayName; 
                 data["Alias"] = group.Mail;
@@ -63,7 +81,16 @@ namespace RBAC
             // Application
             try
             {
-                var app = (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                Application app = null;
+                if (graphClient.GetType() == typeof(TestGraphClient))
+                {
+                    var client = (TestGraphClient)graphClient;
+                    app = (client.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
+                else
+                {
+                    app = (graphClient.Applications.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
                 data["Type"] = "App";
                 data["DisplayName"] = app.DisplayName;
                 return data;
@@ -73,7 +100,16 @@ namespace RBAC
             // Service Principal
             try
             {
-                var sp = (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                ServicePrincipal sp = null;
+                if (graphClient.GetType() == typeof(TestGraphClient))
+                {
+                    var client = (TestGraphClient)graphClient;
+                    sp = (client.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
+                else
+                {
+                    sp = (graphClient.ServicePrincipals.Request().Filter($"Id eq '{accessPol.ObjectId}'").GetAsync().Result)[0];
+                }
                 data["Type"] = "Service Principal";
                 data["DisplayName"] = sp.DisplayName;
                 return data;

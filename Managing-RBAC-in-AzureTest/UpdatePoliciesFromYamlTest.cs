@@ -1,5 +1,3 @@
-
-using Managing_RBAC_in_AzureTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -198,6 +196,7 @@ namespace RBAC
                 Assert.AreEqual(1, del.Item2);
                 Assert.AreEqual(1, del.Item1.Count);
                 Assert.AreEqual(8, del.Item1[0].AccessPolicies[0].PermissionsToKeys.Length);
+                Assert.AreEqual(0, up.updateVaults(vaultsRetrieved, vaultsRetrieved, null, null, null).Count);
             }
             catch (Exception e)
             {
@@ -669,18 +668,37 @@ namespace RBAC
         public void TestTranslateShorthandInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            try
+            List<Testing<string[]>> cases = new List<Testing<string[]>>
             {
-                var a = up.translateShorthand("all", "Key", new string[] { "all", "all - read" }, Constants.ALL_KEY_PERMISSIONS,
-                Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
-                Assert.Fail();
-            }
-            catch (Exception e)
+                new Testing<string[]>(new string[] { "all ", "all - read" }, "Key 'all' permission is duplicated"),
+                new Testing<string[]>(new string[] { "all ", "read" }, "'All' permission removes need for other Key permissions"),
+                new Testing<string[]>(new string[] { "read ", "get" }, "get, list permissions are already included in Key 'read' permission"),
+                new Testing<string[]>(new string[] { "read - create"}, "Remove values could not be recognized in Key permission 'read - <create>'"),
+                new Testing<string[]>(new string[] { "read - list", "get" }, "get permissions are already included in Key 'read' permission"),
+            };
+            foreach(Testing<string[]> t in cases)
             {
-                Assert.AreEqual("Key 'all' permission is duplicated", e.Message);
+                try
+                {
+                    up.translateShorthand(t.testObject[0].Substring(0, t.testObject[0].IndexOf(" ")), "Key", t.testObject, t.testObject[0].StartsWith("a") ? Constants.ALL_KEY_PERMISSIONS : Constants.READ_KEY_PERMISSIONS,
+                        Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+                    Assert.Fail();
+                }
+                catch(Exception e)
+                {
+                    Assert.AreEqual(t.error, e.Message);
+                }
             }
         }
-
+        [TestMethod]
+        public void TestTranslateShorthandValid()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            Testing<string[]> case1 = new Testing<string[]>(new string[] { "all - read, write, storage, crypto" }, "purge");
+            var res = up.translateShorthand("all", "Key", case1.testObject, Constants.ALL_KEY_PERMISSIONS, Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
+            Assert.AreEqual(1, res.Length);
+            Assert.AreEqual(case1.error, res[0]);
+        }
         /// <summary>
         /// Verifies that the correct permissions are being identified by the shorthand keyword.
         /// </summary>
@@ -718,12 +736,104 @@ namespace RBAC
             Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
         }
         [TestMethod]
-        public void TestVerifySecurityPrincipal()
+        public void TestValidVerifySecurityPrincipal()
         {
             var up = new UpdatePoliciesFromYaml(true);
             var yaml = createExpectedYamlVaults();
-            var res = up.verifySecurityPrincipal(yaml[0].AccessPolicies[0], "group", new TestGraphClient(new MsalAuthenticationProvider()));
-            Assert.AreEqual("g1", res["ObjectId"]);
+            List<Testing<Dictionary<string, string>>> list = new List<Testing<Dictionary<string, string>>> { 
+                new Testing<Dictionary<string, string>>(up.verifySecurityPrincipal(yaml[0].AccessPolicies[0], "group", new TestGraphClient(new MsalAuthenticationProvider())), "g1"),
+                new Testing<Dictionary<string, string>>(up.verifySecurityPrincipal(yaml[0].AccessPolicies[1], "user", new TestGraphClient(new MsalAuthenticationProvider())), "ua"),
+                new Testing<Dictionary<string, string>>(up.verifySecurityPrincipal(yaml[0].AccessPolicies[2], "user", new TestGraphClient(new MsalAuthenticationProvider())), "ub"),
+                new Testing<Dictionary<string, string>>(up.verifySecurityPrincipal(yaml[1].AccessPolicies[0], "service principal", new TestGraphClient(new MsalAuthenticationProvider())), "SP1"),
+                new Testing<Dictionary<string, string>>(up.verifySecurityPrincipal(yaml[2].AccessPolicies[0], "application", new TestGraphClient(new MsalAuthenticationProvider())), "a1")
+            };
+            
+            foreach(Testing<Dictionary<string,string>> t in list)
+            {
+                Assert.AreEqual(t.testObject["ObjectId"], t.error);
+            }
+        }
+        [TestMethod]
+        public void TestInvalidVerifySecurityPrincipal()
+        {
+            var up = new UpdatePoliciesFromYaml(true);
+            var tgc = new TestGraphClient(new MsalAuthenticationProvider());
+            var yaml = createExpectedYamlVaults();
+
+            var noAlias = createExpectedYamlVaults()[0].AccessPolicies[1];
+            noAlias.Alias = "";
+            var badDn = yaml[0].AccessPolicies[1];
+            badDn.DisplayName = "user";
+            var badAlias = yaml[0].AccessPolicies[2];
+            badAlias.Alias = "notexist";
+
+            var noAliasGr = createExpectedYamlVaults()[0].AccessPolicies[0];
+            noAliasGr.Alias = "";
+            var badDnGr = yaml[0].AccessPolicies[0];
+            badDnGr.DisplayName = "group";
+            var badAliasGr = createExpectedYamlVaults()[0].AccessPolicies[0];
+            badAliasGr.Alias = "notexist";
+
+            var appAlias = yaml[2].AccessPolicies[0];
+            appAlias.Alias = "app";
+            var badAppName = createExpectedYamlVaults()[2].AccessPolicies[0];
+            badAppName.DisplayName = "notexist";
+
+            var spAlias = yaml[1].AccessPolicies[0];
+            spAlias.Alias = "sp";
+            var badSpName = createExpectedYamlVaults()[1].AccessPolicies[0];
+            badSpName.DisplayName = "notexist";
+
+            var badType = createExpectedYamlVaults()[1].AccessPolicies[0];
+            badType.Type = "unknown";
+            List<Testing<PrincipalPermissions>> list = new List<Testing<PrincipalPermissions>> { 
+                new Testing<PrincipalPermissions>(noAlias, "Alias is required for User A. User skipped."),
+                new Testing<PrincipalPermissions>(badAlias, "Could not find User with Alias 'notexist'. User skipped."),
+                new Testing<PrincipalPermissions>(badDn, "The DisplayName 'user' is incorrect and cannot be recognized. User skipped."),
+                new Testing<PrincipalPermissions>(noAliasGr, "Alias is required for g1. Group skipped."),
+                new Testing<PrincipalPermissions>(badAliasGr, "Could not find Group with DisplayName 'g1'. Group skipped."),
+                new Testing<PrincipalPermissions>(badDnGr, "The DisplayName 'group' is incorrect and cannot be recognized. Group skipped."),
+                new Testing<PrincipalPermissions>(appAlias, "The Alias 'app' should not be defined and cannot be recognized for a1. Application skipped."),
+                new Testing<PrincipalPermissions>(badAppName, "Could not find Application with DisplayName 'notexist'. Application skipped."),
+                new Testing<PrincipalPermissions>(spAlias, "The Alias 'sp' should not be defined and cannot be recognized for SP1. Service Principal skipped."),
+                new Testing<PrincipalPermissions>(badSpName, "Could not find ServicePrincipal with DisplayName 'notexist'. Service Principal skipped."),
+                new Testing<PrincipalPermissions>(badType, "'unknown' is not a valid type for SP1. Valid types are 'User', 'Group', 'Application', or 'Service Principal'. Skipped!")
+            };
+            foreach(Testing<PrincipalPermissions> t in list)
+            {
+                up.verifySecurityPrincipal(t.testObject, t.testObject.Type.ToLower(), tgc);
+                Assert.AreEqual(up.error, t.error);
+            }
+
+        }
+        [TestMethod]
+        public void TestUpdateVaults()
+        {
+            var up = new UpdatePoliciesFromYaml(true);
+            var tgc = new TestGraphClient(new MsalAuthenticationProvider());
+            var tkvm = new TestKVMClient();
+            var vaultsRetrieved = createExpectedYamlVaults();
+            var yamlVaults = createExpectedYamlVaults();
+            yamlVaults[0].AccessPolicies[0].PermissionsToKeys = new string[] { "list", "update", "create", "import", "delete", "recover", "backup", "restore" };
+            yamlVaults[0].AccessPolicies[0].PermissionsToCertificates = new string[] { "list", "update", "create", "import", "delete", "recover", "backup", "restore", "managecontacts", "manageissuers", "getissuers", "listissuers", "setissuers", "deleteissuers" };
+            yamlVaults[0].AccessPolicies[0].PermissionsToSecrets = new string[] { "list", "set", "delete", "recover", "backup", "restore" };
+            var dict = new Dictionary<string, string>();
+            dict["tenantId"] = "00000000-0000-0000-0000-000000000000";
+            var res = up.updateVaults(yamlVaults, vaultsRetrieved, tkvm, dict, tgc);
+
+            Assert.AreEqual(1, res.Count());
+            Assert.AreEqual(1, res[0].AccessPolicies.Count);
+            Assert.AreEqual("get" , res[0].AccessPolicies[0].PermissionsToKeys[0].ToLower());
+            Assert.AreEqual("get", res[0].AccessPolicies[0].PermissionsToSecrets[0].ToLower());
+            Assert.AreEqual("get", res[0].AccessPolicies[0].PermissionsToCertificates[0].ToLower());
+
+            var updated = (TestVaults)tkvm.Vaults;
+            Assert.AreEqual(1, updated.Updated.Count);
+            Assert.AreEqual(4, updated.Updated[0].AccessPolicies.Count());
+            Assert.AreEqual(8, updated.Updated[0].AccessPolicies[0].PermissionsToKeys.Length);
+            Assert.AreEqual(6, updated.Updated[0].AccessPolicies[0].PermissionsToSecrets.Length);
+            Assert.AreEqual(14, updated.Updated[0].AccessPolicies[0].PermissionsToCertificates.Length);
+
         }
         /// <summary>
         /// Creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.

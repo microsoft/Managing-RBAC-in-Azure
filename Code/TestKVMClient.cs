@@ -11,9 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
-namespace Managing_RBAC_in_AzureTest
+namespace RBAC
 {
-    class TestKVMClient : KeyVaultManagementClient
+    public class TestKVMClient : KeyVaultManagementClient
     {
         public TestKVMClient()
         {
@@ -24,7 +24,7 @@ namespace Managing_RBAC_in_AzureTest
         public new string SubscriptionId { set { TestKVMClient.subid = value; } }
         public static string subid = "00000000-0000-0000-0000-000000000000";
     }
-    class TestVaults : IVaultsOperations
+    public class TestVaults : IVaultsOperations
     {
         public TestVaults()
         {
@@ -50,21 +50,13 @@ namespace Managing_RBAC_in_AzureTest
 
         public Task<AzureOperationResponse<Vault>> CreateOrUpdateWithHttpMessagesAsync(string resourceGroupName, string vaultName, VaultCreateOrUpdateParameters parameters, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default)
         {
-            var aps = new List<PrincipalPermissions>();
-            foreach (AccessPolicyEntry ap in parameters.Properties.AccessPolicies)
+            return Task<AzureOperationResponse<Vault>>.Factory.StartNew(() =>
             {
-                aps.Add(new PrincipalPermissions(ap, new TestGraphClient(new MsalAuthenticationProvider())));
-            }
-            Updated.Add(new KeyVaultProperties
-            {
-                ResourceGroupName = resourceGroupName,
-                VaultName = vaultName,
-                Location = "eastus",
-                SubscriptionId = "00000000-0000-0000-0000-000000000000",
-                TenantId = "00000000-0000-0000-0000-000000000000",
-                AccessPolicies = aps,
-            }) ;
-            return null;
+                return new AzureOperationResponse<Vault>
+                {
+                    Body = CreateOrUpdateAsync(resourceGroupName, vaultName, parameters).Result
+                };
+            });
         }
         public Task<Vault> CreateOrUpdateAsync(string resourceGroupName, string vaultName, VaultCreateOrUpdateParameters parameters, CancellationToken cancellationToken = default)
         {
@@ -82,7 +74,10 @@ namespace Managing_RBAC_in_AzureTest
                 TenantId = "00000000-0000-0000-0000-000000000000",
                 AccessPolicies = aps,
             });
-            return null;
+            return Task<Vault>.Factory.StartNew(() =>
+            {
+                return null;
+            });
         }
         public Task<AzureOperationResponse> DeleteWithHttpMessagesAsync(string resourceGroupName, string vaultName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default)
         {

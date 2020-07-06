@@ -1,4 +1,3 @@
-using Managing_RBAC_in_AzureTest;
 using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;

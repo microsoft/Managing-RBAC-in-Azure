@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Managing_RBAC_in_AzureTest
+namespace RBAC
 {
     public class TestGraphClient : GraphServiceClient
     {
@@ -90,7 +90,7 @@ namespace Managing_RBAC_in_AzureTest
 
         public IGraphServiceServicePrincipalsCollectionRequest Filter(string value)
         {
-            Id = value.Substring(value.IndexOf('\''));
+            Id = value.Substring(value.IndexOf('\'') + 1);
             return this;
         }
 
@@ -98,7 +98,7 @@ namespace Managing_RBAC_in_AzureTest
         {
             Task<IGraphServiceServicePrincipalsCollectionPage> ret = Task<IGraphServiceServicePrincipalsCollectionPage>.Factory.StartNew(() =>
             {
-                if (Id.StartsWith("sp1"))
+                if (Id.ToLower().StartsWith("sp1"))
                 {
                     var page = new GraphServiceServicePrincipalsCollectionPage();
                     page.Add(new ServicePrincipal
@@ -110,7 +110,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not sp");
+                    throw new Exception("out of range sp");
                 }
             });
             return ret;
@@ -321,18 +321,18 @@ namespace Managing_RBAC_in_AzureTest
         {
             Task<ServicePrincipal> ret = Task<ServicePrincipal>.Factory.StartNew(() =>
             {
-                if (id.StartsWith("sp1"))
+                if (id.ToLower().StartsWith("sp1"))
                 {
                     var page = new ServicePrincipal
                     {
-                        Id = "sp1",
-                        DisplayName = "sp1"
+                        Id = "SP1",
+                        DisplayName = "SP1"
                     };
                     return page;
                 }
                 else
                 {
-                    throw new Exception("Not user");
+                    throw new Exception("out of range sp");
                 }
             });
             return ret;
@@ -438,7 +438,7 @@ namespace Managing_RBAC_in_AzureTest
 
         public IGraphServiceGroupsCollectionRequest Filter(string value)
         {
-            Id = value.Substring(value.IndexOf('\''));
+            Id = value.Substring(value.IndexOf('\'') + 1);
             return this;
         }
 
@@ -459,7 +459,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not user");
+                    throw new Exception("out of range group");
                 }
             });
             return ret;
@@ -736,7 +736,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not group");
+                    throw new Exception("out of range group");
                 }
             });
             return ret;
@@ -842,7 +842,7 @@ namespace Managing_RBAC_in_AzureTest
 
         public IGraphServiceApplicationsCollectionRequest Filter(string value)
         {
-            Id = value.Substring(value.IndexOf('\''));
+            Id = value.Substring(value.IndexOf('\'') + 1);
             return this;
         }
 
@@ -862,7 +862,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not app");
+                    throw new Exception("out of range app");
                 }
             });
             return ret;
@@ -1078,7 +1078,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not Application");
+                    throw new Exception("out of range Application");
                 }
             });
             return ret;
@@ -1182,7 +1182,7 @@ namespace Managing_RBAC_in_AzureTest
 
         public IGraphServiceUsersCollectionRequest Filter(string value)
         {
-            Id = value.Substring(value.IndexOf('\''));
+            Id = value.Substring(value.IndexOf('\'') + 1);
             return this;
         }
 
@@ -1224,7 +1224,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not user");
+                    throw new Exception("ResourceNotFound user");
                 }
             });
             return ret;
@@ -1576,7 +1576,7 @@ namespace Managing_RBAC_in_AzureTest
                 }
                 else
                 {
-                    throw new Exception("Not user");
+                    throw new Exception("ResourceNotFound user");
                 }
             });
             return ret;
