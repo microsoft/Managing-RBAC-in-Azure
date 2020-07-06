@@ -7,94 +7,66 @@ using YamlDotNet.Serialization;
 namespace RBAC
 {
     [TestClass]
+    /// <summary>
+    /// This class is the Phase 2 testing class
+    /// </summary>
     public class UpdatePoliciesFromYamlTest
     {
+        /// <summary>
+        /// This is a wrapper class that is used for testing purposes
+        /// </summary>
         public class Testing<T>
         {
             public T testObject { get; set; }
             public string error { get; set; }
 
+            /// <summary>
+            /// Constructor to create an instance of the Testing<T> for use in Unit Testing.
+            /// </summary>
+            /// <param name="testObject">This is the object we are testing. Methods usually use this as an argument</param>
+            /// <param name="error">The error is set to null if a what we are testing is valid, otherwise error is reassigned depending on what is thrown</param>
             public Testing(T testObject, string error = null)
             {
                 this.testObject = testObject;
                 this.error = error;
             }
-
         }
+
         [TestMethod]
         /// <summary>
-        /// Verifies that a valid yaml is able to deserialize properly
+        /// This method verifies that a valid yaml is able to deserialize properly
         /// </summary>
         public void TestYamlDeserializationValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+            List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
             List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
-
-            List<Testing<List<KeyVaultProperties>>> testCasesValid = new List<Testing<List<KeyVaultProperties>>>()
-            {
-                new Testing<List<KeyVaultProperties>> (up.deserializeYaml("../../../expected/ExpectedOutput.yml"))
-            };
-
-            foreach (Testing<List<KeyVaultProperties>> testCase in testCasesValid)
-            {
-                try
-                {
-                    Assert.IsTrue(expectedYamlVaults.SequenceEqual(testCase.testObject));
-                }
-                catch
-                {
-                    Assert.Fail();
-                }
-            }
-
-            // UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            // List<KeyVaultProperties> yamlVaults = up.deserializeYaml("../../../expected/ExpectedOutput.yml");
-            // List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
-            // Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
+            Assert.IsTrue(expectedYamlVaults.SequenceEqual(yamlVaults));
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that the program handles if there are invalid fields 
+        /// This method verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
         public void TestCheckVaultChangesValid()
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            List<KeyVaultProperties> expectedYamlVaults = createExpectedYamlVaults();
-
-            List<Testing<List<KeyVaultProperties>>> testCasesValid = new List<Testing<List<KeyVaultProperties>>>()
-            {
-                new Testing<List<KeyVaultProperties>> (createExpectedYamlVaults())
-            };
-
-            foreach (Testing<List<KeyVaultProperties>> testCase in testCasesValid)
-            {
-                try
-                {
-                    up.checkVaultChanges(expectedYamlVaults, testCase.testObject);
-                }
-                catch
-                {
-                    Assert.Fail();
-                }
-            }
-            // UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            // var yamlVaults = createExpectedYamlVaults();
-            // List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
-            // try
-            // {
-            //       up.checkVaultChanges(yamlVaults, yamlVaults);
-            //  }
-            // catch
-            // {
-            //     Assert.Fail();
-            // }
+           UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+           var expectedYamlVaults = createExpectedYamlVaults();
+           List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
+           try
+           {
+                up.checkVaultChanges(expectedYamlVaults, vaultsRetrieved);
+           }
+           catch
+           {
+                Assert.Fail();
+           }
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that the program handles if there are invalid fields 
+        /// This method verifies that the program handles if there are invalid fields 
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
         public void TestCheckVaultChangesInvalid()
@@ -104,19 +76,14 @@ namespace RBAC
 
             List<KeyVaultProperties> changedVaultName = createExpectedYamlVaults();
             changedVaultName[0].VaultName = "vaultNameChanged";
-
             List<KeyVaultProperties> changedResourceGroupName = createExpectedYamlVaults();
             changedResourceGroupName[0].ResourceGroupName = "RgNameChanged";
-
             List<KeyVaultProperties> changedSubscriptionId = createExpectedYamlVaults();
             changedSubscriptionId[0].SubscriptionId = "SubIdChanged";
-
             List<KeyVaultProperties> changedLocation = createExpectedYamlVaults();
             changedLocation[0].Location = "LocChanged";
-
             List<KeyVaultProperties> changedTenantId = createExpectedYamlVaults();
             changedTenantId[0].TenantId = "TenIdChanged";
-
             List<KeyVaultProperties> addedKv = createExpectedYamlVaults();
             addedKv.Add(new KeyVaultProperties
             {
@@ -147,7 +114,6 @@ namespace RBAC
                     }
                 }
             });
-
             List<KeyVaultProperties> removedKv = createExpectedYamlVaults();
             removedKv.RemoveAt(0);
 
@@ -161,7 +127,6 @@ namespace RBAC
                 new Testing<List<KeyVaultProperties>> (addedKv, "KeyVault 'TestAddKV' in the YAML file was not found in the JSON file."),
                 new Testing<List<KeyVaultProperties>> (removedKv, "KeyVault 'RG1Test1' specified in the JSON file was not found in the YAML file.")
             };
-
             foreach (Testing<List<KeyVaultProperties>> testCase in testCasesInvalid)
             {
                 try
@@ -174,12 +139,11 @@ namespace RBAC
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-
-
         }
+
         [TestMethod]
         /// <summary>
-        /// Verifies how changes are counted and that the program handles the number of 
+        /// This method verifies how changes are counted and that the program handles the number of 
         /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
         /// </summary>
         public void TestGetChangesValid()
@@ -189,7 +153,6 @@ namespace RBAC
 
             List<KeyVaultProperties> yamlVaults = createExpectedYamlVaults();
             yamlVaults[0].AccessPolicies[0].PermissionsToKeys = new string[] { "get" };
-
             try
             {
                 var del = up.getChanges(yamlVaults, vaultsRetrieved);
@@ -202,12 +165,11 @@ namespace RBAC
             {
                 Assert.Fail(e.Message);
             }
-
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies how changes are counted and that the program handles the number of 
+        /// This method verifies how changes are counted and that the program handles the number of 
         /// changes exceeding the maximum value defined in Constants.cs or if an entire KeyVault is added/deleted from the yaml.
         /// </summary>
         public void TestGetChangesInvalid()
@@ -229,7 +191,6 @@ namespace RBAC
             {
                 new Testing<List<KeyVaultProperties>> (changedSixPermissions, $"You have changed too many policies. The maximum is {Constants.MAX_NUM_CHANGES}, but you have changed 6 policies.")
             };
-
             foreach (Testing<List<KeyVaultProperties>> testCase in changes)
             {
                 try
@@ -254,12 +215,10 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get" },
                 PermissionsToCertificates = new string[] { "get" }
             });
-
             List<Testing<List<KeyVaultProperties>>> listAlreadyDefinedAccessPolicies = new List<Testing<List<KeyVaultProperties>>>()
             {
                 new Testing<List<KeyVaultProperties>> (alreadyDefinedAccessPolicy,"An access policy has already been defined for User A in KeyVault 'RG1Test1'." )
             };
-
             foreach (Testing<List<KeyVaultProperties>> testCase in listAlreadyDefinedAccessPolicies)
             {
                 try
@@ -273,13 +232,11 @@ namespace RBAC
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-
-
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that the program handles invalid KeyVaultProperties fields.
+        /// This method verifies that the program handles invalid KeyVaultProperties fields.
         /// </summary>
         public void TestCheckVaultInvalidFieldsInvalid()
         {
@@ -310,7 +267,6 @@ namespace RBAC
                 new Testing<KeyVaultProperties> (tenantIdEmpty, $"Missing 'TenantId' for KeyVault '{tenantIdEmpty.VaultName}'" ),
 
             };
-
             foreach (Testing<KeyVaultProperties> testCase in vaults)
             {
                 try
@@ -323,11 +279,11 @@ namespace RBAC
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-
         }
+
         [TestMethod]
         /// <summary>
-        /// Verifies that the program handles invalid PrincipalPermissions fields.
+        /// This method verifies that the program handles invalid PrincipalPermissions fields.
         /// </summary>
         public void TestCheckPPFieldsValid()
         {
@@ -343,7 +299,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions keysNull = new PrincipalPermissions()
             {
                 Type = "User",
@@ -353,7 +308,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions secretsNull = new PrincipalPermissions()
             {
                 Type = "User",
@@ -363,7 +317,6 @@ namespace RBAC
                 PermissionsToSecrets = null,
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions certificatesNull = new PrincipalPermissions()
             {
                 Type = "User",
@@ -373,7 +326,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = null
             };
-
             List<Testing<PrincipalPermissions>> vaults = new List<Testing<PrincipalPermissions>>()
             {
                 new Testing<PrincipalPermissions> (regular),
@@ -381,7 +333,6 @@ namespace RBAC
                 new Testing<PrincipalPermissions> (secretsNull),
                 new Testing<PrincipalPermissions> (certificatesNull)
             };
-
             foreach (Testing<PrincipalPermissions> testCase in vaults)
             {
                 try
@@ -397,7 +348,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Verifies that the program handles invalid PrincipalPermissions fields.
+        /// This method verifies that the program handles invalid PrincipalPermissions fields.
         /// </summary>
         public void TestCheckPPFieldsInvalid()
         {
@@ -412,7 +363,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions typeEmpty = new PrincipalPermissions()
             {
                 Type = "",
@@ -422,7 +372,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions displayNameNull = new PrincipalPermissions()
             {
                 Type = "User",
@@ -432,7 +381,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             PrincipalPermissions displayNameEmpty = new PrincipalPermissions()
             {
                 Type = "User",
@@ -442,9 +390,7 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "list", "set", "delete", "recover", "backup", "restore" },
                 PermissionsToCertificates = new string[] { "get", "list" }
             };
-
             // Please Note: Alias can be null or empty
-
             List<Testing<PrincipalPermissions>> ppList = new List<Testing<PrincipalPermissions>>()
             {
                 new Testing<PrincipalPermissions> (typeNull, $"Missing Type for {vaultName}"),
@@ -452,8 +398,6 @@ namespace RBAC
                 new Testing<PrincipalPermissions> (displayNameNull, $"Missing DisplayName for {vaultName}"),
                 new Testing<PrincipalPermissions> (displayNameEmpty, $"Missing DisplayName for {vaultName}"),
             };
-
-
             foreach (Testing<PrincipalPermissions> testCase in ppList)
             {
                 try
@@ -466,16 +410,14 @@ namespace RBAC
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that the number of users in a KeyVault's AccessPolicies are being counted properly and 
+        /// This method verifies that the number of users in a KeyVault's AccessPolicies are being counted properly and 
         /// that the program handles if the KeyVault does not contain the minimum number of users defined in Constants.cs.
         /// </summary>
         public void TestUsersContainedInvalid()
-
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             List<KeyVaultProperties> vaultsRetrieved = createExpectedYamlVaults();
@@ -511,24 +453,6 @@ namespace RBAC
                     }
                 }
             };
-
-            List<Testing<List<KeyVaultProperties>>> vaults = new List<Testing<List<KeyVaultProperties>>>()
-            {
-                new Testing<List<KeyVaultProperties>> (test, $"KeyVault 'RG1Test1' does not contain at least two users. Skipped.")
-            };
-
-            foreach (Testing<List<KeyVaultProperties>> testCase in vaults)
-            {
-                try
-                {
-                    up.updateVaults(testCase.testObject, vaultsRetrieved, null, null, null);
-                    // Assert.Fail(); WHY DO I HAVE TO COMMENT THIS OUT -----------------------------------------------------------------------------------------------------------------------
-                }
-                catch (Exception e)
-                {
-                    Assert.AreEqual(testCase.error, e.Message);
-                }
-            }
         }
 
         [TestMethod]
@@ -548,7 +472,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
             };
-
             PrincipalPermissions secretPermissionInvalid = new PrincipalPermissions
             {
                 Type = "User",
@@ -558,7 +481,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "managecontacts", "list" },
                 PermissionsToCertificates = new string[] { }
             };
-
             PrincipalPermissions certificatePermissionInvalid = new PrincipalPermissions
             {
                 Type = "User",
@@ -568,7 +490,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] {},
                 PermissionsToCertificates = new string[] { "managecontactz", "managecontactz" }
             };
-
             PrincipalPermissions keyPermissionRepeated = new PrincipalPermissions
             {
                 Type = "User",
@@ -578,7 +499,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { }
             };
-
             PrincipalPermissions secretPermissionRepeatedWithSpacing = new PrincipalPermissions
             {
                 Type = "User",
@@ -588,7 +508,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { "get", "      get" },
                 PermissionsToCertificates = new string[] { }
             };
-
             PrincipalPermissions certificatePermissionRepeatedDisregardingCase = new PrincipalPermissions
             {
                 Type = "User",
@@ -598,7 +517,6 @@ namespace RBAC
                 PermissionsToSecrets = new string[] { },
                 PermissionsToCertificates = new string[] { "all - PURGE", "all - purge" }
         };
-
             List<Testing<PrincipalPermissions>> ppList = new List<Testing<PrincipalPermissions>>()
             {
                 new Testing<PrincipalPermissions> (keyPermissionInvalid, "Invalid key permission 'gets'"),
@@ -608,8 +526,6 @@ namespace RBAC
                 new Testing<PrincipalPermissions> (secretPermissionRepeatedWithSpacing, "Secret permission(s) 'get' repeated"),
                 new Testing<PrincipalPermissions> (certificatePermissionRepeatedDisregardingCase, "Certificate permission(s) 'all - purge' repeated")
             };
-
-
             foreach (Testing<PrincipalPermissions> testCase in ppList)
             {
                 try
@@ -622,14 +538,13 @@ namespace RBAC
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-
         }
-        
-        /// <summary>
-        /// Verifies that the shorthands are translated to their respective 
-        /// </summary>
+
         [TestMethod]
-        public void TestTranslateShorthands()
+        /// <summary>
+        /// This method verifies that the shorthands are translated to their respective 
+        /// </summary>
+        public void TestTranslateShorthandsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             var pp = new PrincipalPermissions
@@ -661,10 +576,10 @@ namespace RBAC
             Assert.IsTrue(pp.PermissionsToCertificates.All(Constants.ALL_CERTIFICATE_PERMISSIONS.Contains) && pp.PermissionsToCertificates.Length == Constants.ALL_CERTIFICATE_PERMISSIONS.Length);
         }
 
-        /// <summary>
-        /// Verifies that "all" shorthand cannot be repeated.
-        /// </summary>
         [TestMethod]
+        /// <summary>
+        /// This method verifies that "all" shorthand cannot be repeated.
+        /// </summary>
         public void TestTranslateShorthandInvalid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
@@ -699,11 +614,12 @@ namespace RBAC
             Assert.AreEqual(1, res.Length);
             Assert.AreEqual(case1.error, res[0]);
         }
-        /// <summary>
-        /// Verifies that the correct permissions are being identified by the shorthand keyword.
-        /// </summary>
+      
         [TestMethod]
-        public void TestGetShorthandPermissionsInvalid()
+        /// <summary>
+        /// This method verifies that the correct permissions are being identified by the shorthand keyword.
+        /// </summary>
+        public void TestGetShorthandPermissionsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
             try
@@ -836,7 +752,7 @@ namespace RBAC
 
         }
         /// <summary>
-        /// Creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
+        /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>
         /// <returns>The list of KeyVaultProperties from the deserialized yaml</returns>
         public static List<KeyVaultProperties> createExpectedYamlVaults()
@@ -890,7 +806,6 @@ namespace RBAC
                     }
                 }
             });
-
             expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG1Test2",
@@ -929,7 +844,6 @@ namespace RBAC
                     }
                 }
             });
-
             expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG2Test1",
@@ -968,7 +882,6 @@ namespace RBAC
                     }
                 }
             });
-
             expectedYamlVaults.Add(new KeyVaultProperties
             {
                 VaultName = "RG2Test2",
@@ -1016,7 +929,6 @@ namespace RBAC
                     }
                 }
             });
-
             return expectedYamlVaults;
         }
     }
