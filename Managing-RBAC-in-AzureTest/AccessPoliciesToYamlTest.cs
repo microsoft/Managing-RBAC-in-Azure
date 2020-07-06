@@ -1,4 +1,4 @@
-using Managing_RBAC_in_AzureTest;
+
 using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -13,33 +13,43 @@ using System.Linq;
 namespace RBAC
 {
     [TestClass]
+    /// <summary>
+    /// This class is the Phase 1 testing class
+    /// </summary>
     public class AccessPoliciesToYamlTest
     {
+        /// <summary>
+        /// This is a wrapper class that is used for testing purposes
+        /// </summary>
         public class Testing <T>
         {
             public T testObject { get; set; }
             public string error { get; set; }
 
+            /// <summary>
+            /// Constructor to create an instance of the Testing<T> for use in Unit Testing.
+            /// </summary>
+            /// <param name="testObject">This is the object we are testing. Methods usually use this as an argument</param>
+            /// <param name="error">The error is set to null if a what we are testing is valid, otherwise error is reassigned depending on what is thrown</param>
             public Testing (T testObject, string error = null)
             {
                 this.testObject = testObject;
                 this.error = error;
             }
-
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that reading in valid Main args work
+        /// This method verifies that reading in valid Main args work
         /// </summary>
         public void TestVerifyFileExtensionsValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+
             List<Testing<string[]>> testCasesValid = new List<Testing<string[]>>()
             {
                 new Testing<string[]> (new string[] { "file.json", "file.yml" })
             };
-
             foreach (Testing<string[]> testCase in testCasesValid)
             {
                 try
@@ -53,14 +63,14 @@ namespace RBAC
             }
         }
 
-
         [TestMethod]
         /// <summary>
-        /// Verifies that reading in invalid Main args are handled
+        /// This method verifies that reading in invalid Main args are handled
         /// </summary>
         public void TestVerifyFileExtensionsInvalid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
+
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
                 new Testing <string[]> (new string[] {}, "Missing 2 input files."),
@@ -68,8 +78,7 @@ namespace RBAC
                 new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json" }, "Too many input files. Maximum needed is 2."),
                 new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The 1st argument is not a .json file."),
                 new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The 2nd argument is not a .yml file.")
-            };
-       
+            };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
                 try
@@ -85,38 +94,34 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Verifies that a valid Json file is consistent with an expected json file
+        /// This method verifies that a valid Json file is consistent with an expected json file
         /// </summary>
         public void TestReadJsonFileValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var json = ap.readJsonFile("../../../input/MasterConfig.json");
             var exp = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
-
             Assert.IsTrue(exp.Equals(json));
         }
 
         [TestMethod]
         /// <summary>
-        /// Verifies that reading in valid Json fields work
+        /// This method verifies that reading in valid Json fields work
         /// </summary>
         public void TestCheckJsonFieldsValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
-
             List<Testing<JsonInput>> testCasesJsonFieldsValid = new List<Testing<JsonInput>>()
             {
                 new Testing <JsonInput> (createExpectedJson( new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId"))
             };
-
             foreach (Testing<JsonInput> testCase in testCasesJsonFieldsValid)
             {
                 try
                 {
                     ap.checkJsonFields(testCase.testObject, configVaults);
-
                 }
                 catch
                 {
@@ -127,7 +132,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null)
+        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null)
         /// </summary>
         public void TestCheckJsonFieldsInvalid()
         {
@@ -142,7 +147,6 @@ namespace RBAC
                 new Testing <JsonInput> (createExpectedJson( new AadAppKey() , null, "AppName", "KeyVault", "ClientId","ClientKey", "TenantId"),
                 "Missing Resources in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'.")
             };
-
             foreach (Testing<JsonInput> testCase in testCasesJsonFieldsInvalid)
             {
                 try
@@ -169,7 +173,6 @@ namespace RBAC
                 new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), "Appname", "KeyVault", "ClientId" , "ClientKey", null),
                 "Missing TenantIdSecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.")
             };
-
             foreach (Testing<JsonInput> testCase in testCasesAadFieldsInvalid)
             {
                 try
@@ -186,7 +189,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Verifies that reading in valid Resource fields work
+        /// This method verifies that reading in valid Resource fields work
         /// </summary>
         public void TestCheckMissingResourceFieldsValid()
         {
@@ -198,13 +201,11 @@ namespace RBAC
             {
                 new Testing <JsonInput> (createExpectedJson( new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId"))
             };
-
             foreach (Testing<JsonInput> testCase in testMissingResourcesFieldsValid)
             {
                 try
                 {
                     ap.checkMissingResourceFields(testCase.testObject, configVaults);
-
                 }
                 catch
                 {
@@ -215,7 +216,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Verifies that reading invalid Resource Fields are handled
+        /// This method verifies that reading invalid Resource Fields are handled
         /// </summary>
         public void TestCheckMissingResourceFieldsInvalid()
         {
@@ -223,59 +224,27 @@ namespace RBAC
             string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
 
-
             JsonInput missingResourceGroupName = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
             missingResourceGroupName.Resources[0].ResourceGroups[0].ResourceGroupName = null;
             JsonInput missingSubscriptionId = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKeye", "TenantId");
             missingSubscriptionId.Resources[1].SubscriptionId = null;
-
             List<Testing<JsonInput>> negativeTestMissingResourceFields = new List<Testing<JsonInput>>()
             {
                 new Testing<JsonInput>(missingResourceGroupName, "Missing 'ResourceGroupName' for ResourceGroup. Invalid fields were defined; valid fields are 'ResourceGroupName' and 'KeyVaults'."),
                 new Testing<JsonInput>(missingSubscriptionId, "Missing 'SubscriptionId' for Resource. Invalid fields were defined; valid fields are 'SubscriptionId' and 'ResourceGroups'.")
-
             };
-
             foreach (Testing<JsonInput> testCase in negativeTestMissingResourceFields)
             {
                 try
                 {
                     ap.checkMissingResourceFields(testCase.testObject, configVaults);
                     Assert.Fail();
-
                 }
                 catch (Exception e)
                 {
                     Assert.AreEqual(testCase.error, e.Message);
                 }
             }
-        }
-        [TestMethod]
-        public void TestGetVaults()
-        {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var json = ap.readJsonFile("../../../input/TestActualVaults.json");
-            var ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
-            Assert.AreEqual(4, ret.Count);
-
-            json.Resources[0].ResourceGroups.Add(new ResourceGroup
-            {
-                ResourceGroupName = "RG1",
-                KeyVaults = new string[] { "RG1Test1" }.ToList()
-            }) ;
-            json.Resources[0].ResourceGroups.Add(new ResourceGroup
-            {
-                ResourceGroupName = "RG2"
-            });
-            ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
-            Assert.AreEqual(3, ret.Count);
-        }
-        [TestMethod]
-        public void TestConvertToYaml()
-        {
-            AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var vaults = UpdatePoliciesFromYamlTest.createExpectedYamlVaults();
-            ap.convertToYaml(vaults, "../../../output/ActualOutput.yml");
         }
 
         /// <summary>
