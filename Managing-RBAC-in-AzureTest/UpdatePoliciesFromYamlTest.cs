@@ -1,4 +1,5 @@
 
+using Managing_RBAC_in_AzureTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -716,7 +717,14 @@ namespace RBAC
             Assert.IsTrue(Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("management", "certificate")));
             Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
         }
-
+        [TestMethod]
+        public void TestVerifySecurityPrincipal()
+        {
+            var up = new UpdatePoliciesFromYaml(true);
+            var yaml = createExpectedYamlVaults();
+            var res = up.verifySecurityPrincipal(yaml[0].AccessPolicies[0], "group", new TestGraphClient(new MsalAuthenticationProvider()));
+            Assert.AreEqual("g1", res["ObjectId"]);
+        }
         /// <summary>
         /// Creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>

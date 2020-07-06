@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using NSubstitute.Routing.AutoValues;
 using System;
-using System.Collections;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -276,6 +276,7 @@ namespace RBAC
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var vaults = UpdatePoliciesFromYamlTest.createExpectedYamlVaults();
             ap.convertToYaml(vaults, "../../../output/ActualOutput.yml");
+            Assert.AreEqual(System.IO.File.ReadAllText("../../../output/ActualOutput.yml"), System.IO.File.ReadAllText("../../../output/ActualOutput.yml"));
         }
 
         /// <summary>
