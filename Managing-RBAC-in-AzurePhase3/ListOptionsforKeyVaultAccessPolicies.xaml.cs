@@ -71,9 +71,9 @@ namespace Managing_RBAC_in_AzureListOptions
             ShorthandTranslation.IsOpen = false;
 
             // Remove any translation prior, preventing a rolling list
-            if (ShorthandTranslationStackPanel.Children.Count == 2)
+            if (ShorthandTranslationStackPanel.Children.Count == 3)
             {
-                ShorthandTranslationStackPanel.Children.RemoveAt(1);
+                ShorthandTranslationStackPanel.Children.RemoveRange(1, 2);
             }
 
             ComboBoxItem selectedBlock = (ComboBoxItem)ShorthandBlockDropdown.SelectedItem;
@@ -106,9 +106,14 @@ namespace Managing_RBAC_in_AzureListOptions
 
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
-                    Text = $"{block}: {shorthand}: \n- {string.Join("\n- ", shorthandPermissions)}",
-                    Margin = new Thickness(15, 15, 15, 15),
-                    TextWrapping = TextWrapping.Wrap,
+                    FontWeight = FontWeights.SemiBold,
+                    Text = $"{block}: {shorthand}:",
+                    Margin = new Thickness(15, 0, 15, 0)
+                });
+                ShorthandTranslationStackPanel.Children.Add(new TextBlock()
+                {
+                    Text = $"- {string.Join("\n- ", shorthandPermissions)}",
+                    Margin = new Thickness(15, 0, 15, 15)
                 });
 
                 ShorthandTranslation.IsOpen = true;
