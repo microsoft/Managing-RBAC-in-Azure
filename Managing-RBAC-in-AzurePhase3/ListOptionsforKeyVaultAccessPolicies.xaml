@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
         mc:Ignorable="d"
-        Title="ListOptionsforKeyVaultAccessPolicies" Height="450" Width="800" Background="WhiteSmoke">
+        Title="ListOptionsforKeyVaultAccessPolicies" Height="450" Width="800" Background="#FFE3EBEB">
 
     <Window.Resources>
         <Style x:Key="ComboBoxStyle" TargetType="{x:Type ComboBox}">
@@ -63,7 +63,7 @@
             <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="Height" Value="25"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
     </Window.Resources>
@@ -84,8 +84,8 @@
         <ComboBox Name="ShorthandDropdown" Style="{StaticResource ComboBoxStyle}" Margin="205,70,0,0" Width="125" Visibility="Hidden" SelectionChanged="ShorthandDropdown_SelectionChanged"/>
 
         <Popup Name="ShorthandTranslation" Style="{StaticResource PopupTranslationStyle}">
-            <Border  BorderThickness="0.3" Height="100" Width="500" BorderBrush="#FFE0E0E0">
-                <StackPanel Name="ShorthandTranslationStackPanel" Height="100" Width="500" Background="White">
+            <Border BorderThickness="0.3" Height="Auto" Width="300" BorderBrush="#FFE0E0E0">
+                <StackPanel Name="ShorthandTranslationStackPanel" Height="Auto" Width="300" Background="White">
                     <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="ClosePopUp_Click"/>
                 </StackPanel>
             </Border>

@@ -1,4 +1,5 @@
 ﻿using RBAC;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -101,10 +102,11 @@ namespace Managing_RBAC_in_AzureListOptions
 
                 UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
                 string[] shorthandPermissions = up.getShorthandPermissions(shorthand.ToLower(), permissionType);
+                shorthandPermissions = shorthandPermissions.Select(val => (val.Substring(0, 1).ToUpper() + val.Substring(1))).ToArray();
 
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
-                    Text = $"The {permissionType} shorthand '{shorthand}' translates to {string.Join(", ", shorthandPermissions)}.",
+                    Text = $"{block}: {shorthand}: \n- {string.Join("\n- ", shorthandPermissions)}",
                     Margin = new Thickness(15, 15, 15, 15),
                     TextWrapping = TextWrapping.Wrap,
                 });
