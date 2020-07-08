@@ -452,15 +452,8 @@ namespace RBAC
                     properties.AccessPolicies.Add(new AccessPolicyEntry(new Guid(secrets["tenantId"]), principalPermissions.ObjectId,
                         new Permissions(principalPermissions.PermissionsToKeys, principalPermissions.PermissionsToSecrets, principalPermissions.PermissionsToCertificates)));
                 }
-
-                if (!Testing)
-                {
-                    Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
-                }
-                else
-                {
-                    Changed.Add(kv);
-                }
+                Vault updatedVault = kvmClient.Vaults.CreateOrUpdateAsync(kv.ResourceGroupName, kv.VaultName, new VaultCreateOrUpdateParameters(kv.Location, properties)).Result;
+                
             }
             catch (Exception e)
             {
@@ -496,10 +489,20 @@ namespace RBAC
                     {
                         throw new Exception($"Alias is required for {principalPermissions.DisplayName}.");
                     }
-
-                    User user = graphClient.Users[principalPermissions.Alias.ToLower().Trim()]
-                    .Request()
-                    .GetAsync().Result;
+                    User user = null;
+                    if (Testing)
+                    {
+                        TestGraphClient client = (TestGraphClient)graphClient;
+                        user = client.Users[principalPermissions.Alias.ToLower().Trim()]
+                           .Request()
+                           .GetAsync().Result;
+                    }
+                    else
+                    {
+                        user = graphClient.Users[principalPermissions.Alias.ToLower().Trim()]
+                            .Request()
+                            .GetAsync().Result;
+                    } 
 
                     if (principalPermissions.DisplayName.Trim().ToLower() != user.DisplayName.ToLower())
                     {
@@ -534,10 +537,23 @@ namespace RBAC
                         throw new Exception($"Alias is required for {principalPermissions.DisplayName}.");
                     }
 
-                    Group group = graphClient.Groups
-                    .Request()
-                    .Filter($"startswith(Mail,'{principalPermissions.Alias}')")
-                    .GetAsync().Result[0];
+                    Group group = null;
+                    if (Testing)
+                    {
+                        TestGraphClient client = (TestGraphClient)graphClient;
+                        group = client.Groups
+                            .Request()
+                            .Filter($"startswith(Mail,'{principalPermissions.Alias}')")
+                            .GetAsync().Result[0];
+                    }
+                    else
+                    {
+                        group = graphClient.Groups
+                            .Request()
+                            .Filter($"startswith(Mail,'{principalPermissions.Alias}')")
+                            .GetAsync().Result[0];
+                    }
+                    
 
                     if (principalPermissions.DisplayName.Trim().ToLower() != group.DisplayName.ToLower())
                     {
@@ -567,10 +583,23 @@ namespace RBAC
             {
                 try
                 {
-                    Application app = graphClient.Applications
-                    .Request()
-                    .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
-                    .GetAsync().Result[0];
+                    Application app = null;
+                    if (Testing)
+                    {
+                        TestGraphClient client = (TestGraphClient)graphClient;
+                        app = client.Applications
+                            .Request()
+                            .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
+                            .GetAsync().Result[0];
+                    }
+                    else
+                    {
+                        app = graphClient.Applications
+                            .Request()
+                            .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
+                            .GetAsync().Result[0];
+                    }
+                    
 
                     if (principalPermissions.Alias.Length != 0)
                     {
@@ -601,10 +630,23 @@ namespace RBAC
             {
                 try
                 {
-                    ServicePrincipal principal = graphClient.ServicePrincipals
-                        .Request()
-                        .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
-                        .GetAsync().Result[0];
+                    ServicePrincipal principal = null;
+                    if (Testing)
+                    {
+                        TestGraphClient client = (TestGraphClient)graphClient;
+                        principal = client.ServicePrincipals
+                            .Request()
+                            .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
+                            .GetAsync().Result[0];
+                    }
+                    else
+                    {
+                        principal = graphClient.ServicePrincipals
+                            .Request()
+                            .Filter($"startswith(DisplayName,'{principalPermissions.DisplayName}')")
+                            .GetAsync().Result[0];
+                    }
+                     
 
                     if (principalPermissions.Alias.Length != 0)
                     {
@@ -845,7 +887,7 @@ namespace RBAC
                     var common = permissions.Intersect(permissionsToGrant);
                     if (common.Count() != 0)
                     {
-                        throw new Exception($"{string.Join(", ", valuesToRemove)} permissions are already included in {permissionType} '{shorthand}' permission");
+                        throw new Exception($"{string.Join(", ", common)} permissions are already included in {permissionType} '{shorthand}' permission");
                     }
                     return (permissions.Concat(permissionsToGrant).Where(val => val != inst).ToArray());
                 }
@@ -861,7 +903,7 @@ namespace RBAC
         /// <returns>A string array of the shorthand permissions that correspond to the shorthand keyword</returns>
         public string[] getShorthandPermissions(string shorthand, string permissionType)
         {
-            if (permissionType == "key")
+            if (permissionType.ToLower() == "key")
             {
                 if (shorthand == "all")
                 {
@@ -884,7 +926,7 @@ namespace RBAC
                     return Constants.CRYPTO_KEY_PERMISSIONS;
                 }
             }
-            else if (permissionType == "secret")
+            else if (permissionType.ToLower() == "secret")
             {
                 if (shorthand == "all")
                 {
@@ -903,7 +945,7 @@ namespace RBAC
                     return Constants.STORAGE_SECRET_PERMISSIONS;
                 }
             }
-            else if (permissionType == "certificate")
+            else if (permissionType.ToLower() == "certificate")
             {
                 if (shorthand == "all")
                 {
@@ -954,6 +996,7 @@ namespace RBAC
         /// <param name="message">The error message to be printed</param>
         private void ConsoleError(string message)
         {
+            error = message;
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Error: {message}");
             Console.ResetColor();
@@ -965,5 +1008,6 @@ namespace RBAC
         public List<KeyVaultProperties> Changed { get; set; }
         // This field defines the logger
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public string error;
     }
 }
