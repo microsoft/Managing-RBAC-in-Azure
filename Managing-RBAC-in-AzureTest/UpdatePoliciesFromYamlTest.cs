@@ -625,15 +625,9 @@ namespace RBAC
         public void TestGetShorthandPermissionsValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
-            try
-            {
-                var res = up.getShorthandPermissions("all", "key");
-                Assert.Fail();
-            }
-            catch(Exception e)
-            {
-                Assert.AreEqual("Cannot remove 'all' from a permission", e.Message);
-            }
+            var res = up.getShorthandPermissions("all", "key");
+            Assert.IsTrue(Constants.ALL_KEY_PERMISSIONS.SequenceEqual(res));
+            
 
             Assert.IsNull(up.getShorthandPermissions("none", "key"));
             Assert.IsNull(up.getShorthandPermissions("none", "secret"));
