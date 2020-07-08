@@ -249,6 +249,9 @@ namespace RBAC
                 }
             }
         }
+        /// <summary>
+        /// Tests getVaults() method.
+        /// </summary>
         [TestMethod]
         public void TestGetVaults()
         {
@@ -269,6 +272,9 @@ namespace RBAC
             ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
             Assert.AreEqual(3, ret.Count);
         }
+        /// <summary>
+        /// Tests convertToYaml method
+        /// </summary>
         [TestMethod]
         public void TestConvertToYaml()
         {

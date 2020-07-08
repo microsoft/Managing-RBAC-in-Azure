@@ -690,6 +690,9 @@ namespace RBAC
                 }
             }
         }
+        /// <summary>
+        /// Tests translateShorthand() valid cases.
+        /// </summary>
         [TestMethod]
         public void TestTranslateShorthandValid()
         {
@@ -735,6 +738,9 @@ namespace RBAC
             Assert.IsTrue(Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("management", "certificate")));
             Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
         }
+        /// <summary>
+        /// Tests verifySecurityPrincipal() valid cases
+        /// </summary>
         [TestMethod]
         public void TestValidVerifySecurityPrincipal()
         {
@@ -753,6 +759,9 @@ namespace RBAC
                 Assert.AreEqual(t.testObject["ObjectId"], t.error);
             }
         }
+        /// <summary>
+        /// Tests verifySecurityPrincipal() invalid cases
+        /// </summary>
         [TestMethod]
         public void TestInvalidVerifySecurityPrincipal()
         {
@@ -802,10 +811,13 @@ namespace RBAC
             foreach(Testing<PrincipalPermissions> t in list)
             {
                 up.verifySecurityPrincipal(t.testObject, t.testObject.Type.ToLower(), tgc);
-                Assert.AreEqual(up.error, t.error);
+                Assert.AreEqual(t.error, up.error);
             }
 
         }
+        /// <summary>
+        /// Tests updateVaults() method. 
+        /// </summary>
         [TestMethod]
         public void TestUpdateVaults()
         {
