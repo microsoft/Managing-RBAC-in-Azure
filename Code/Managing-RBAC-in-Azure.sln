@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-Azure", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-AzureTest", "..\Managing-RBAC-in-AzureTest\Managing-RBAC-in-AzureTest.csproj", "{4DDFBB73-60DB-48E9-B092-77641AC7A21F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-AzureListOptions", "..\Managing-RBAC-in-AzurePhase3\Managing-RBAC-in-AzureListOptions.csproj", "{61FEC8C5-1958-4438-A50F-83D9CF533476}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4DDFBB73-60DB-48E9-B092-77641AC7A21F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DDFBB73-60DB-48E9-B092-77641AC7A21F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DDFBB73-60DB-48E9-B092-77641AC7A21F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61FEC8C5-1958-4438-A50F-83D9CF533476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61FEC8C5-1958-4438-A50F-83D9CF533476}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61FEC8C5-1958-4438-A50F-83D9CF533476}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61FEC8C5-1958-4438-A50F-83D9CF533476}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

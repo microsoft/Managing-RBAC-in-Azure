@@ -24,6 +24,7 @@
 	<PackageReference Include="Serilog" Version="2.9.0" />
 	<PackageReference Include="System.Collections" Version="4.3.0" />
 	<PackageReference Include="System.IO" Version="4.3.0" />
+	<PackageReference Include="System.Linq" Version="4.3.0" />
 	<PackageReference Include="System.Management.Automation" Version="7.0.2" />
 	<PackageReference Include="System.Windows.Extensions" Version="4.7.0" />
 	<PackageReference Include="YamlDotNet" Version="8.1.2" />
