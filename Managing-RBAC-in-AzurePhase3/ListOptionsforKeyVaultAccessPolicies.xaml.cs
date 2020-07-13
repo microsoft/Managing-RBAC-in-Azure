@@ -92,8 +92,8 @@ namespace Managing_RBAC_in_AzureListOptions
             ComboBox shorthandDropdown = sender as ComboBox;
             if (shorthandDropdown.IsDropDownOpen)
             {
-                ComboBoxItem selectedShorthand = (ComboBoxItem)shorthandDropdown.SelectedItem;
-                string shorthand = (string)selectedShorthand.Content;
+                ComboBoxItem selectedShorthand = shorthandDropdown.SelectedItem as ComboBoxItem;
+                string shorthand = selectedShorthand.Content as string;
 
                 string permissionType = "";
                 if (block == "PermissionsToKeys")
@@ -144,7 +144,7 @@ namespace Managing_RBAC_in_AzureListOptions
             ShorthandPermissionsLabel.Visibility = Visibility.Hidden;
             ShorthandPermissionsDropdown.Visibility = Visibility.Hidden;
         }
-     
+
         // 2. List by Security Principal ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -325,18 +325,35 @@ namespace Managing_RBAC_in_AzureListOptions
                 ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
                 string scope = selectedScope.Content as string;
 
-                if (scope != "YAML")
+                try
                 {
-                    populateSelectedScopeBreakdown();
+                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
+                    if (yaml.Count() == 0)
+                    {
+                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                    }
+
+                    if (scope != "YAML")
+                    {
+                        populateSelectedScopeBreakdown(yaml);
+                    }
+                    else
+                    {
+                        SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+                    }
                     SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
                     SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
                 }
-                else
+                catch (Exception ex)
                 {
+                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    BreakdownTypeDropdown.SelectedIndex = -1;
+                    BreakdownScopeDropdown.SelectedIndex = -1;
+                    BreakdownScopeLabel.Visibility = Visibility.Hidden;
+                    BreakdownScopeDropdown.Visibility = Visibility.Hidden;
                     SelectedScopeBreakdownDropdown.SelectedIndex = -1;
-                    SelectedScopeBreakdownLabel.Visibility = Visibility.Hidden;
-                    SelectedScopeBreakdownDropdown.Visibility = Visibility.Hidden;
                 }
             }
         }
@@ -344,12 +361,10 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <summary>
         /// This method populates the selectedScope dropdown based off of the selected permissions breakdown scope item.
         /// </summary>
-        private void populateSelectedScopeBreakdown()
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        private void populateSelectedScopeBreakdown(List<KeyVaultProperties> yaml)
         {
             SelectedScopeBreakdownDropdown.Items.Clear();
-
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
             ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
@@ -488,64 +503,56 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="selected">The list of selected items from the permissions breakdown selected scope dropdown, if applicable</param>
         private void calculatePermissionBreakdown(string scope, List<string> selected)
         {
-            try
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+            if (yaml.Count() == 0)
             {
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+                throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+            }
+            //dont even make visible then just throw errors
 
-                if (yaml.Count() == 0)
+            ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
+            string type = selectedType.Content as string;
+
+            Dictionary<string, Dictionary<string, int>> count;
+            if (scope == "YAML")
+            {
+                count = countPermissions(yaml, type);
+            }
+            else
+            {
+                ILookup<string, KeyVaultProperties> lookup;
+                if (scope == "Subscription")
                 {
-                    throw new Exception("  The Yaml file must be named 'YamlOutput.yml' and stored in\n  the 'Config' project folder. Please advise, or else fetch the \n  code again.");
+                    lookup = yaml.ToLookup(kv => kv.SubscriptionId);
                 }
-
-                ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
-                string type = selectedType.Content as string;
-
-                Dictionary<string, Dictionary<string, int>> count;
-                if (scope == "YAML")
+                else if (scope == "ResourceGroup")
                 {
-                    count = countPermissions(yaml, type);
+                    lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
                 }
                 else
                 {
-                    ILookup<string, KeyVaultProperties> lookup;
-                    if (scope == "Subscription")
-                    {
-                        lookup = yaml.ToLookup(kv => kv.SubscriptionId);
-                    }
-                    else if (scope == "ResourceGroup")
-                    {
-                        lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
-                    }
-                    else
-                    {
-                        lookup = yaml.ToLookup(kv => kv.VaultName);
-                    }
-
-                    List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
-                    foreach (var specifiedScope in selected)
-                    {
-                        vaultsInScope.AddRange(lookup[specifiedScope].ToList());
-                    }
-                    count = countPermissions(vaultsInScope, type);
+                    lookup = yaml.ToLookup(kv => kv.VaultName);
                 }
 
-                PieChart keys = (LiveCharts.Wpf.PieChart)PermissionsToKeysChart;
-                setChartData(keys, count["keyBreakdown"]);
-                PieChart secrets = (LiveCharts.Wpf.PieChart)PermissionsToSecretsChart;
-                setChartData(secrets, count["secretBreakdown"]);
-                PieChart certificates = (LiveCharts.Wpf.PieChart)PermissionsToCertificatesChart;
-                setChartData(certificates, count["certificateBreakdown"]);
+                List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
+                foreach (var specifiedScope in selected)
+                {
+                    vaultsInScope.AddRange(lookup[specifiedScope].ToList());
+                }
+                count = countPermissions(vaultsInScope, type);
+            }
 
-                PermissionBreakdownResults.IsOpen = true;
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show($"{e.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                BreakdownTypeDropdown.SelectedIndex = -1;
-                BreakdownScopeDropdown.SelectedIndex = -1;
-                SelectedScopeBreakdownDropdown.SelectedIndex = -1;
-            }
+            PieChart keys = (LiveCharts.Wpf.PieChart)PermissionsToKeysChart;
+            setChartData(keys, count["keyBreakdown"]);
+            PieChart secrets = (LiveCharts.Wpf.PieChart)PermissionsToSecretsChart;
+            setChartData(secrets, count["secretBreakdown"]);
+            PieChart certificates = (LiveCharts.Wpf.PieChart)PermissionsToCertificatesChart;
+            setChartData(certificates, count["certificateBreakdown"]);
+
+            PermissionBreakdownResults.IsOpen = true;
+
         }
 
         /// <summary>
@@ -769,7 +776,7 @@ namespace Managing_RBAC_in_AzureListOptions
         private void Run_Click(object sender, RoutedEventArgs e)
         {
             Button btn = sender as Button;
-            
+
             if (btn.Name == "ShorthandPermissionsRun")
             {
                 ShorthandPermissionsTranslation.IsOpen = true;

@@ -201,14 +201,13 @@
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
 
         <Popup Name="ShorthandPermissionsTranslation" Style="{StaticResource PopupTranslationStyle}">
-            <Border BorderThickness="0.3" Height="Auto" Width="300" BorderBrush="#FFE0E0E0">
-                <StackPanel Name="ShorthandTranslationStackPanel" Height="Auto" Width="300" Background="White">
+            <Border BorderThickness="0.3" Height="Auto" Width="320" BorderBrush="#FFE0E0E0">
+                <StackPanel Name="ShorthandTranslationStackPanel" Height="Auto" Width="320" Background="White">
                     <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="CloseShorthandPermissionsTranslation_Click"/>
                 </StackPanel>
             </Border>
         </Popup>
 
-        
         <!-- Security Principal List Option-->
         <TextBlock Name="SecurityPrincipalList" Text="2. List Permissions by Security Principal"
                    Grid.Column ="1" Grid.Row="6"
