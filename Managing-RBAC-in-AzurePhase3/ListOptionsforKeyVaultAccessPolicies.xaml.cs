@@ -1,12 +1,13 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
+﻿using RBAC;
+using System;
 using System.Collections.Generic;
-using RBAC;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Constants = RBAC.Constants;
+using LiveCharts;
+using LiveCharts.Wpf;
 using System.Windows.Media;
-
-
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -30,11 +31,11 @@ namespace Managing_RBAC_in_AzureListOptions
         /// 
         private void ShorthandPermissionTypesDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBox blockDropdown = (ComboBox)sender;
+            ComboBox blockDropdown = sender as ComboBox;
             if (blockDropdown.SelectedIndex != -1)
             {
-                ComboBoxItem selectedScope = (ComboBoxItem)blockDropdown.SelectedItem;
-                string val = (string)selectedScope.Content;
+                ComboBoxItem selectedScope = blockDropdown.SelectedItem as ComboBoxItem;
+                string val = selectedScope.Content as string;
 
                 if (val == "PermissionsToKeys")
                 {
@@ -84,11 +85,11 @@ namespace Managing_RBAC_in_AzureListOptions
                 ShorthandTranslationStackPanel.Children.RemoveRange(1, 2);
             }
 
-            ComboBoxItem selectedBlock = (ComboBoxItem)ShorthandPermissionTypesDropdown.SelectedItem;
-            string block = (string)selectedBlock.Content;
+            ComboBoxItem selectedBlock = ShorthandPermissionTypesDropdown.SelectedItem as ComboBoxItem;
+            string block = selectedBlock.Content as string;
 
             // Wait for selection in second dropdown if the first has changed
-            ComboBox shorthandDropdown = (ComboBox)sender;
+            ComboBox shorthandDropdown = sender as ComboBox;
             if (shorthandDropdown.IsDropDownOpen)
             {
                 ComboBoxItem selectedShorthand = (ComboBoxItem)shorthandDropdown.SelectedItem;
@@ -115,16 +116,16 @@ namespace Managing_RBAC_in_AzureListOptions
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
                     FontWeight = FontWeights.SemiBold,
+                    FontSize = 15,
                     Text = $"{block}: {shorthand}:",
-                    Margin = new Thickness(15, 0, 15, 0)
+                    Margin = new Thickness(15, 0, 15, 2)
                 });
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
                     Text = $"- {string.Join("\n- ", shorthandPermissions)}",
-                    Margin = new Thickness(15, 0, 15, 15)
+                    Margin = new Thickness(20, 0, 15, 22),
+                    FontSize = 14
                 });
-
-                ShorthandPermissionsTranslation.IsOpen = true;
             }
         }
 
@@ -296,29 +297,409 @@ namespace Managing_RBAC_in_AzureListOptions
         // 4. Breakdown of Permission Usage by Percentage -------------------------------------------------------------------------------------------
 
         /// <summary>
-        /// This method populates the "Specify the scope:" dropdown and makes it visible upon a selection.
+        /// This method hides the permissions breakdown selected scope dropdown if this dropdown is re-selected.
         /// </summary>
-        /// <param name="sender">The breakdown scope block dropdown</param>
+        /// <param name="sender">The permissions breakdown type dropdown</param>
+        /// <param name="e">The event that occurs when a selection changes</param>
+        private void BreakdownTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            BreakdownScopeDropdown.SelectedIndex = -1;
+
+            BreakdownScopeLabel.Visibility = Visibility.Visible;
+            BreakdownScopeDropdown.Visibility = Visibility.Visible;
+
+            SelectedScopeBreakdownLabel.Visibility = Visibility.Hidden;
+            SelectedScopeBreakdownDropdown.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// This method populates the selectedScope dropdown if "YAML" was not selected. 
+        /// Otherwise, this method resets and hides the selectedScope dropdown.
+        /// </summary>
+        /// <param name="sender">The permissions breakdown scope dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
         private void BreakdownScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (BreakdownSpecifyScopeLabel.Visibility == Visibility.Visible ||
-                BreakdownSpecifyScopeDropdown.Visibility == Visibility.Visible)
+            if (BreakdownTypeDropdown.SelectedIndex != -1 && BreakdownScopeDropdown.SelectedIndex != -1)
             {
-                BreakdownSpecifyScopeDropdown.Items.Clear();
+                ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+
+                if (scope != "YAML")
+                {
+                    populateSelectedScopeBreakdown();
+
+                    SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
+                    SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+                    SelectedScopeBreakdownLabel.Visibility = Visibility.Hidden;
+                    SelectedScopeBreakdownDropdown.Visibility = Visibility.Hidden;
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method populates the selectedScope dropdown based off of the selected permissions breakdown scope item.
+        /// </summary>
+        private void populateSelectedScopeBreakdown()
+        {
+            SelectedScopeBreakdownDropdown.Items.Clear();
+
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+            ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            List<string> items = new List<string>();
+            if (scope == "Subscription")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
+                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
+                    {
+                        items.Add(kv.SubscriptionId);
+                    }
+                }
+            }
+            else if (scope == "ResourceGroup")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.ResourceGroupName);
+                }
             }
             else
             {
-                BreakdownSpecifyScopeLabel.Visibility = Visibility.Visible;
-                BreakdownSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.VaultName);
+                }
             }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            BreakdownSpecifyScopeDropdown.Items.Add(item1);
 
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            BreakdownSpecifyScopeDropdown.Items.Add(item2);
+            // Only add distinct items
+            foreach (string item in items.Distinct())
+            {
+                SelectedScopeBreakdownDropdown.Items.Add(new CheckBox()
+                {
+                    Content = item
+                });
+            }
+        }
+
+        /// <summary>
+        /// This method allows you to select multiple scopes and shows how many you selected on the ComboBox.
+        /// </summary>
+        /// <param name="sender">The permissions breakdown selected scope dropdown</param>
+        /// <param name="e">The event that occurs when a selection changes</param>
+        private void SelectedScopeBreakdownDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedItems(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+        }
+
+        /// <summary>
+        /// This method gets the list of selected items from the checkbox selected scope dropdown.
+        /// </summary>
+        /// <param name="items">The ItemCollection from the permissions breakdown selected scope dropdown</param>
+        /// <returns>A list of the selected items</returns>
+        private List<string> getSelectedItems(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = SelectedScopeBreakdownDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+        /// <summary>
+        /// This method runs the permissions breakdown list option upon clicking the button.
+        /// </summary>
+        /// <param name="sender">The 'Run' button for the permissions breakdown</param>
+        /// <param name="e">The event that occurs when the button is clicked</param>
+        private void RunPermissionsBreakdown_Click(object sender, RoutedEventArgs e)
+        {
+            ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
+            List<string> selected = getSelectedItems(scopeDropdown.Items);
+
+            ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = breakdownScope.Content as string;
+
+            if (scope != "YAML" && selected.Count() == 0)
+            {
+                MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                calculatePermissionBreakdown(scope, selected);
+            }
+        }
+
+        /// <summary>
+        /// This method calculates the permissions breakdown usages and displays the results on the popup.
+        /// If the file path is not defined in the Constants file, an exception is thrown.
+        /// </summary>
+        /// <param name="scope">The selected item from the permissions breakdown scope dropdown</param>
+        /// <param name="selected">The list of selected items from the permissions breakdown selected scope dropdown, if applicable</param>
+        private void calculatePermissionBreakdown(string scope, List<string> selected)
+        {
+            try
+            {
+                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                if (yaml.Count() == 0)
+                {
+                    throw new Exception("  The Yaml file must be named 'YamlOutput.yml' and stored in\n  the 'Config' project folder. Please advise, or else fetch the \n  code again.");
+                }
+
+                ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedType.Content as string;
+
+                Dictionary<string, Dictionary<string, int>> count;
+                if (scope == "YAML")
+                {
+                    count = countPermissions(yaml, type);
+                }
+                else
+                {
+                    ILookup<string, KeyVaultProperties> lookup;
+                    if (scope == "Subscription")
+                    {
+                        lookup = yaml.ToLookup(kv => kv.SubscriptionId);
+                    }
+                    else if (scope == "ResourceGroup")
+                    {
+                        lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
+                    }
+                    else
+                    {
+                        lookup = yaml.ToLookup(kv => kv.VaultName);
+                    }
+
+                    List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
+                    foreach (var specifiedScope in selected)
+                    {
+                        vaultsInScope.AddRange(lookup[specifiedScope].ToList());
+                    }
+                    count = countPermissions(vaultsInScope, type);
+                }
+
+                PieChart keys = (LiveCharts.Wpf.PieChart)PermissionsToKeysChart;
+                setChartData(keys, count["keyBreakdown"]);
+                PieChart secrets = (LiveCharts.Wpf.PieChart)PermissionsToSecretsChart;
+                setChartData(secrets, count["secretBreakdown"]);
+                PieChart certificates = (LiveCharts.Wpf.PieChart)PermissionsToCertificatesChart;
+                setChartData(certificates, count["certificateBreakdown"]);
+
+                PermissionBreakdownResults.IsOpen = true;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"{e.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                BreakdownTypeDropdown.SelectedIndex = -1;
+                BreakdownScopeDropdown.SelectedIndex = -1;
+                SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+            }
+        }
+
+        /// <summary>
+        /// This method counts the permission/shorthand usages for each type of permission and returns a dictionary that stores the data.
+        /// </summary>
+        /// <param name="vaultsInScope">The KeyVaults to parse through, or the scope, to generate the permission usage results</param>
+        /// <param name="type">The type by which to generate the permission usage results, i.e. by permissions or by shorthands</param>
+        /// <returns>A dictionary that stores the permission breakdown usages for each permission block</returns>
+        private Dictionary<string, Dictionary<string, int>> countPermissions(List<KeyVaultProperties> vaultsInScope, string type)
+        {
+            Dictionary<string, Dictionary<string, int>> usages = new Dictionary<string, Dictionary<string, int>>();
+            if (type == "Permissions")
+            {
+                usages["keyBreakdown"] = populateBreakdownKeys(Constants.ALL_KEY_PERMISSIONS);
+                usages["secretBreakdown"] = populateBreakdownKeys(Constants.ALL_SECRET_PERMISSIONS);
+                usages["certificateBreakdown"] = populateBreakdownKeys(Constants.ALL_CERTIFICATE_PERMISSIONS);
+
+                foreach (KeyVaultProperties kv in vaultsInScope)
+                {
+                    foreach (PrincipalPermissions principal in kv.AccessPolicies)
+                    {
+                        checkForPermissions(usages, principal);
+                    }
+                }
+            }
+            else
+            {
+                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+
+                usages["keyBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray());
+                usages["secretBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray());
+                usages["certificateBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray());
+
+                foreach (KeyVaultProperties kv in vaultsInScope)
+                {
+                    foreach (PrincipalPermissions principal in kv.AccessPolicies)
+                    {
+                        checkForShorthands(up, usages, principal);
+                    }
+                }
+            }
+            return usages;
+        }
+
+        /// <summary>
+        /// This method initializes the keys of the dictionary with each permission or shorthand keyword.
+        /// </summary>
+        /// <param name="permissions">The permissions block or shorthands array for which to add keys</param>
+        /// <returns>A dictionary initialized with each permission or shorthand as keys</returns>
+        private Dictionary<string, int> populateBreakdownKeys(string[] permissions)
+        {
+            Dictionary<string, int> breakdown = new Dictionary<string, int>();
+            foreach (string str in permissions)
+            {
+                breakdown.Add(str, 0);
+            }
+            return breakdown;
+        }
+
+        /// <summary>
+        /// This method counts the occurrences of each permission type and stores the results in a dictionary.
+        /// </summary>
+        /// <param name="usages">The dictionary that stores the permission breakdown usages for each permission block</param>
+        /// <param name="principal">The current PrincipalPermissions object</param>
+        private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        {
+            foreach (string key in principal.PermissionsToKeys)
+            {
+                ++usages["keyBreakdown"][key];
+            }
+            foreach (string secret in principal.PermissionsToSecrets)
+            {
+                ++usages["secretBreakdown"][secret];
+            }
+            foreach (string certif in principal.PermissionsToCertificates)
+            {
+                ++usages["certificateBreakdown"][certif];
+            }
+        }
+
+        /// <summary>
+        /// This method counts the occurrences of each shorthand type and stores the results in a dictionary.
+        /// </summary>
+        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
+        /// <param name="usages">A dictionary that stores the permission breakdown usages for each permission block</param>
+        /// <param name="principal">The current PrincipalPermissions object</param>
+        private void checkForShorthands(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        {
+            foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
+            {
+                var permissions = up.getShorthandPermissions(shorthand, "key");
+                if (principal.PermissionsToKeys.Intersect(permissions).Count() == permissions.Count())
+                {
+                    ++usages["keyBreakdown"][shorthand];
+                }
+            }
+
+            foreach (string shorthand in Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray())
+            {
+                var permissions = up.getShorthandPermissions(shorthand, "secret");
+                if (principal.PermissionsToSecrets.Intersect(permissions).Count() == permissions.Count())
+                {
+                    ++usages["secretBreakdown"][shorthand];
+                }
+            }
+
+            foreach (string shorthand in Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray())
+            {
+                var permissions = up.getShorthandPermissions(shorthand, "certificate");
+                if (principal.PermissionsToCertificates.Intersect(permissions).Count() == permissions.Count())
+                {
+                    ++usages["certificateBreakdown"][shorthand];
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method adds and sets the pie chart data to the respective pie chart.
+        /// </summary>
+        /// <param name="chart">The pie chart to which we want to add data</param>
+        /// <param name="breakdownCount">The permissions count corresponding to a particular permissions block</param>
+        private void setChartData(PieChart chart, Dictionary<string, int> breakdownCount)
+        {
+            SeriesCollection data = new SeriesCollection();
+            var descendingOrder = breakdownCount.OrderByDescending(i => i.Value);
+
+            foreach (var item in descendingOrder)
+            {
+                data.Add(new LiveCharts.Wpf.PieSeries()
+                {
+                    Title = item.Key,
+                    Values = new ChartValues<int>() { item.Value },
+                    DataLabels = true,
+                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y))
+                });
+                chart.Series = data;
+
+                var tooltip = (DefaultTooltip)chart.DataTooltip;
+                tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
+            }
+        }
+
+        /// <summary>
+        /// This method closes the permissions breakdown popup and resets the dropdowns.
+        /// </summary>
+        /// <param name="sender">The close popup button</param>
+        /// <param name="e">The event that occurs when the button is clicked</param>
+        private void CloseBreakdownResults_Click(object sender, RoutedEventArgs e)
+        {
+            PermissionBreakdownResults.IsOpen = false;
+
+            BreakdownTypeDropdown.SelectedIndex = -1;
+            BreakdownScopeDropdown.SelectedIndex = -1;
+            SelectedScopeBreakdownDropdown.SelectedIndex = -1;
         }
 
         // 5. Most Accessed Keyvaults ---------------------------------------------------------------------------------------------
@@ -391,7 +772,7 @@ namespace Managing_RBAC_in_AzureListOptions
             
             if (btn.Name == "ShorthandPermissionsRun")
             {
-                // Execute Code
+                ShorthandPermissionsTranslation.IsOpen = true;
             }
             else if (btn.Name == "SecurityPrincipalRun")
             {
@@ -403,7 +784,7 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else if (btn.Name == "BreakdownRun")
             {
-                // Execute Code
+                RunPermissionsBreakdown_Click(sender, e);
             }
             else if (btn.Name == "MostAccessedRun")
             {
@@ -423,7 +804,7 @@ namespace Managing_RBAC_in_AzureListOptions
         private void Run_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Button btn = sender as Button;
-            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
+            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 77, 101));
         }
 
         /// <summary>
@@ -434,8 +815,7 @@ namespace Managing_RBAC_in_AzureListOptions
         private void Run_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Button btn = sender as Button;
-            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(174, 251, 255));
+            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
-
     }
 }

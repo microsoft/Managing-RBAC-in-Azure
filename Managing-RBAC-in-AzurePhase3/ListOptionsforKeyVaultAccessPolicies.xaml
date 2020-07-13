@@ -3,39 +3,38 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
         mc:Ignorable="d"
-        Title="ListOptionsforKeyVaultAccessPolicies" Height="800" Width="1350" Background="#FFE3EBEB">
+        Title="ListOptionsforKeyVaultAccessPolicies" Height="815" Width="1350" Background="#FFE3EBEB">
 
     <Window.Resources>
         <Style x:Key="RunButton" TargetType="{x:Type Button}">
             <Setter Property="Content" Value="Run"/>
-            <Setter Property="BorderBrush" Value="Black"/>
-            <Setter Property="Margin" Value="0,5,195,0"/>
+            <Setter Property="Margin" Value="0,10,195,0"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontStyle" Value="Normal"/>
-            <Setter Property="Height" Value="20"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="23"/>
             <Setter Property="Width" Value="50" />
-            <Setter Property="Background" Value="#FFAEFBFF" />
-            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="5" 
-                                Background= "{TemplateBinding Background}"
-                                BorderThickness="1"
-                                BorderBrush="Black">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center">
-                            </ContentPresenter>
+                        <Border CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <EventSetter Event="MouseEnter" Handler="Run_MouseEnter"/>
+            <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
+            <EventSetter Event="Click" Handler="Run_Click"/>
         </Style>
 
-        <Style x:Key="ComboBoxStyleCol1" TargetType="{x:Type ComboBox}">
+        <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontStyle" Value="Normal"/>
@@ -44,7 +43,7 @@
             <Setter Property="Width" Value="250"/>
         </Style>
 
-        <Style x:Key="ComboBoxStyleOther" TargetType="{x:Type ComboBox}">
+        <Style x:Key="ComboBoxStyleHidden" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontStyle" Value="Normal"/>
@@ -53,24 +52,24 @@
             <Setter Property="Width" Value="250"/>
             <Setter Property="Visibility" Value="Hidden"/>
         </Style>
+        
         <Style x:Key="FiltersStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Grid.ColumnSpan" Value="2"/>
             <Setter Property="FontFamily" Value="Sitka Display"/>
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,30,0,0"/>
+            <Setter Property="Margin" Value="0,18,0,0"/>
         </Style>
 
-        <Style x:Key="LabelStyle" TargetType="{x:Type Label}">
+        <Style x:Key="LabelStyleVisible" TargetType="{x:Type Label}">
             <Setter Property="FontFamily" Value="Sitka Subheading"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="Margin" Value="10,0,0,0"/>
         </Style>
 
-        <Style x:Key="LabelStyleOther" TargetType="{x:Type Label}">
+        <Style x:Key="LabelStyleHidden" TargetType="{x:Type Label}">
             <Setter Property="FontFamily" Value="Sitka Subheading"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="Visibility" Value="Hidden"/>
         </Style>
 
@@ -96,11 +95,34 @@
 
         <Style x:Key="TitleStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontFamily" Value="Sitka Display"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextDecorations" Value="Underline"/>
+        </Style>
+
+        <Style x:Key="BreakdownChartStyle" TargetType="lvc:PieChart">
+            <Setter Property="Hoverable" Value="True"/>
+            <Setter Property="LegendLocation" Value="Right"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Height" Value="375"/>
+            <Setter Property="Width" Value="525"/>
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,60,0,25"/>
+        </Style>
+
+        <Style x:Key="ChartTitleStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,25,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
 
@@ -147,21 +169,19 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Name="Title" Text="Listing Options for KeyVault Access Policies"
-                   Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5"
-                   Style="{StaticResource TitleStyle}"/>
+        <TextBlock Name="Title" Text="Listing Options for KeyVault Access Policies" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource TitleStyle}"/>
 
         <!-- Shorthand List Option-->
         <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand" 
-                   Grid.Column="1" Grid.Row="2" Margin ="0,30,0,0"
+                   Grid.Column="1" Grid.Row="2" Margin ="0,20,0,0"
                    Style="{StaticResource FiltersStyle}"/>
 
         <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
                 Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2"
-                Style="{StaticResource LabelStyle}"/>
+                Style="{StaticResource LabelStyleVisible}"/>
         
         <ComboBox Name ="ShorthandPermissionTypesDropdown" 
-                  Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleCol1}"
+                  Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
             <ComboBoxItem Content="PermissionsToKeys"/>
             <ComboBoxItem Content="PermissionsToSecrets"/>
@@ -170,16 +190,14 @@
 
         <Button Name ="ShorthandPermissionsRun" 
                 Grid.Column="1" Grid.Row="5"
-                Style="{StaticResource RunButton}"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+                Style="{StaticResource RunButton}"/>
 
         <Label Name="ShorthandPermissionsLabel" Content="Choose your shorthand:" 
-               Grid.Column="2" Grid.Row ="3" Style="{StaticResource LabelStyleOther}"
+               Grid.Column="2" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
                Visibility="Hidden"/>
         
         <ComboBox Name="ShorthandPermissionsDropdown"
-                  Grid.Column="2" Grid.Row="4" Style="{StaticResource ComboBoxStyleOther}"   
+                  Grid.Column="2" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
 
         <Popup Name="ShorthandPermissionsTranslation" Style="{StaticResource PopupTranslationStyle}">
@@ -197,10 +215,10 @@
                    Style="{StaticResource FiltersStyle}"/>
 
         <Label Name="SecurityPrincipalScopeLabel" Content="Choose your scope:"
-               Grid.Column="1" Grid.Row="7" Style="{StaticResource LabelStyle}"/>
+               Grid.Column="1" Grid.Row="7" Style="{StaticResource LabelStyleVisible}"/>
         <ComboBox Name="SecurityPrincipalScopeDropdown" 
                   Grid.Column ="1" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleCol1}"   
+                  Style="{StaticResource ComboBoxStyleVisible}"   
                   SelectionChanged="SecurityPrincipalScopeDropdown_SelectionChanged">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
@@ -210,24 +228,22 @@
 
         <Button Name ="SecurityPrincipalRun"
                 Grid.Column="1" Grid.Row="9" 
-                Style="{StaticResource RunButton}"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+                Style="{StaticResource RunButton}"/>
 
         <Label Name="SecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="2" Grid.Row="7" 
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="SecurityPrincipalSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="8" 
-                  Style="{StaticResource ComboBoxStyleOther}"
+                  Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
         
         <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="3" Grid.Row="7"
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="SecurityPrincipalTypeDropdown" 
                   Grid.Column="3" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleOther}">
+                  Style="{StaticResource ComboBoxStyleHidden}">
             <ComboBoxItem Content="All"/>
             <ComboBoxItem Content="User"/>
             <ComboBoxItem Content="Group"/>
@@ -241,11 +257,11 @@
                    Style="{StaticResource FiltersStyle}"/>
 
         <Label Name="PermissionsScopeLabel" Content="Choose your scope:" 
-               Grid.Column="1" Grid.Row="11" Style="{StaticResource LabelStyle}" />
+               Grid.Column="1" Grid.Row="11" Style="{StaticResource LabelStyleVisible}" />
         <ComboBox Name="PermissionsScopeDropdown" 
                   Grid.Column="1" Grid.Row="12" 
                   SelectionChanged="PermissionsScopeDropdown_SelectionChanged"
-                  Style="{StaticResource ComboBoxStyleCol1}">
+                  Style="{StaticResource ComboBoxStyleVisible}">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
             <ComboBoxItem Content="ResourceGroup"/>
@@ -254,73 +270,96 @@
 
         <Button Name ="PermissionsRun"
                 Grid.Column="1" Grid.Row="13"
-                Style="{StaticResource RunButton}"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+                Style="{StaticResource RunButton}"/>
 
         <Label Name="PermissionsSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="2" Grid.Row="11" 
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         
         <ComboBox Name ="PermissionsSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="12"
-                  Style="{StaticResource ComboBoxStyleOther}" 
+                  Style="{StaticResource ComboBoxStyleHidden}" 
                   SelectionChanged="PermissionsSpecifyScopeDropdown_SelectionChanged"/>
 
         <Label Name="KeyPermissionsLabel" Content="Key Permissions:"
-               Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleOther}"/>
+               Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name="KeyPermissionsDropdown"
-                  Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleOther}"        
+                  Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}"        
                    Visibility="Hidden"
                   SelectionChanged="KeyPermissionsDropdown_SelectionChanged"/>
 
         <Label Name="SecretPermissionsLabel" Content="Secret Permissions:"
                Grid.Column="4" Grid.Row="11"
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="SecretPermissionsDropdown"
                   Grid.Column="4" Grid.Row="12"
-                  Visibility = "Hidden" Style="{StaticResource ComboBoxStyleOther}"
+                  Visibility = "Hidden" Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="SecretPermissionsDropdown_SelectionChanged"/>
 
         <Label Name="CertificatePermissionsLabel" Content="Certificate Permissions:"
                Grid.Column="5" Grid.Row="11"
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="CertificatePermissionsDropdown"
                   Grid.Column="5" Grid.Row="12"
-                  Style="{StaticResource ComboBoxStyleOther}"/>
+                  Style="{StaticResource ComboBoxStyleHidden}"/>
 
         <!-- Permission Usage Breakdown Option-->
-        <TextBlock Name="PermissionBreakdown"
-                   Text="4. Breakdown of Permission Usage by Percentage"
-                   Grid.Column="1" Grid.Row="14"
-                   Style="{StaticResource FiltersStyle}"/>
-           
-        <Label Name="BreakdownScopeLabel" Content="Choose your scope:"
-               Grid.Column="1" Grid.Row="15"
-               Style="{StaticResource LabelStyle}" />
-        <ComboBox Name="BreakdownScopeDropdown"
-                  Grid.Column="1" Grid.Row="16"
-                  Style="{StaticResource ComboBoxStyleCol1}" 
-                  SelectionChanged="BreakdownScopeDropdown_SelectionChanged">
+        <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Permission Usage by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="1" Grid.Row="14"/>
+
+        <Label Name="BreakdownTypeDropLabel" Content="By permissions or by shorthands?" Style="{StaticResource LabelStyleVisible}" Grid.Column="1" Grid.Row="15"/>
+        <ComboBox Name="BreakdownTypeDropdown" Style="{StaticResource ComboBoxStyleVisible}" Grid.Column="1" Grid.Row="16" SelectionChanged="BreakdownTypeDropdown_SelectionChanged">
+            <ComboBoxItem Content="Permissions"/>
+            <ComboBoxItem Content="Shorthands"/>
+        </ComboBox>
+
+        <Label Name="BreakdownScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyleHidden}" Grid.Column="2" Grid.Row="15"/>
+        <ComboBox Name="BreakdownScopeDropdown" Style="{StaticResource ComboBoxStyleHidden}" SelectionChanged="BreakdownScopeDropdown_SelectionChanged" Grid.Column="2" Grid.Row="16">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
             <ComboBoxItem Content="ResourceGroup"/>
             <ComboBoxItem Content="KeyVault"/>
         </ComboBox>
 
-        <Button Name ="BreakdownRun" 
-                Grid.Column="1" Grid.Row="17"
-                Style="{StaticResource RunButton}"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+        <Label Name="SelectedScopeBreakdownLabel" Content="Specify the scope:" Style="{StaticResource LabelStyleHidden}" Grid.Column="3" Grid.Row="15"/>
+        <ComboBox Name="SelectedScopeBreakdownDropdown" Style="{StaticResource ComboBoxStyleHidden}" Visibility="Hidden" DropDownClosed="SelectedScopeBreakdownDropdown_DropDownClosed" Grid.Column="3" Grid.Row="16"/>
 
-        <Label Name="BreakdownSpecifyScopeLabel" Content="Specify the Scope:"
-               Grid.Column="2" Grid.Row="15"
-               Style="{StaticResource LabelStyleOther}"/>
-        
-        <ComboBox Name ="BreakdownSpecifyScopeDropdown"
-                  Grid.Column="2" Grid.Row="16"
-                  Style="{StaticResource ComboBoxStyleOther}"/>
+        <Button Name="BreakdownRun" Style="{StaticResource RunButton}" Grid.Column="1" Grid.Row="17"/>
+
+        <!-- Permission Breakdown Results Popup -->
+        <Popup Name="PermissionBreakdownResults" Style="{StaticResource PopupTranslationStyle}" Width="Auto" Height="525">
+            <Border BorderThickness="0.5" Width="650" BorderBrush="LightSlateGray">
+                <Grid Background="White">
+                    <Button Name="CloseBreakdownResults" Style="{StaticResource ClosePopupButton}" Click="CloseBreakdownResults_Click"/>
+
+                    <Grid Width="Auto" Height="500" VerticalAlignment="Bottom">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <StackPanel Name="BreakdownResultsStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True" CanHorizontallyScroll="True">
+                                <TextBlock Name="ResultsTitle" Text="Breakdown of Permission Usage by Percentage" Style="{StaticResource FiltersStyle}" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline"/>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Separator Grid.Row="0" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                    <lvc:PieChart Grid.Row="0" Name="PermissionsToKeysChart" Style="{StaticResource BreakdownChartStyle}"/>
+
+                                    <Separator Grid.Row="1" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                    <lvc:PieChart Grid.Row="1" Name="PermissionsToSecretsChart" Style="{StaticResource BreakdownChartStyle}"/>
+
+                                    <Separator Grid.Row="2" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                    <lvc:PieChart Grid.Row="2" Name="PermissionsToCertificatesChart" Style="{StaticResource BreakdownChartStyle}"/>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
 
         <!-- Most Accessed KeyVaults List Option-->
         <TextBlock Name="MostAccessed" Text="5. Most Accesssed KeyVaults"
@@ -329,10 +368,10 @@
           
         <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
                Grid.Column="1" Grid.Row="19"
-               Style="{StaticResource LabelStyle}"/>
+               Style="{StaticResource LabelStyleVisible}"/>
         <ComboBox Name="MostAccessedScopeDropdown"
                   Grid.Column="1" Grid.Row="20"
-                  Style="{StaticResource ComboBoxStyleCol1}"
+                  Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="MostAccessedScopeDropdown_SelectionChanged">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
@@ -342,16 +381,14 @@
 
         <Button Name ="MostAccessedRun" 
                 Grid.Column="1" Grid.Row="21"
-                Style="{StaticResource RunButton}"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+                Style="{StaticResource RunButton}"/>
 
         <Label Name="MostAccessedSpecifyScopeLabel" Content="Specify the Scope:"
                Grid.Column="2" Grid.Row="19" 
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="MostAccessedSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="20"
-                  Style="{StaticResource ComboBoxStyleOther}"/>
+                  Style="{StaticResource ComboBoxStyleHidden}"/>
 
         <!-- Ranked Security Principal List Option-->
         <TextBlock Name="SecurityPrincipalAccess"
@@ -361,10 +398,10 @@
         <Label Name="SecurityPrincipalAccessScopeLabel"
                Content="Choose your scope:"
                Grid.Column="1" Grid.Row="23"
-               Style="{StaticResource LabelStyle}"/>
+               Style="{StaticResource LabelStyleVisible}"/>
         <ComboBox Name="SecurityPrincipalAccessScopeDropdown"
                   Grid.Column="1" Grid.Row="24"
-                  Style="{StaticResource ComboBoxStyleCol1}" 
+                  Style="{StaticResource ComboBoxStyleVisible}" 
                   SelectionChanged="SecurityPrincipalAccessScopeDropdown_SelectionChanged">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
@@ -374,18 +411,15 @@
 
         <Button Name ="SecurityPrincipalAccessRun" 
                 Grid.Column="1" Grid.Row="25"
-                Style="{StaticResource RunButton}"
-                BorderBrush="Black"
-                MouseEnter="Run_MouseEnter" MouseLeave="Run_MouseLeave"
-                Click="Run_Click"/>
+                Style="{StaticResource RunButton}"/>
 
         <Label Name="SecurityPrincipalAccessSpecifyScopeLabel"
                Content="Specify the scope:"
                Grid.Column="2" Grid.Row="23" 
-               Style="{StaticResource LabelStyleOther}"/>
+               Style="{StaticResource LabelStyleHidden}"/>
         
         <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="24"
-                  Style="{StaticResource ComboBoxStyleOther}"/>
+                  Style="{StaticResource ComboBoxStyleHidden}"/>
     </Grid>
 </Window>
