@@ -33,8 +33,5 @@ namespace Managing_RBAC_in_AzureListOptions
         public static readonly string[] SHORTHANDS_KEYS = { "all", "read", "write", "storage", "crypto" };
         public static readonly string[] SHORTHANDS_SECRETS = { "all", "read", "write", "storage"};
         public static readonly string[] SHORTHANDS_CERTIFICATES = { "all", "read", "write", "storage", "management" };
-
-        public static SolidColorBrush MOUSE_ENTER_BUTTON_COLOR = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
-        public static SolidColorBrush MOUSE_LEAVE_BUTTON_COLOR = new SolidColorBrush(System.Windows.Media.Color.FromRgb(174, 251, 255));
     }
 }

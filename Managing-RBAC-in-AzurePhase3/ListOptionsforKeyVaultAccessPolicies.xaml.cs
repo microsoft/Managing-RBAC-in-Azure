@@ -4,6 +4,8 @@ using RBAC;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+
 
 
 namespace Managing_RBAC_in_AzureListOptions
@@ -131,7 +133,8 @@ namespace Managing_RBAC_in_AzureListOptions
         /// </summary>
         /// <param name="sender">The close popup button</param>
         /// <param name="e">The event that occurs when the button is clicked</param>
-        private void closeShorthandPermissionsTranslation(object sender, RoutedEventArgs e)
+
+        private void CloseShorthandPermissionsTranslation_Click(object sender, RoutedEventArgs e)
         {
             ShorthandPermissionsTranslation.IsOpen = false;
 
@@ -140,7 +143,7 @@ namespace Managing_RBAC_in_AzureListOptions
             ShorthandPermissionsLabel.Visibility = Visibility.Hidden;
             ShorthandPermissionsDropdown.Visibility = Visibility.Hidden;
         }
-
+     
         // 2. List by Security Principal ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -378,125 +381,61 @@ namespace Managing_RBAC_in_AzureListOptions
         // "Run" Buttons that Execute Code & Output ----------------------------------------------------------------------------------
 
         /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
+        /// This method displays an output when a button is clicked
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        private void ShorthandPermissionsRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Run_Click(object sender, RoutedEventArgs e)
         {
-            ShorthandPermissionsRun.Content = "Click";
-            ShorthandPermissionsRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
-        }
-
-        private void ShorthandPermissionsRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            ShorthandPermissionsRun.Content = "Run";
-            ShorthandPermissionsRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
+            Button btn = sender as Button;
+            
+            if (btn.Name == "ShorthandPermissionsRun")
+            {
+                // Execute Code
+            }
+            else if (btn.Name == "SecurityPrincipalRun")
+            {
+                // Execute Code
+            }
+            else if (btn.Name == "PermissionsRun")
+            {
+                // Execute Code
+            }
+            else if (btn.Name == "BreakdownRun")
+            {
+                // Execute Code
+            }
+            else if (btn.Name == "MostAccessedRun")
+            {
+                // Execute Code
+            }
+            else if (btn.Name == "SecurityPrincipalAccessRun")
+            {
+                // Execute Code
+            }
         }
 
         /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
+        /// This method makes the button a different color when the user hovers over it
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        private void SecurityPrincipalRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Run_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            SecurityPrincipalRun.Content = "Click";
-            SecurityPrincipalRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
-        }
-
-        private void SecurityPrincipalRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            SecurityPrincipalRun.Content = "Run";
-            SecurityPrincipalRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
+            Button btn = sender as Button;
+            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
         }
 
         /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
+        /// This method returns the button to its original color when a user exits or isn't hovering over the button
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        private void PermissionsRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Run_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            PermissionsRun.Content = "Click";
-            PermissionsRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
+            Button btn = sender as Button;
+            btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(174, 251, 255));
         }
 
-        /// <summary>
-        /// This method executes when a mouse exits/leaves the button. It changes color back to a darker blue and changes button text to "Run"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void PermissionsRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            PermissionsRun.Content = "Run";
-            PermissionsRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void BreakdownRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            BreakdownRun.Content = "Click";
-            BreakdownRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse exits/leaves the button. It changes color back to a darker blue and changes button text to "Run"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void BreakdownRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-           BreakdownRun.Content = "Run";
-            BreakdownRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void MostAccessedRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            MostAccessedRun.Content = "Click";
-            MostAccessedRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse exits/leaves the button. It changes color back to a darker blue and changes button text to "Run"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void MostAccessedRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            MostAccessedRun.Content = "Run";
-            MostAccessedRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse enters/hovers the button. It changes color to light blue and changes button text to "Click"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void SecurityPrincipalAccessRun_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-           SecurityPrincipalAccessRun.Content = "Click";
-           SecurityPrincipalAccessRun.Background = Constants.MOUSE_ENTER_BUTTON_COLOR;
-        }
-
-        /// <summary>
-        /// This method executes when a mouse exits/leaves the button. It changes color back to a darker blue and changes button text to "Run"
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void SecurityPrincipalAccessRun_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            SecurityPrincipalAccessRun.Content = "Run";
-            SecurityPrincipalAccessRun.Background = Constants.MOUSE_LEAVE_BUTTON_COLOR;
-        }
     }
 }
