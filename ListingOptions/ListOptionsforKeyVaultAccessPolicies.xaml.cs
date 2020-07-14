@@ -513,7 +513,6 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
             }
-            //dont even make visible then just throw errors
 
             ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedType.Content as string;
@@ -555,7 +554,6 @@ namespace Managing_RBAC_in_AzureListOptions
             setChartData(certificates, count["certificateBreakdown"]);
 
             PermissionBreakdownResults.IsOpen = true;
-
         }
 
         /// <summary>
@@ -567,6 +565,8 @@ namespace Managing_RBAC_in_AzureListOptions
         private Dictionary<string, Dictionary<string, int>> countPermissions(List<KeyVaultProperties> vaultsInScope, string type)
         {
             Dictionary<string, Dictionary<string, int>> usages = new Dictionary<string, Dictionary<string, int>>();
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+
             if (type == "Permissions")
             {
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.ALL_KEY_PERMISSIONS);
@@ -577,14 +577,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     foreach (PrincipalPermissions principal in kv.AccessPolicies)
                     {
-                        checkForPermissions(usages, principal);
+                        checkForPermissions(up, usages, principal);
                     }
                 }
             }
             else
             {
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray());
                 usages["secretBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray());
                 usages["certificateBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray());
@@ -618,10 +616,12 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <summary>
         /// This method counts the occurrences of each permission type and stores the results in a dictionary.
         /// </summary>
+        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="usages">The dictionary that stores the permission breakdown usages for each permission block</param>
         /// <param name="principal">The current PrincipalPermissions object</param>
-        private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        private void checkForPermissions(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string key in principal.PermissionsToKeys)
             {
                 ++usages["keyBreakdown"][key];
@@ -644,6 +644,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="principal">The current PrincipalPermissions object</param>
         private void checkForShorthands(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
                 var permissions = up.getShorthandPermissions(shorthand, "key");
@@ -669,6 +670,26 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     ++usages["certificateBreakdown"][shorthand];
                 }
+            }
+        }
+
+        /// <summary>
+        /// This method translates the "all" keyword into it's respective permissions
+        /// </summary>
+        /// <param name="principal"></param>
+        private void translateAllKeyword(PrincipalPermissions principal)
+        {
+            if (principal.PermissionsToKeys.Contains("all"))
+            {
+                principal.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS;
+            }
+            if (principal.PermissionsToSecrets.Contains("all"))
+            {
+                principal.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS;
+            }
+            if (principal.PermissionsToCertificates.Contains("all"))
+            {
+                principal.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS;
             }
         }
 
@@ -709,6 +730,8 @@ namespace Managing_RBAC_in_AzureListOptions
 
             BreakdownTypeDropdown.SelectedIndex = -1;
             BreakdownScopeDropdown.SelectedIndex = -1;
+            BreakdownScopeLabel.Visibility = Visibility.Hidden;
+            BreakdownScopeDropdown.Visibility = Visibility.Hidden;
             SelectedScopeBreakdownDropdown.SelectedIndex = -1;
         }
 
