@@ -37,15 +37,15 @@ namespace Managing_RBAC_in_AzureListOptions
                 ComboBoxItem selectedScope = blockDropdown.SelectedItem as ComboBoxItem;
                 string val = selectedScope.Content as string;
 
-                if (val == "PermissionsToKeys")
+                if (val == "Key Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_KEYS);
                 }
-                else if (val == "PermissionsToSecrets")
+                else if (val == "Secret Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_SECRETS);
                 }
-                else if (val == "PermissionsToCertificates")
+                else if (val == "Certificate Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_CERTIFICATES);
                 }
@@ -96,15 +96,15 @@ namespace Managing_RBAC_in_AzureListOptions
                 string shorthand = selectedShorthand.Content as string;
 
                 string permissionType = "";
-                if (block == "PermissionsToKeys")
+                if (block == "Key Permissions")
                 {
                     permissionType = "key";
                 }
-                else if (block == "PermissionsToSecrets")
+                else if (block == "Secret Permissions")
                 {
                     permissionType = "secret";
                 }
-                else if (block == "PermissionsToCertificates")
+                else if (block == "Certificate Permissions")
                 {
                     permissionType = "certificate";
                 }
