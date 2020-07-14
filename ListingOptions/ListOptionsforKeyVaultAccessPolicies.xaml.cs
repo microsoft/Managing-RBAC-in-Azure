@@ -320,6 +320,9 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">The event that occurs when a selection changes</param>
         private void BreakdownScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SelectedScopeBreakdownLabel.Visibility = Visibility.Hidden;
+            SelectedScopeBreakdownDropdown.Visibility = Visibility.Hidden;
+
             if (BreakdownTypeDropdown.SelectedIndex != -1 && BreakdownScopeDropdown.SelectedIndex != -1)
             {
                 ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
@@ -338,13 +341,13 @@ namespace Managing_RBAC_in_AzureListOptions
                     if (scope != "YAML")
                     {
                         populateSelectedScopeBreakdown(yaml);
+                        SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
+                        SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
                     }
                     else
                     {
                         SelectedScopeBreakdownDropdown.SelectedIndex = -1;
                     }
-                    SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
-                    SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex)
                 {

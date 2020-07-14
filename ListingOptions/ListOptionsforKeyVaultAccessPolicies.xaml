@@ -6,6 +6,7 @@
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="ListOptionsforKeyVaultAccessPolicies" Height="815" Width="1350" Background="#FFE3EBEB">
 
     <Window.Resources>
