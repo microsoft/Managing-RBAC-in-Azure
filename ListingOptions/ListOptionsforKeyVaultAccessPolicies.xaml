@@ -6,6 +6,7 @@
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="ListOptionsforKeyVaultAccessPolicies" Height="815" Width="1350" Background="#FFE3EBEB">
 
     <Window.Resources>
@@ -169,7 +170,7 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Name="Title" Text="Listing Options for KeyVault Access Policies" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource TitleStyle}"/>
+        <TextBlock Name="Header" Text="Listing Options for KeyVault Access Policies" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource TitleStyle}"/>
 
         <!-- Shorthand List Option-->
         <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand" 
@@ -183,9 +184,9 @@
         <ComboBox Name ="ShorthandPermissionTypesDropdown" 
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
-            <ComboBoxItem Content="PermissionsToKeys"/>
-            <ComboBoxItem Content="PermissionsToSecrets"/>
-            <ComboBoxItem Content="PermissionsToCertificates"/>
+            <ComboBoxItem Content="Key Permissions"/>
+            <ComboBoxItem Content="Secret Permissions"/>
+            <ComboBoxItem Content="Certificate Permissions"/>
         </ComboBox>
 
         <Button Name ="ShorthandPermissionsRun" 
@@ -209,7 +210,7 @@
         </Popup>
 
         <!-- Security Principal List Option-->
-        <TextBlock Name="SecurityPrincipalList" Text="2. List Permissions by Security Principal"
+        <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal"
                    Grid.Column ="1" Grid.Row="6"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -251,7 +252,7 @@
         </ComboBox>
 
         <!-- Permissions List Option-->
-        <TextBlock Name="PermissionsList" Text="3. List Permissions"
+        <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions"
                    Grid.Column="1" Grid.Row="10"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -303,7 +304,7 @@
                   Style="{StaticResource ComboBoxStyleHidden}"/>
 
         <!-- Permission Usage Breakdown Option-->
-        <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Permission Usage by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="1" Grid.Row="14"/>
+        <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="1" Grid.Row="14"/>
 
         <Label Name="BreakdownTypeDropLabel" Content="By permissions or by shorthands?" Style="{StaticResource LabelStyleVisible}" Grid.Column="1" Grid.Row="15"/>
         <ComboBox Name="BreakdownTypeDropdown" Style="{StaticResource ComboBoxStyleVisible}" Grid.Column="1" Grid.Row="16" SelectionChanged="BreakdownTypeDropdown_SelectionChanged">
@@ -333,7 +334,7 @@
                     <Grid Width="Auto" Height="500" VerticalAlignment="Bottom">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                             <StackPanel Name="BreakdownResultsStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True" CanHorizontallyScroll="True">
-                                <TextBlock Name="ResultsTitle" Text="Breakdown of Permission Usage by Percentage" Style="{StaticResource FiltersStyle}" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline"/>
+                                <TextBlock Name="ResultsTitle" Text="Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline"/>
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
@@ -361,7 +362,7 @@
         </Popup>
 
         <!-- Most Accessed KeyVaults List Option-->
-        <TextBlock Name="MostAccessed" Text="5. Most Accesssed KeyVaults"
+        <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."
                    Grid.Column="1" Grid.Row="18" 
                    Style="{StaticResource FiltersStyle}"/>
           
@@ -391,7 +392,7 @@
 
         <!-- Ranked Security Principal List Option-->
         <TextBlock Name="SecurityPrincipalAccess"
-                   Text="6. Ranked Security Principals by Access"
+                   Text="6. List Top 10 Security Principals by Permission Access."
                    Grid.Column="1" Grid.Row="22"
                    Style="{StaticResource FiltersStyle}"/>
         <Label Name="SecurityPrincipalAccessScopeLabel"
