@@ -118,12 +118,12 @@ namespace Managing_RBAC_in_AzureListOptions
                     FontWeight = FontWeights.SemiBold,
                     FontSize = 15,
                     Text = $"{block}: {shorthand}:",
-                    Margin = new Thickness(15, 0, 15, 2)
+                    Margin = new Thickness(20, 0, 15, 2)
                 });
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
                     Text = $"- {string.Join("\n- ", shorthandPermissions)}",
-                    Margin = new Thickness(20, 0, 15, 22),
+                    Margin = new Thickness(25, 0, 15, 22),
                     FontSize = 14
                 });
             }

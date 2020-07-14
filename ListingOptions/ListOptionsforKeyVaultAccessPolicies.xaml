@@ -169,7 +169,7 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Name="Title" Text="Listing Options for KeyVault Access Policies" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource TitleStyle}"/>
+        <TextBlock Name="Header" Text="Listing Options for KeyVault Access Policies" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="5" Style="{StaticResource TitleStyle}"/>
 
         <!-- Shorthand List Option-->
         <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand" 
