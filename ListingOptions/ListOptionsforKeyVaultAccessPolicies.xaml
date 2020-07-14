@@ -361,7 +361,7 @@
         </Popup>
 
         <!-- Most Accessed KeyVaults List Option-->
-        <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access"
+        <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."
                    Grid.Column="1" Grid.Row="18" 
                    Style="{StaticResource FiltersStyle}"/>
           
@@ -391,7 +391,7 @@
 
         <!-- Ranked Security Principal List Option-->
         <TextBlock Name="SecurityPrincipalAccess"
-                   Text="6. List Top 10 Security Principals by Permission Access"
+                   Text="6. List Top 10 Security Principals by Permission Access."
                    Grid.Column="1" Grid.Row="22"
                    Style="{StaticResource FiltersStyle}"/>
         <Label Name="SecurityPrincipalAccessScopeLabel"
