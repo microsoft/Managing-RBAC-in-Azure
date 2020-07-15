@@ -443,7 +443,7 @@ namespace Managing_RBAC_in_AzureListOptions
             List<string> selected = new List<string>();
             try
             {
-                ComboBoxItem selectedItem = SelectedScopeBreakdownDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedItem = (ComboBoxItem)SelectedScopeBreakdownDropdown.SelectedItem;
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
@@ -453,10 +453,10 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 try
                 {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
                     SelectedScopeBreakdownDropdown.SelectedIndex = -1;
 
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    if (lastItem.Content.ToString().EndsWith("selected"))
                     {
                         items.RemoveAt(items.Count - 1);
                     }
@@ -737,7 +737,6 @@ namespace Managing_RBAC_in_AzureListOptions
                 });
                 chart.Series = data;
                 
-
                 var tooltip = chart.DataTooltip as DefaultTooltip;
                 tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
             }
