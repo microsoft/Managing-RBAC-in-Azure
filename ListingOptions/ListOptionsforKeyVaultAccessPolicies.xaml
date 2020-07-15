@@ -75,7 +75,7 @@
             <Setter Property="Visibility" Value="Hidden"/>
         </Style>
 
-        <Style x:Key="PopupTranslationStyle" TargetType="{x:Type Popup}">
+        <Style x:Key="PopupStyle" TargetType="{x:Type Popup}">
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
@@ -103,7 +103,7 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextDecorations" Value="Underline"/>
-            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="Margin" Value="0,15,0,0"/>
         </Style>
 
         <Style x:Key="BreakdownChartStyle" TargetType="lvc:PieChart">
@@ -112,20 +112,20 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Height" Value="375"/>
-            <Setter Property="Width" Value="525"/>
+            <Setter Property="Width" Value="575"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="0,60,0,25"/>
+            <Setter Property="Margin" Value="0,82,0,25"/>
         </Style>
 
         <Style x:Key="ChartTitleStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontFamily" Value="Sitka Display"/>
-            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Height" Value="25"/>
             <Setter Property="Margin" Value="0,25,0,0"/>
-            <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
     </Window.Resources>
 
@@ -202,7 +202,7 @@
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
 
-            <Popup Name="ShorthandPermissionsTranslation" Style="{StaticResource PopupTranslationStyle}">
+            <Popup Name="ShorthandPermissionsTranslation" Style="{StaticResource PopupStyle}">
                 <Border BorderThickness="0.3" Height="Auto" Width="320" BorderBrush="#FFE0E0E0">
                     <StackPanel Name="ShorthandTranslationStackPanel" Height="Auto" Width="320" Background="White">
                         <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="CloseShorthandPermissionsTranslation_Click"/>
@@ -258,7 +258,7 @@
                    Style="{StaticResource FiltersStyle}"/>
 
             <Label Name="PermissionsScopeLabel" Content="Choose your scope:" 
-               Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}" />
+               Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}"/>
             <ComboBox Name="PermissionsScopeDropdown" 
                   Grid.Column="0" Grid.Row="12" 
                   SelectionChanged="PermissionsScopeDropdown_SelectionChanged"
@@ -327,12 +327,12 @@
             <Button Name="BreakdownRun" Style="{StaticResource RunButton}" Grid.Column="0" Grid.Row="17"/>
 
             <!-- Permission Breakdown Results Popup -->
-            <Popup Name="PermissionBreakdownResults" Style="{StaticResource PopupTranslationStyle}" Width="Auto" Height="525">
-                <Border BorderThickness="0.5" Width="650" BorderBrush="LightSlateGray">
+            <Popup Name="PermissionBreakdownResults" Style="{StaticResource PopupStyle}" Width="Auto" Height="550">
+                <Border BorderThickness="0.5" Width="700" BorderBrush="LightSlateGray">
                     <Grid Background="White">
                         <Button Name="CloseBreakdownResults" Style="{StaticResource ClosePopupButton}" Click="CloseBreakdownResults_Click"/>
 
-                        <Grid Width="Auto" Height="500" VerticalAlignment="Bottom">
+                        <Grid Width="Auto" Height="525" VerticalAlignment="Bottom">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                 <StackPanel Name="BreakdownResultsStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True" CanHorizontallyScroll="True">
                                     <TextBlock Name="ResultsTitle" Text="Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline"/>
@@ -344,15 +344,18 @@
                                         </Grid.RowDefinitions>
 
                                         <Separator Grid.Row="0" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
+                                        <TextBlock Grid.Row="0" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="185,5,0,0"/>
                                         <lvc:PieChart Grid.Row="0" Name="PermissionsToKeysChart" Style="{StaticResource BreakdownChartStyle}"/>
 
                                         <Separator Grid.Row="1" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
+                                        <TextBlock Grid.Row="1" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="205,5,0,0"/>
                                         <lvc:PieChart Grid.Row="1" Name="PermissionsToSecretsChart" Style="{StaticResource BreakdownChartStyle}"/>
 
                                         <Separator Grid.Row="2" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
+                                        <TextBlock Grid.Row="2" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="240,5,0,0"/>
                                         <lvc:PieChart Grid.Row="2" Name="PermissionsToCertificatesChart" Style="{StaticResource BreakdownChartStyle}"/>
                                     </Grid>
                                 </StackPanel>
@@ -361,6 +364,18 @@
                     </Grid>
                 </Border>
             </Popup>
+
+            <!--<lvc:PieChart Grid.Row="2" Name="Pchart" Style="{StaticResource BreakdownChartStyle}">
+                <lvc:PieChart.Series>
+                    <lvc:PieSeries Name="a" Values="6" DataLabels="True">
+                        <lvc:PieSeries.DataLabelsTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="%"/>
+                            </DataTemplate>
+                        </lvc:PieSeries.DataLabelsTemplate>
+                    </lvc:PieSeries>
+                </lvc:PieChart.Series>
+            </lvc:PieChart> -->
 
             <!-- #5 Most Accessed KeyVaults List Option-->
             <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."

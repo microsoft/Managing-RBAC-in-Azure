@@ -8,6 +8,8 @@ using Constants = RBAC.Constants;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Windows.Media;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -703,18 +705,40 @@ namespace Managing_RBAC_in_AzureListOptions
             SeriesCollection data = new SeriesCollection();
             var descendingOrder = breakdownCount.OrderByDescending(i => i.Value);
 
+            int total = 0;
+            foreach (int val in breakdownCount.Values)
+            {
+                total += val;
+            }
+
             foreach (var item in descendingOrder)
             {
+                // Create custom label
+                double percentage = item.Value / (double)total;
+                FrameworkElementFactory stackPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
+                stackPanelFactory.SetValue(StackPanel.OrientationProperty, Orientation.Vertical);
+                FrameworkElementFactory label = new FrameworkElementFactory(typeof(TextBlock));
+                label.SetValue(TextBlock.TextProperty, string.Format("{0:P}", percentage));
+                label.SetValue(TextBlock.FontSizeProperty, new Binding("15"));
+                label.SetValue(TextBlock.ForegroundProperty, new Binding("Black"));
+                stackPanelFactory.AppendChild(label);
+
                 data.Add(new LiveCharts.Wpf.PieSeries()
                 {
                     Title = item.Key,
                     Values = new ChartValues<int>() { item.Value },
                     DataLabels = true,
-                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y))
+                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y)),
+                    LabelPosition = PieLabelPosition.OutsideSlice,
+                    DataLabelsTemplate = new DataTemplate()
+                    {
+                        VisualTree = stackPanelFactory
+                    }
                 });
                 chart.Series = data;
+                
 
-                var tooltip = (DefaultTooltip)chart.DataTooltip;
+                var tooltip = chart.DataTooltip as DefaultTooltip;
                 tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
             }
         }
