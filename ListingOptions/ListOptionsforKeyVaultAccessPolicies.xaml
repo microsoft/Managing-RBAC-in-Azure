@@ -115,7 +115,7 @@
             <Setter Property="Width" Value="575"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="0,82,0,25"/>
+            <Setter Property="Margin" Value="0,90,0,40"/>
         </Style>
 
         <Style x:Key="ChartTitleStyle" TargetType="{x:Type TextBlock}">
@@ -123,7 +123,7 @@
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Height" Value="25"/>
-            <Setter Property="Margin" Value="0,25,0,0"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
@@ -344,18 +344,18 @@
                                         </Grid.RowDefinitions>
 
                                         <Separator Grid.Row="0" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
-                                        <TextBlock Grid.Row="0" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="185,5,0,0"/>
+                                        <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="0" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
                                         <lvc:PieChart Grid.Row="0" Name="PermissionsToKeysChart" Style="{StaticResource BreakdownChartStyle}"/>
 
                                         <Separator Grid.Row="1" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
-                                        <TextBlock Grid.Row="1" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="205,5,0,0"/>
+                                        <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="1" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
                                         <lvc:PieChart Grid.Row="1" Name="PermissionsToSecretsChart" Style="{StaticResource BreakdownChartStyle}"/>
 
                                         <Separator Grid.Row="2" VerticalAlignment="Top"/>
-                                        <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}" Padding="0,0,200,0"/>
-                                        <TextBlock Grid.Row="2" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" FontSize="13" Padding="240,5,0,0"/>
+                                        <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="2" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
                                         <lvc:PieChart Grid.Row="2" Name="PermissionsToCertificatesChart" Style="{StaticResource BreakdownChartStyle}"/>
                                     </Grid>
                                 </StackPanel>
@@ -364,18 +364,6 @@
                     </Grid>
                 </Border>
             </Popup>
-
-            <!--<lvc:PieChart Grid.Row="2" Name="Pchart" Style="{StaticResource BreakdownChartStyle}">
-                <lvc:PieChart.Series>
-                    <lvc:PieSeries Name="a" Values="6" DataLabels="True">
-                        <lvc:PieSeries.DataLabelsTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="%"/>
-                            </DataTemplate>
-                        </lvc:PieSeries.DataLabelsTemplate>
-                    </lvc:PieSeries>
-                </lvc:PieChart.Series>
-            </lvc:PieChart> -->
 
             <!-- #5 Most Accessed KeyVaults List Option-->
             <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."
