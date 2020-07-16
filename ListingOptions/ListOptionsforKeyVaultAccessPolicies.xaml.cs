@@ -39,15 +39,15 @@ namespace Managing_RBAC_in_AzureListOptions
                 ComboBoxItem selectedScope = blockDropdown.SelectedItem as ComboBoxItem;
                 string val = selectedScope.Content as string;
 
-                if (val == "PermissionsToKeys")
+                if (val == "Key Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_KEYS);
                 }
-                else if (val == "PermissionsToSecrets")
+                else if (val == "Secret Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_SECRETS);
                 }
-                else if (val == "PermissionsToCertificates")
+                else if (val == "Certificate Permissions")
                 {
                     populateShorthandDropdown(Constants.SHORTHANDS_CERTIFICATES);
                 }
@@ -98,15 +98,15 @@ namespace Managing_RBAC_in_AzureListOptions
                 string shorthand = selectedShorthand.Content as string;
 
                 string permissionType = "";
-                if (block == "PermissionsToKeys")
+                if (block == "Key Permissions")
                 {
                     permissionType = "key";
                 }
-                else if (block == "PermissionsToSecrets")
+                else if (block == "Secret Permissions")
                 {
                     permissionType = "secret";
                 }
-                else if (block == "PermissionsToCertificates")
+                else if (block == "Certificate Permissions")
                 {
                     permissionType = "certificate";
                 }
@@ -120,12 +120,12 @@ namespace Managing_RBAC_in_AzureListOptions
                     FontWeight = FontWeights.SemiBold,
                     FontSize = 15,
                     Text = $"{block}: {shorthand}:",
-                    Margin = new Thickness(15, 0, 15, 2)
+                    Margin = new Thickness(20, 0, 15, 2)
                 });
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
                 {
                     Text = $"- {string.Join("\n- ", shorthandPermissions)}",
-                    Margin = new Thickness(20, 0, 15, 22),
+                    Margin = new Thickness(25, 0, 15, 22),
                     FontSize = 14
                 });
             }
@@ -322,6 +322,9 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">The event that occurs when a selection changes</param>
         private void BreakdownScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SelectedScopeBreakdownLabel.Visibility = Visibility.Hidden;
+            SelectedScopeBreakdownDropdown.Visibility = Visibility.Hidden;
+
             if (BreakdownTypeDropdown.SelectedIndex != -1 && BreakdownScopeDropdown.SelectedIndex != -1)
             {
                 ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
@@ -340,13 +343,13 @@ namespace Managing_RBAC_in_AzureListOptions
                     if (scope != "YAML")
                     {
                         populateSelectedScopeBreakdown(yaml);
+                        SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
+                        SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
                     }
                     else
                     {
                         SelectedScopeBreakdownDropdown.SelectedIndex = -1;
                     }
-                    SelectedScopeBreakdownLabel.Visibility = Visibility.Visible;
-                    SelectedScopeBreakdownDropdown.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex)
                 {
