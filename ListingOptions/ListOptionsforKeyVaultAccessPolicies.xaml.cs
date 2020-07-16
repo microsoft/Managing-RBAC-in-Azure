@@ -8,6 +8,8 @@ using Constants = RBAC.Constants;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Windows.Media;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -441,7 +443,7 @@ namespace Managing_RBAC_in_AzureListOptions
             List<string> selected = new List<string>();
             try
             {
-                ComboBoxItem selectedItem = SelectedScopeBreakdownDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedItem = (ComboBoxItem)SelectedScopeBreakdownDropdown.SelectedItem;
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
@@ -451,10 +453,10 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 try
                 {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
                     SelectedScopeBreakdownDropdown.SelectedIndex = -1;
 
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    if (lastItem.Content.ToString().EndsWith("selected"))
                     {
                         items.RemoveAt(items.Count - 1);
                     }
@@ -513,7 +515,6 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
             }
-            //dont even make visible then just throw errors
 
             ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedType.Content as string;
@@ -555,7 +556,6 @@ namespace Managing_RBAC_in_AzureListOptions
             setChartData(certificates, count["certificateBreakdown"]);
 
             PermissionBreakdownResults.IsOpen = true;
-
         }
 
         /// <summary>
@@ -567,6 +567,8 @@ namespace Managing_RBAC_in_AzureListOptions
         private Dictionary<string, Dictionary<string, int>> countPermissions(List<KeyVaultProperties> vaultsInScope, string type)
         {
             Dictionary<string, Dictionary<string, int>> usages = new Dictionary<string, Dictionary<string, int>>();
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+
             if (type == "Permissions")
             {
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.ALL_KEY_PERMISSIONS);
@@ -577,14 +579,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     foreach (PrincipalPermissions principal in kv.AccessPolicies)
                     {
-                        checkForPermissions(usages, principal);
+                        checkForPermissions(up, usages, principal);
                     }
                 }
             }
             else
             {
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray());
                 usages["secretBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray());
                 usages["certificateBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray());
@@ -618,10 +618,12 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <summary>
         /// This method counts the occurrences of each permission type and stores the results in a dictionary.
         /// </summary>
+        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="usages">The dictionary that stores the permission breakdown usages for each permission block</param>
         /// <param name="principal">The current PrincipalPermissions object</param>
-        private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        private void checkForPermissions(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string key in principal.PermissionsToKeys)
             {
                 ++usages["keyBreakdown"][key];
@@ -644,6 +646,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="principal">The current PrincipalPermissions object</param>
         private void checkForShorthands(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
                 var permissions = up.getShorthandPermissions(shorthand, "key");
@@ -673,6 +676,26 @@ namespace Managing_RBAC_in_AzureListOptions
         }
 
         /// <summary>
+        /// This method translates the "all" keyword into it's respective permissions
+        /// </summary>
+        /// <param name="principal"></param>
+        private void translateAllKeyword(PrincipalPermissions principal)
+        {
+            if (principal.PermissionsToKeys.Contains("all"))
+            {
+                principal.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS;
+            }
+            if (principal.PermissionsToSecrets.Contains("all"))
+            {
+                principal.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS;
+            }
+            if (principal.PermissionsToCertificates.Contains("all"))
+            {
+                principal.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS;
+            }
+        }
+
+        /// <summary>
         /// This method adds and sets the pie chart data to the respective pie chart.
         /// </summary>
         /// <param name="chart">The pie chart to which we want to add data</param>
@@ -682,18 +705,39 @@ namespace Managing_RBAC_in_AzureListOptions
             SeriesCollection data = new SeriesCollection();
             var descendingOrder = breakdownCount.OrderByDescending(i => i.Value);
 
+            int total = 0;
+            foreach (int val in breakdownCount.Values)
+            {
+                total += val;
+            }
+
             foreach (var item in descendingOrder)
             {
+                // Create custom label
+                double percentage = item.Value / (double)total;
+                FrameworkElementFactory stackPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
+                stackPanelFactory.SetValue(StackPanel.OrientationProperty, Orientation.Vertical);
+                FrameworkElementFactory label = new FrameworkElementFactory(typeof(TextBlock));
+                label.SetValue(TextBlock.TextProperty, string.Format("{0:P}", percentage));
+                label.SetValue(TextBlock.FontSizeProperty, new Binding("15"));
+                label.SetValue(TextBlock.ForegroundProperty, new Binding("Black"));
+                stackPanelFactory.AppendChild(label);
+
                 data.Add(new LiveCharts.Wpf.PieSeries()
                 {
                     Title = item.Key,
                     Values = new ChartValues<int>() { item.Value },
                     DataLabels = true,
-                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y))
+                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y)),
+                    LabelPosition = PieLabelPosition.OutsideSlice,
+                    DataLabelsTemplate = new DataTemplate()
+                    {
+                        VisualTree = stackPanelFactory
+                    }
                 });
                 chart.Series = data;
-
-                var tooltip = (DefaultTooltip)chart.DataTooltip;
+                
+                var tooltip = chart.DataTooltip as DefaultTooltip;
                 tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
             }
         }
@@ -709,6 +753,8 @@ namespace Managing_RBAC_in_AzureListOptions
 
             BreakdownTypeDropdown.SelectedIndex = -1;
             BreakdownScopeDropdown.SelectedIndex = -1;
+            BreakdownScopeLabel.Visibility = Visibility.Hidden;
+            BreakdownScopeDropdown.Visibility = Visibility.Hidden;
             SelectedScopeBreakdownDropdown.SelectedIndex = -1;
         }
 
