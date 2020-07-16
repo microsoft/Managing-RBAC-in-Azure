@@ -33,7 +33,7 @@
             <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
             <EventSetter Event="Click" Handler="Run_Click"/>
         </Style>
-
+        
         <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="11"/>
@@ -52,7 +52,7 @@
             <Setter Property="Width" Value="250"/>
             <Setter Property="Visibility" Value="Hidden"/>
         </Style>
-        
+
         <Style x:Key="FiltersStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Grid.ColumnSpan" Value="2"/>
             <Setter Property="FontFamily" Value="Sitka Display"/>
@@ -78,7 +78,6 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
         </Style>
-
         <Style x:Key="ClosePopupButton" TargetType="{x:Type Button}">
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -179,7 +178,7 @@
         <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
                 Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2"
                 Style="{StaticResource LabelStyleVisible}"/>
-        
+
         <ComboBox Name ="ShorthandPermissionTypesDropdown" 
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
@@ -195,7 +194,7 @@
         <Label Name="ShorthandPermissionsLabel" Content="Choose your shorthand:" 
                Grid.Column="2" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
                Visibility="Hidden"/>
-        
+
         <ComboBox Name="ShorthandPermissionsDropdown"
                   Grid.Column="2" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
@@ -236,7 +235,7 @@
                   Grid.Column="2" Grid.Row="8" 
                   Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
-        
+
         <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="3" Grid.Row="7"
                Style="{StaticResource LabelStyleHidden}"/>
@@ -274,7 +273,7 @@
         <Label Name="PermissionsSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="2" Grid.Row="11" 
                Style="{StaticResource LabelStyleHidden}"/>
-        
+
         <ComboBox Name ="PermissionsSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="12"
                   Style="{StaticResource ComboBoxStyleHidden}" 
@@ -364,13 +363,29 @@
         <TextBlock Name="MostAccessed" Text="5. Most Accesssed KeyVaults"
                    Grid.Column="1" Grid.Row="18" 
                    Style="{StaticResource FiltersStyle}"/>
-          
-        <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
+        <TextBlock Name="MostAccessedExplain"
+               Grid.Column="1" Grid.Row="20"
+               Grid.ColumnSpan="2" FontSize="10.5" Padding="10,0,10,10">
+            * Security Principals are Users, Groups, Applications, or Service Principals <LineBreak/>
+            * The 'Permissions' option combines each security principals access to <LineBreak/> keys, secrets, and certificates
+        </TextBlock>
+        <Label Name="MostAccessedTypeLabel" Content="List by security principal or permissions:"
                Grid.Column="1" Grid.Row="19"
                Style="{StaticResource LabelStyleVisible}"/>
-        <ComboBox Name="MostAccessedScopeDropdown"
-                  Grid.Column="1" Grid.Row="20"
+        <ComboBox Name="MostAccessedTypeDropdown"
+                  Grid.Column="1" Grid.Row="21"
                   Style="{StaticResource ComboBoxStyleVisible}"
+                  SelectionChanged="MostAccessedTypeDropdown_SelectionChanged">
+            <ComboBoxItem Content="Security Principal"/>
+            <ComboBoxItem Content="Permissions"/>
+        </ComboBox>
+                  
+        <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
+               Grid.Column="2" Grid.Row="19"
+               Style="{StaticResource LabelStyleHidden}"/>
+        <ComboBox Name="MostAccessedScopeDropdown"
+                  Grid.Column="2" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="MostAccessedScopeDropdown_SelectionChanged">
             <ComboBoxItem Content="YAML"/>
             <ComboBoxItem Content="Subscription"/>
@@ -379,27 +394,29 @@
         </ComboBox>
 
         <Button Name ="MostAccessedRun" 
-                Grid.Column="1" Grid.Row="21"
+                Grid.Column="1" Grid.Row="22"
                 Style="{StaticResource RunButton}"/>
 
         <Label Name="MostAccessedSpecifyScopeLabel" Content="Specify the Scope:"
-               Grid.Column="2" Grid.Row="19" 
+               Grid.Column="3" Grid.Row="19" 
                Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="MostAccessedSpecifyScopeDropdown"
-                  Grid.Column="2" Grid.Row="20"
-                  Style="{StaticResource ComboBoxStyleHidden}"/>
+                  Grid.Column="3" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
+                  DropDownClosed="MostAccessedSpecifyScopeDropdown_DropDownClosed"/>
 
         <!-- Ranked Security Principal List Option-->
         <TextBlock Name="SecurityPrincipalAccess"
                    Text="6. Ranked Security Principals by Access"
-                   Grid.Column="1" Grid.Row="22"
+                   Grid.Column="1" Grid.Row="23"
                    Style="{StaticResource FiltersStyle}"/>
+
         <Label Name="SecurityPrincipalAccessScopeLabel"
                Content="Choose your scope:"
-               Grid.Column="1" Grid.Row="23"
+               Grid.Column="1" Grid.Row="24"
                Style="{StaticResource LabelStyleVisible}"/>
         <ComboBox Name="SecurityPrincipalAccessScopeDropdown"
-                  Grid.Column="1" Grid.Row="24"
+                  Grid.Column="1" Grid.Row="25"
                   Style="{StaticResource ComboBoxStyleVisible}" 
                   SelectionChanged="SecurityPrincipalAccessScopeDropdown_SelectionChanged">
             <ComboBoxItem Content="YAML"/>
@@ -409,16 +426,30 @@
         </ComboBox>
 
         <Button Name ="SecurityPrincipalAccessRun" 
-                Grid.Column="1" Grid.Row="25"
+                Grid.Column="1" Grid.Row="26"
                 Style="{StaticResource RunButton}"/>
 
         <Label Name="SecurityPrincipalAccessSpecifyScopeLabel"
                Content="Specify the scope:"
-               Grid.Column="2" Grid.Row="23" 
+               Grid.Column="2" Grid.Row="24" 
                Style="{StaticResource LabelStyleHidden}"/>
-        
+
         <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
-                  Grid.Column="2" Grid.Row="24"
+                  Grid.Column="2" Grid.Row="25"
                   Style="{StaticResource ComboBoxStyleHidden}"/>
+        <Popup x:Name="TopKVResults"  IsOpen="False" Style="{StaticResource PopupTranslationStyle}">
+
+            <Border BorderThickness="0.3" Height="Auto" Width="500" BorderBrush="#FFE0E0E0">
+                <StackPanel Name="TopKVStackPanel" Height="Auto" Width="500" Background="White">
+                    <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
+                    <DataGrid x:Name="TopKVGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                        
+                    </DataGrid>
+
+                </StackPanel>
+            </Border>
+        </Popup>
+     
+
     </Grid>
 </Window>

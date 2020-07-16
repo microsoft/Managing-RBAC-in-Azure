@@ -8,6 +8,8 @@ using Constants = RBAC.Constants;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Windows.Media;
+using System.Windows.Data;
+using System.ServiceModel.Channels;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -416,7 +418,7 @@ namespace Managing_RBAC_in_AzureListOptions
             ComboBox scopeDropdown = sender as ComboBox;
             ItemCollection items = scopeDropdown.Items;
 
-            List<string> selected = getSelectedItems(items);
+            List<string> selected = getSelectedItemsScopeBreakdown(items);
             int numChecked = selected.Count();
 
             // Make the ComboBox show how many are selected
@@ -433,7 +435,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// </summary>
         /// <param name="items">The ItemCollection from the permissions breakdown selected scope dropdown</param>
         /// <returns>A list of the selected items</returns>
-        private List<string> getSelectedItems(ItemCollection items)
+        private List<string> getSelectedItemsScopeBreakdown(ItemCollection items)
         {
             List<string> selected = new List<string>();
             try
@@ -480,7 +482,7 @@ namespace Managing_RBAC_in_AzureListOptions
         private void RunPermissionsBreakdown_Click(object sender, RoutedEventArgs e)
         {
             ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
-            List<string> selected = getSelectedItems(scopeDropdown.Items);
+            List<string> selected = getSelectedItemsScopeBreakdown(scopeDropdown.Items);
 
             ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = breakdownScope.Content as string;
@@ -718,23 +720,71 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">The event that occurs when a selection changes</param>
         private void MostAccessedScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var box = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
+            var choice = box.Content as string;
             if (MostAccessedSpecifyScopeLabel.Visibility == Visibility.Visible ||
                MostAccessedSpecifyScopeDropdown.Visibility == Visibility.Visible)
             {
                 MostAccessedSpecifyScopeDropdown.Items.Clear();
+                if(choice == "YAML")
+                {
+                    MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+                    MostAccessedSpecifyScopeLabel.Visibility = Visibility.Hidden;
+                }
             }
             else
             {
-                MostAccessedSpecifyScopeLabel.Visibility = Visibility.Visible;
-                MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                if (choice != "YAML")
+                {
+                    MostAccessedSpecifyScopeLabel.Visibility = Visibility.Visible;
+                    MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                }
             }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            MostAccessedSpecifyScopeDropdown.Items.Add(item1);
-
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            MostAccessedSpecifyScopeDropdown.Items.Add(item2);
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            if (choice == "KeyVault")
+            {
+                foreach(KeyVaultProperties kv in yaml)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = kv.VaultName;
+                    MostAccessedSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
+            if(choice == "ResourceGroup")
+            {
+                var rgs = new HashSet<string>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (!rgs.Contains(kv.ResourceGroupName))
+                    {
+                        rgs.Add(kv.ResourceGroupName);
+                    }
+                }
+                foreach(string s in rgs)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = s;
+                    MostAccessedSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
+            if (choice == "Subscription")
+            {
+                var subs = new HashSet<string>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (!subs.Contains(kv.SubscriptionId))
+                    {
+                        subs.Add(kv.SubscriptionId);
+                    }
+                }
+                foreach (string s in subs)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = s;
+                    MostAccessedSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
         }
 
         // 6. Ranked Security Principal by Access ----------------------------------------------------------------------------------------------------
@@ -795,12 +845,185 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else if (btn.Name == "MostAccessedRun")
             {
-                // Execute Code
+                RunTopKVs(sender, e);
             }
             else if (btn.Name == "SecurityPrincipalAccessRun")
             {
                 // Execute Code
             }
+        }
+
+        private void RunTopKVs(object sender, RoutedEventArgs e)
+        {
+            ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
+            if(breakdownScope == null)
+            {
+                MessageBox.Show("Please specify scope type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            string scope = breakdownScope.Content as string;
+            var cb = MostAccessedSpecifyScopeDropdown as ComboBox;
+            List<string> selected = getSelectedItemsMostAccessed(cb.Items);
+
+            if (scope != "YAML" && selected.Count() == 0)
+            {
+                MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                var typeBox = MostAccessedTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = typeBox.Content as string;
+                List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
+                var topVaults = getTopKVs(vaults, type);
+                if(type == "Security Principal")
+                {
+                    var fill = new List<TopKVSPClass>();
+                    for (int i = 0; i < topVaults.Count; i++)
+                    {
+                        if (i > 9)
+                        {
+                            break;
+                        }
+                        fill.Add(new TopKVSPClass(topVaults[i].Key, topVaults[i].Value));
+                    }
+                    TopKVGrid.Columns.Clear();
+                    var col1 = new DataGridTextColumn();
+                    col1.Header = "Vault Name";
+                    col1.Binding = new System.Windows.Data.Binding("VaultName");
+                    col1.Width = 250;
+                    TopKVGrid.Columns.Add(col1);
+
+                    var col2 = new DataGridTextColumn();
+                    col2.Header = "Security Principals";
+                    col2.Binding = new System.Windows.Data.Binding("SecurityPrincipals");
+                    col2.Width = 250;
+                    TopKVGrid.Columns.Add(col2);
+
+                    TopKVGrid.ItemsSource = fill;
+                    TopKVResults.IsOpen = true;
+                }
+                else
+                {
+                    var fill = new List<TopKVPermClass>();
+                    for (int i = 0; i < topVaults.Count; i++)
+                    {
+                        if (i > 9)
+                        {
+                            break;
+                        }
+                        fill.Add(new TopKVPermClass(topVaults[i].Key, topVaults[i].Value));
+                    }
+                    TopKVGrid.Columns.Clear();
+                    var col1 = new DataGridTextColumn();
+                    col1.Header = "Vault Name";
+                    col1.Binding = new System.Windows.Data.Binding("VaultName");
+                    col1.Width = 250;
+                    TopKVGrid.Columns.Add(col1);
+
+                    var col2 = new DataGridTextColumn();
+                    col2.Header = "Total Permissions";
+                    col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
+                    col2.Width = 250;
+                    TopKVGrid.Columns.Add(col2);
+
+                    TopKVGrid.ItemsSource = fill;
+                    TopKVResults.IsOpen = true;
+
+                    
+                }
+            }
+        }
+        internal class TopKVSPClass
+        {
+            public string VaultName { get; set; }
+            public int SecurityPrincipals { get; set; }
+            public TopKVSPClass(string name, int count)
+            {
+                VaultName = name;
+                SecurityPrincipals = count;
+            }
+        }
+        internal class TopKVPermClass
+        {
+            public string VaultName { get; set; }
+            public int TotalPermissions { get; set; }
+            public TopKVPermClass(string name, int count)
+            {
+                VaultName = name;
+                TotalPermissions = count;
+            }
+        }
+        private List<KeyValuePair<string, int>> getTopKVs(List<KeyVaultProperties> vaults, string type)
+        {
+            if(type == "Security Principal")
+            {
+                var kvs = new Dictionary<string, int>();
+                foreach (KeyVaultProperties kv in vaults)
+                {
+                    kvs.Add(kv.VaultName, kv.AccessPolicies.Count);
+                }
+                var ret = kvs.ToList();
+                ret.Sort((a, b) => b.Value.CompareTo(a.Value));
+                return ret;
+            }
+            else
+            {
+                var kvs = new Dictionary<string, int>();
+                foreach (KeyVaultProperties kv in vaults)
+                {
+                    int count = 0;
+                    foreach (PrincipalPermissions pp in kv.AccessPolicies)
+                    {
+                        count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
+                    }
+                    kvs.Add(kv.VaultName, count);
+                }
+                var ret = kvs.ToList();
+                ret.Sort((a, b) => b.Value.CompareTo(a.Value));
+                return ret;
+            }
+        }
+
+        private List<KeyVaultProperties> getScopeKVs(string scope, List<string> selected)
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            var yamlVaults = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            var ret = new List<KeyVaultProperties>();
+            if (scope == "YAML")
+            {
+                return yamlVaults;
+            }
+            else if(scope == "KeyVault")
+            {
+                foreach(var kv in yamlVaults)
+                {
+                    if (selected.Contains(kv.VaultName))
+                    {
+                        ret.Add(kv);
+                    }
+                }
+            }
+            else if(scope == "ResourceGroup")
+            {
+                foreach (var kv in yamlVaults)
+                {
+                    if (selected.Contains(kv.ResourceGroupName))
+                    {
+                        ret.Add(kv);
+                    }
+                }
+            }
+            else if (scope == "Subscription")
+            {
+                foreach (var kv in yamlVaults)
+                {
+                    if (selected.Contains(kv.SubscriptionId))
+                    {
+                        ret.Add(kv);
+                    }
+                }
+            }
+            return ret;
         }
 
         /// <summary>
@@ -823,6 +1046,73 @@ namespace Managing_RBAC_in_AzureListOptions
         {
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
+        }
+
+        private void MostAccessedSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedItemsMostAccessed(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new CheckBox()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+        }
+
+        private List<string> getSelectedItemsMostAccessed(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = MostAccessedSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    MostAccessedSpecifyScopeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+        private void MostAccessedTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MostAccessedScopeDropdown.Visibility = Visibility.Visible;
+            MostAccessedScopeLabel.Visibility = Visibility.Visible;
+        }
+
+        private void CloseTopKVResults_Click(object sender, RoutedEventArgs e)
+        {
+            TopKVResults.IsOpen = false;
         }
     }
 }

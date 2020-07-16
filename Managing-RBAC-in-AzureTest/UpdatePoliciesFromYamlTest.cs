@@ -618,36 +618,6 @@ namespace RBAC
             Assert.AreEqual(case1.error, res[0]);
             var vaults = createExpectedYamlVaults();
 
-            //TopKV Policies
-            var kvs = new Dictionary<string, int>();
-            foreach (KeyVaultProperties kv in vaults)
-            {
-                kvs.Add(kv.VaultName, kv.AccessPolicies.Count);
-            }
-            var ret = kvs.ToList();
-            ret.Sort((a, b) => b.Value.CompareTo(a.Value));
-            foreach(var v in ret)
-            {
-                Console.WriteLine($"{v.Key} has {v.Value} policies\n");
-            }
-
-            //TopKVPermissions
-            kvs = new Dictionary<string, int>();
-            foreach (KeyVaultProperties kv in vaults)
-            {
-                int count = 0;
-                foreach (PrincipalPermissions pp in kv.AccessPolicies)
-                {
-                    count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
-                }
-                kvs.Add(kv.VaultName, count);
-            }
-            ret = kvs.ToList();
-            ret.Sort((a, b) => b.Value.CompareTo(a.Value));
-            foreach (var v in ret)
-            {
-                Console.WriteLine($"{v.Key} has {v.Value} permissions\n");
-            }
 
             //TopSP Policies
             var sps = new List<TopSp>();
