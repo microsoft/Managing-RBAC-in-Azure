@@ -13,12 +13,8 @@ using Microsoft.Graph;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Reflection;
-using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Serilog;
 
 namespace RBAC
 {
@@ -37,41 +33,22 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the file arguments are of the correct type.
+        /// This method verifies that the file arguments valid.
         /// </summary>
-        /// <param name="args">The string array of program arguments</param>
-        public void verifyFileExtensions(string[] args)
+        /// <param name="jsonPath">The json file path specified in the Constants.cs file</param>
+        /// <param name="yamlPath">The yaml file path specified in the Constants.cs file</param>
+        public void verifyFileExtensions(string jsonPath, string yamlPath)
         {
             log.Info("Checking file extensions...");
             try
             {
-                if (args.Length == 0 || args == null)
-                {
-                    throw new Exception("Missing 2 input files.");
-                }
-                if (args.Length == 1)
-                {
-                    throw new Exception("Missing 1 input file.");
-                }
-                if (args.Length > 2)
-                {
-                    throw new Exception("Too many input files. Maximum needed is 2.");
-                }
-                if (System.IO.Path.GetExtension(args[0]) != ".json")
-                {
-                    throw new Exception("The 1st argument is not a .json file.");
-                }
-                if (System.IO.Path.GetExtension(args[1]) != ".yml")
-                {
-                    throw new Exception("The 2nd argument is not a .yml file.");
-                }
-                log.Info("File extensions verified!");
+                var json = jsonPath;
+                var yaml = yamlPath;
             }
             catch (Exception e)
             {
-                log.Error("InvalidArgs", e);
-                log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
-                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
+                log.Error("FileNotFound", e);
+                log.Debug("The file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
                 Exit(e.Message);
             }
         }
@@ -79,14 +56,14 @@ namespace RBAC
         /// <summary>
         /// This method reads in and deserializes the Json input file.
         /// </summary>
-        /// <param name="jsonDirectory">The Json file path</param>
         /// <returns>A JsonInput object that stores the Json input data</returns>
-        public JsonInput readJsonFile(string jsonDirectory)
+        /// <param name="jsonPath">The json file path specified in the Constants.cs file</param>
+        public JsonInput readJsonFile(string jsonPath)
         {
             log.Info("Reading in Json file....");
             try
             {
-                string masterConfig = System.IO.File.ReadAllText(jsonDirectory);
+                string masterConfig = System.IO.File.ReadAllText(jsonPath);
                 JsonInput vaultList = JsonConvert.DeserializeObject<JsonInput>(masterConfig);
 
                 JObject configVaults = JObject.Parse(masterConfig);
@@ -665,8 +642,8 @@ namespace RBAC
         /// This method converts the Vault objects to KeyVaultProperties objects, serializes the list of objects, and outputs the YAML.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
-        /// <param name="yamlDirectory"> The directory of the outputted yaml file </param>
-        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlDirectory)
+        /// <param name="yamlPath">The yaml file path specified in the Constants.cs file</param>
+        public void convertToYaml(List<KeyVaultProperties> vaultsRetrieved, string yamlPath)
         {
             log.Info("Converting to YAML...");
             try
@@ -674,7 +651,7 @@ namespace RBAC
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
-                System.IO.File.WriteAllText(yamlDirectory, yaml);
+                System.IO.File.WriteAllText(yamlPath, yaml);
                 log.Info("YAML created!");
             }
             catch (Exception e)

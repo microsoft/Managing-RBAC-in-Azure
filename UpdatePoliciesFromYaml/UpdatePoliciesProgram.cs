@@ -1,35 +1,28 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Extensions.Azure;
-using Newtonsoft.Json;
-using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using YamlDotNet.Serialization;
 
 namespace RBAC
 {
-    public class UpdatePoliciesFromYamlProgram
+    public class UpdatePoliciesProgram
     {
         /// <summary>
         /// This method reads in the Yaml file with access policy changes and updates these policies in Azure.
         /// </summary>
-        /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
-            run(args, false);
+            runProgram(false);
         }
-        public static List<KeyVaultProperties> run(string[] args, bool testing)
+        public static List<KeyVaultProperties> runProgram(bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("Refer to 'LogFile.log' for more details should an error be thrown.\n");
+            Console.WriteLine("Refer to 'Config/Log.log' for more details should an error be thrown.\n");
             Console.ResetColor();
 
             Console.WriteLine("Reading input file...");
-            ap.verifyFileExtensions(args);
-            JsonInput vaultList = ap.readJsonFile(args[0]);
+            ap.verifyFileExtensions(Constants.JSON_FILE_PATH, Constants.YAML_FILE_PATH);
+            JsonInput vaultList = ap.readJsonFile(Constants.JSON_FILE_PATH);
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Grabbing secrets...");
@@ -50,7 +43,7 @@ namespace RBAC
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(testing);
 
             Console.WriteLine("Reading yaml file...");
-            List<KeyVaultProperties> yamlVaults = up.deserializeYaml(args[1]);
+            List<KeyVaultProperties> yamlVaults = up.deserializeYaml(Constants.YAML_FILE_PATH);
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Updating key vaults...");

@@ -1,13 +1,12 @@
-﻿<Window x:Class="Managing_RBAC_in_AzureListOptions.MainWindow"
+﻿<Window x:Class="RBAC.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RBAC"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-        xmlns:local="clr-namespace:Managing_RBAC_in_AzureListOptions"
-        mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="ListOptionsforKeyVaultAccessPolicies" Height="625" Width="1000" Background="#FFE3EBEB">
+        Title="ListingOptions" Height="625" Width="1000" Background="#FFE3EBEB">
 
     <Window.Resources>
         <Style x:Key="RunButton" TargetType="{x:Type Button}">
@@ -427,4 +426,5 @@
                   Style="{StaticResource ComboBoxStyleHidden}"/>
         </Grid>
     </Viewbox>
+
 </Window>

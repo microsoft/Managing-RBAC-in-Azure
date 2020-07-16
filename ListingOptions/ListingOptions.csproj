@@ -3,9 +3,9 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Managing_RBAC_in_AzureListOptions</RootNamespace>
     <UseWPF>true</UseWPF>
-    <StartupObject>Managing_RBAC_in_AzureListOptions.App</StartupObject>
+    <RootNamespace>RBAC</RootNamespace>
+    <StartupObject>RBAC.App</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Code\Managing-RBAC-in-Azure.csproj" />
+    <ProjectReference Include="..\UpdatePoliciesFromYaml\UpdatePoliciesFromYaml.csproj" />
   </ItemGroup>
 
 </Project>

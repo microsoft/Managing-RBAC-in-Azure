@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Managing_RBAC_in_AzureListOptions
+namespace RBAC
 {
     /// <summary>
     /// Interaction logic for App.xaml

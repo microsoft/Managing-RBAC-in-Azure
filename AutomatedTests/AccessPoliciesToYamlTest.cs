@@ -1,11 +1,6 @@
-using Microsoft.Azure.Management.BatchAI.Fluent.Models;
-using Microsoft.Azure.Management.Storage.Fluent.Models;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using NSubstitute.Routing.AutoValues;
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,6 +32,7 @@ namespace RBAC
             }
         }
 
+
         [TestMethod]
         /// <summary>
         /// This method verifies that reading in valid Main args work
@@ -53,7 +49,7 @@ namespace RBAC
             {
                 try
                 {
-                    ap.verifyFileExtensions(testCase.testObject);
+                    ap.verifyFileExtensions(testCase.testObject[0], testCase.testObject[1]);
                 }
                 catch
                 {
@@ -72,17 +68,14 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] {}, "Missing 2 input files."),
-                new Testing <string[]> (new string[] { "file.json" }, "Missing 1 input file."),
-                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json" }, "Too many input files. Maximum needed is 2."),
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The 1st argument is not a .json file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The 2nd argument is not a .yml file.")
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "Could not find file 'file.jsn'."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "Could not find file 'file.yaml'.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
                 try
                 {
-                    ap.verifyFileExtensions(testCase.testObject);
+                    ap.verifyFileExtensions(testCase.testObject[0], testCase.testObject[1]);
                 }
                 catch (Exception e)
                 {
@@ -245,10 +238,11 @@ namespace RBAC
                 }
             }
         }
+
+        [TestMethod]
         /// <summary>
         /// Tests getVaults() method.
         /// </summary>
-        [TestMethod]
         public void TestGetVaults()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -268,10 +262,11 @@ namespace RBAC
             ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
             Assert.AreEqual(3, ret.Count);
         }
+
+        [TestMethod]
         /// <summary>
         /// Tests convertToYaml method
         /// </summary>
-        [TestMethod]
         public void TestConvertToYaml()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);

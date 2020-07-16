@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>RBAC</RootNamespace>
+    <StartupObject>RBAC.UpdatePoliciesProgram</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AccessPoliciesToYaml\AccessPoliciesToYaml.csproj" />
+  </ItemGroup>
+
+</Project>

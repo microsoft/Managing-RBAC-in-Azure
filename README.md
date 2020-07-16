@@ -49,7 +49,7 @@ Note that you can add multiple ResourceGroup names per SubscriptionId and can sp
 - **EXAMPLE 3** - Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names, which gets all of the KeyVaults specified in the list.
 
 ## Defining your File Paths
-To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the **Project Properties**. 
+To define the location of your input MasterConfig.json file and output yaml file, edit the **Project Properties**. 
 Click on the **Debug** tab and within **Application arguments**, add your file path to the json file, enter a space, and add your file path to the yaml file.
 
 ## Security Principals in AAD
@@ -96,7 +96,9 @@ Refer to the [YamlSample.yml file](Config/YamlSample.yml) for formatting.
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
 - All of the shorthands are defined in the **Constants.cs** file and can be modified
 
-## Global Constants and Design Considerations
+## Design Considerations
+
+#### 1. Global Constants
 In the **Constants.cs** file, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
@@ -107,6 +109,22 @@ In the **Constants.cs** file, we have defined:
 - all of the shorthand keywords as well as all valid permissions for each permission block
 
 All of these constants can be modified should they need to change.
+
+#### 2. DeletePolicies.yml
+A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYamlProgram**, and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYamlProgram** with every run of **UpdatePoliciesFromYamlProgram** as it reflects the changes made in the portal since the last **AccessPoliciesToYamlProgram** run. 
+
+#### 3. Debugging
+- We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
+- We have also provided a series of automated test cases to verify your inputs. These can be found in the **Managing-RBAC-in-AzureTest** directory.
+
+# Analyzing the Yaml
+We have defined 6 listing options for your benefit:
+- 1. **List Permissions by Shorthand** - translates a shorthand keyword into its respective permissions
+- 2. **List Assigned Permissions by Security Principal** - lists all of the access policies in regards to a specified security principal
+- 3. **List Security Principal by Assigned Permissions** - lists all of the security principals with a specified permission
+- 4. **Breakdown of Assigned Permissions by Percentage** - displays the percentage breakdown of the permissions or shorthands used within a specified scope
+- 5. **List Top 10 KeyVaults by Permission Access** - lists the 10 vaults with the highest number of granted permissions or the highest number of access policies in a specified scope
+- 6. **List Top 10 Security Principals by Permission Access** - lists the 10 security principals with the highest number of granted permissions or the highest number of access policies in a specified scope
 
 # Contributing 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a 

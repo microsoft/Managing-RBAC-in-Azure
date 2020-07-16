@@ -11,10 +11,10 @@ using System.Windows.Media;
 using System.ComponentModel;
 using System.Windows.Data;
 
-namespace Managing_RBAC_in_AzureListOptions
+namespace RBAC
 {
     /// <summary>
-    /// Interaction logic for ListOptionsforKeyVaultAccessPolicies.xaml
+    /// Interaction logic for ListingOptions.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -736,7 +736,7 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                 });
                 chart.Series = data;
-                
+
                 var tooltip = chart.DataTooltip as DefaultTooltip;
                 tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
             }
@@ -875,3 +875,4 @@ namespace Managing_RBAC_in_AzureListOptions
         }
     }
 }
+
