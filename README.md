@@ -1,12 +1,18 @@
 # Prerequisites 
-This project uses the following NuGet packages: 
+This project uses the following NuGet packages for AccessPoliciesToYaml: 
 - Newtonsoft.Json
 - YamlDotNet
 - Microsoft.Graph*
-- Microsoft.Azure.Management
-- Azure.Security.KeyVault
+- Microsoft.Azure.Management.Fluent
+- Azure.Security.KeyVault.Secrets
 - Azure.Identity 
 - System.Collections 
+- log4net
+- Microsoft.Azure.Management.KeyVault
+
+ListingOptions requires:
+- liveCharts
+- livecharts.wpf
 
 # Getting Started 
 
@@ -49,8 +55,7 @@ Note that you can add multiple ResourceGroup names per SubscriptionId and can sp
 - **EXAMPLE 3** - Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names, which gets all of the KeyVaults specified in the list.
 
 ## Defining your File Paths
-To define the location of your input MasterConfig.json file and output yaml file, edit the **Project Properties**. 
-Click on the **Debug** tab and within **Application arguments**, add your file path to the json file, enter a space, and add your file path to the yaml file.
+To change the file paths of your input MasterConfig.json and output YamlOutput.yml files, modify the following defined in the Constants.cs file: **JSON_FILE_PATH** and **YAML_FILE_PATH**.
 
 ## Security Principals in AAD
 A security principal is an object that is requesting access to Azure resources. It can be represented as a...
@@ -111,7 +116,7 @@ In the **Constants.cs** file, we have defined:
 All of these constants can be modified should they need to change.
 
 #### 2. DeletePolicies.yml
-A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYamlProgram**, and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYamlProgram** with every run of **UpdatePoliciesFromYamlProgram** as it reflects the changes made in the portal since the last **AccessPoliciesToYamlProgram** run. 
+A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**, and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the last **AccessPoliciesToYaml** run. 
 
 #### 3. Debugging
 - We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
