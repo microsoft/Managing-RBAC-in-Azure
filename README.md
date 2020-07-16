@@ -120,7 +120,7 @@ A **DeletePolicies.yml** file will be generated to display the access policies t
 
 #### 3. Debugging
 - We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
-- We have also provided a series of automated test cases to verify your inputs. These can be found in the **Managing-RBAC-in-AzureTest** directory.
+- We have also provided a series of automated test cases to verify your inputs. These can be found in the **AutomatedTests** directory.
 
 # Analyzing the Yaml
 We have defined 6 listing options for your benefit:
