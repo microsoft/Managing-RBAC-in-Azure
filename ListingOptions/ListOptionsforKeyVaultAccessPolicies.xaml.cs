@@ -1022,7 +1022,7 @@ namespace Managing_RBAC_in_AzureListOptions
                     TopSPGrid.Columns.Add(col3);
 
                     var col4 = new DataGridTextColumn();
-                    col4.Header = "Permissions Granted to Service Principal";
+                    col4.Header = "Permissions Granted";
                     col4.Binding = new System.Windows.Data.Binding("count");
                     col4.Width = 187.5;
                     TopSPGrid.Columns.Add(col4);

@@ -478,7 +478,7 @@
                         <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="500" Padding="10,10,10,10"
                             Background="White"
                             Foreground="Black"
-                            FontSize="16"
+                            FontSize="20"
                             FontWeight="SemiBold"
                             TextAlignment="Center" 
                             FontFamily="Sitka Subheading"
@@ -487,7 +487,7 @@
                             <DataGrid.Resources>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontSize" Value="16"/>
                                     <Setter Property="BorderThickness" Value="0,0,1,2"/>
                                     <Setter Property="BorderBrush" Value="Black"/>
                                     <Setter Property="FontFamily" Value="Sitka Subheading"/>
@@ -495,7 +495,7 @@
                                     <Setter Property="Foreground" Value="White"/>
                                 </Style>
                                 <Style TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
                                     <Setter Property="FontFamily" Value="Sitka Text"/>
                                 </Style>
                             </DataGrid.Resources>
@@ -512,7 +512,7 @@
                         <TextBlock Text="Top 10 Security Principals by Permission Access" Width="750" Padding="10,10,10,10"
                             Background="White"
                             Foreground="Black"
-                            FontSize="16"
+                            FontSize="20"
                             FontWeight="SemiBold"
                             TextAlignment="Center" 
                             FontFamily="Sitka Subheading"
@@ -521,7 +521,7 @@
                             <DataGrid.Resources>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontSize" Value="16"/>
                                     <Setter Property="BorderThickness" Value="0,0,1,2"/>
                                     <Setter Property="BorderBrush" Value="Black"/>
                                     <Setter Property="FontFamily" Value="Sitka Subheading"/>
@@ -529,7 +529,7 @@
                                     <Setter Property="Foreground" Value="White"/>
                                 </Style>
                                 <Style TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
                                     <Setter Property="FontFamily" Value="Sitka Text"/>
                                 </Style>
                             </DataGrid.Resources>
