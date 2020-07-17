@@ -9,7 +9,7 @@ using LiveCharts;
 using LiveCharts.Wpf;
 using System.Windows.Media;
 using System.Windows.Data;
-using System.ServiceModel.Channels;
+using System.ComponentModel;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -443,7 +443,7 @@ namespace Managing_RBAC_in_AzureListOptions
             List<string> selected = new List<string>();
             try
             {
-                ComboBoxItem selectedItem = SelectedScopeBreakdownDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedItem = (ComboBoxItem)SelectedScopeBreakdownDropdown.SelectedItem;
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
@@ -453,10 +453,10 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 try
                 {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
                     SelectedScopeBreakdownDropdown.SelectedIndex = -1;
 
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    if (lastItem.Content.ToString().EndsWith("selected"))
                     {
                         items.RemoveAt(items.Count - 1);
                     }
@@ -515,7 +515,6 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
             }
-            //dont even make visible then just throw errors
 
             ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedType.Content as string;
@@ -557,7 +556,6 @@ namespace Managing_RBAC_in_AzureListOptions
             setChartData(certificates, count["certificateBreakdown"]);
 
             PermissionBreakdownResults.IsOpen = true;
-
         }
 
         /// <summary>
@@ -569,6 +567,8 @@ namespace Managing_RBAC_in_AzureListOptions
         private Dictionary<string, Dictionary<string, int>> countPermissions(List<KeyVaultProperties> vaultsInScope, string type)
         {
             Dictionary<string, Dictionary<string, int>> usages = new Dictionary<string, Dictionary<string, int>>();
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+
             if (type == "Permissions")
             {
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.ALL_KEY_PERMISSIONS);
@@ -579,14 +579,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     foreach (PrincipalPermissions principal in kv.AccessPolicies)
                     {
-                        checkForPermissions(usages, principal);
+                        checkForPermissions(up, usages, principal);
                     }
                 }
             }
             else
             {
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-
                 usages["keyBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray());
                 usages["secretBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray());
                 usages["certificateBreakdown"] = populateBreakdownKeys(Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray());
@@ -620,10 +618,12 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <summary>
         /// This method counts the occurrences of each permission type and stores the results in a dictionary.
         /// </summary>
+        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="usages">The dictionary that stores the permission breakdown usages for each permission block</param>
         /// <param name="principal">The current PrincipalPermissions object</param>
-        private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        private void checkForPermissions(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string key in principal.PermissionsToKeys)
             {
                 ++usages["keyBreakdown"][key];
@@ -646,6 +646,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="principal">The current PrincipalPermissions object</param>
         private void checkForShorthands(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
+            up.translateShorthands(principal);
             foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
                 var permissions = up.getShorthandPermissions(shorthand, "key");
@@ -675,6 +676,26 @@ namespace Managing_RBAC_in_AzureListOptions
         }
 
         /// <summary>
+        /// This method translates the "all" keyword into it's respective permissions
+        /// </summary>
+        /// <param name="principal"></param>
+        private void translateAllKeyword(PrincipalPermissions principal)
+        {
+            if (principal.PermissionsToKeys.Contains("all"))
+            {
+                principal.PermissionsToKeys = Constants.ALL_KEY_PERMISSIONS;
+            }
+            if (principal.PermissionsToSecrets.Contains("all"))
+            {
+                principal.PermissionsToSecrets = Constants.ALL_SECRET_PERMISSIONS;
+            }
+            if (principal.PermissionsToCertificates.Contains("all"))
+            {
+                principal.PermissionsToCertificates = Constants.ALL_CERTIFICATE_PERMISSIONS;
+            }
+        }
+
+        /// <summary>
         /// This method adds and sets the pie chart data to the respective pie chart.
         /// </summary>
         /// <param name="chart">The pie chart to which we want to add data</param>
@@ -684,18 +705,39 @@ namespace Managing_RBAC_in_AzureListOptions
             SeriesCollection data = new SeriesCollection();
             var descendingOrder = breakdownCount.OrderByDescending(i => i.Value);
 
+            int total = 0;
+            foreach (int val in breakdownCount.Values)
+            {
+                total += val;
+            }
+
             foreach (var item in descendingOrder)
             {
+                // Create custom label
+                double percentage = item.Value / (double)total;
+                FrameworkElementFactory stackPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
+                stackPanelFactory.SetValue(StackPanel.OrientationProperty, Orientation.Vertical);
+                FrameworkElementFactory label = new FrameworkElementFactory(typeof(TextBlock));
+                label.SetValue(TextBlock.TextProperty, string.Format("{0:P}", percentage));
+                label.SetValue(TextBlock.FontSizeProperty, new Binding("15"));
+                label.SetValue(TextBlock.ForegroundProperty, new Binding("Black"));
+                stackPanelFactory.AppendChild(label);
+
                 data.Add(new LiveCharts.Wpf.PieSeries()
                 {
                     Title = item.Key,
                     Values = new ChartValues<int>() { item.Value },
                     DataLabels = true,
-                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y))
+                    LabelPoint = (chartPoint => string.Format("{0}", chartPoint.Y)),
+                    LabelPosition = PieLabelPosition.OutsideSlice,
+                    DataLabelsTemplate = new DataTemplate()
+                    {
+                        VisualTree = stackPanelFactory
+                    }
                 });
                 chart.Series = data;
-
-                var tooltip = (DefaultTooltip)chart.DataTooltip;
+                
+                var tooltip = chart.DataTooltip as DefaultTooltip;
                 tooltip.SelectionMode = TooltipSelectionMode.OnlySender;
             }
         }
@@ -711,6 +753,8 @@ namespace Managing_RBAC_in_AzureListOptions
 
             BreakdownTypeDropdown.SelectedIndex = -1;
             BreakdownScopeDropdown.SelectedIndex = -1;
+            BreakdownScopeLabel.Visibility = Visibility.Hidden;
+            BreakdownScopeDropdown.Visibility = Visibility.Hidden;
             SelectedScopeBreakdownDropdown.SelectedIndex = -1;
         }
 
@@ -799,23 +843,72 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">The event that occurs when a selection changes</param>
         private void SecurityPrincipalAccessScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var box = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
+            var choice = box.Content as string;
             if (SecurityPrincipalAccessSpecifyScopeLabel.Visibility == Visibility.Visible ||
               SecurityPrincipalAccessSpecifyScopeDropdown.Visibility == Visibility.Visible)
             {
-                SecurityPrincipalAccessScopeDropdown.Items.Clear();
+                SecurityPrincipalAccessSpecifyScopeDropdown.Items.Clear();
+                if (choice == "YAML")
+                {
+                    SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+                    SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
+                }
             }
             else
             {
-                SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Visible;
-                SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                if(choice != "YAML")
+                {
+                    SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Visible;
+                    SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                }
+                
             }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(item1);
-
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(item2);
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            if (choice == "KeyVault")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = kv.VaultName;
+                    SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
+            if (choice == "ResourceGroup")
+            {
+                var rgs = new HashSet<string>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (!rgs.Contains(kv.ResourceGroupName))
+                    {
+                        rgs.Add(kv.ResourceGroupName);
+                    }
+                }
+                foreach (string s in rgs)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = s;
+                    SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
+            if (choice == "Subscription")
+            {
+                var subs = new HashSet<string>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (!subs.Contains(kv.SubscriptionId))
+                    {
+                        subs.Add(kv.SubscriptionId);
+                    }
+                }
+                foreach (string s in subs)
+                {
+                    CheckBox item = new CheckBox();
+                    item.Content = s;
+                    SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(item);
+                }
+            }
         }
 
 
@@ -852,10 +945,180 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else if (btn.Name == "SecurityPrincipalAccessRun")
             {
-                // Execute Code
+                RunTopSPs(sender, e);
             }
         }
 
+        private void RunTopSPs(object sender, RoutedEventArgs e)
+        {
+            ComboBoxItem breakdownScope = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
+            if (breakdownScope == null)
+            {
+                MessageBox.Show("Please specify scope type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            string scope = breakdownScope.Content as string;
+            var cb = SecurityPrincipalAccessSpecifyScopeDropdown;
+            List<string> selected = getSelectedItemsSPAccess(cb.Items);
+            if (scope != "YAML" && selected.Count() == 0)
+            {
+                MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                var typeBox = SecurityPrincipalAccessTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = typeBox.Content as string;
+                List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
+                var topSPs = getTopSPs(vaults, type);
+                if(type == "Key Vault")
+                {
+                    TopSPGrid.Columns.Clear();
+                    var col1 = new DataGridTextColumn();
+                    col1.Header = "Service Principal Type";
+                    col1.Binding = new System.Windows.Data.Binding("type");
+                    col1.Width = 187.5;
+                    TopSPGrid.Columns.Add(col1);
+
+                    var col2 = new DataGridTextColumn();
+                    col2.Header = "Name";
+                    col2.Binding = new System.Windows.Data.Binding("name");
+                    col2.Width = 187.5;
+                    TopSPGrid.Columns.Add(col2);
+
+                    var col3 = new DataGridTextColumn();
+                    col3.Header = "Alias";
+                    col3.Binding = new System.Windows.Data.Binding("alias");
+                    col3.Width = 187.5;
+                    TopSPGrid.Columns.Add(col3);
+
+                    var col4 = new DataGridTextColumn();
+                    col4.Header = "Key Vaults Accessed";
+                    col4.Binding = new System.Windows.Data.Binding("count");
+                    col4.Width = 187.5;
+                    TopSPGrid.Columns.Add(col4);
+
+                    TopSPGrid.ItemsSource = topSPs;
+                    TopSPResults.IsOpen = true;
+                }
+                else
+                {
+                    TopSPGrid.Columns.Clear();
+                    var col1 = new DataGridTextColumn();
+                    col1.Header = "Service Principal Type";
+                    col1.Binding = new System.Windows.Data.Binding("type");
+                    col1.Width = 125;
+                    TopSPGrid.Columns.Add(col1);
+
+                    var col2 = new DataGridTextColumn();
+                    col2.Header = "Name";
+                    col2.Binding = new System.Windows.Data.Binding("name");
+                    col2.Width = 125;
+                    TopSPGrid.Columns.Add(col2);
+
+                    var col3 = new DataGridTextColumn();
+                    col3.Header = "Alias";
+                    col3.Binding = new System.Windows.Data.Binding("alias");
+                    col3.Width = 125;
+                    TopSPGrid.Columns.Add(col3);
+
+                    var col4 = new DataGridTextColumn();
+                    col4.Header = "Permissions Granted to Service Principal";
+                    col4.Binding = new System.Windows.Data.Binding("count");
+                    col4.Width = 125;
+                    TopSPGrid.Columns.Add(col4);
+
+                    TopSPGrid.ItemsSource = topSPs;
+                    TopSPResults.IsOpen = true;
+                }
+            }
+        }
+
+        private List<TopSp> getTopSPs(List<KeyVaultProperties> vaults, string type)
+        {
+            if(type == "Key Vault")
+            {
+                var sps = new List<TopSp>();
+                var found = new HashSet<string>();
+                foreach (KeyVaultProperties kv in vaults)
+                {
+                    foreach (PrincipalPermissions pp in kv.AccessPolicies)
+                    {
+                        if ((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
+                        {
+                            var idx = sps.FindIndex(c => c.alias == pp.Alias);
+                            sps[idx].count++;
+                        }
+                        else if ((pp.Type.ToLower() == "application" || pp.Type.ToLower() == "service principal") && found.Contains(pp.DisplayName))
+                        {
+                            var idx = sps.FindIndex(c => c.name == pp.DisplayName);
+                            sps[idx].count++;
+                        }
+                        else if (pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group")
+                        {
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1, pp.Alias));
+                            found.Add(pp.Alias);
+                        }
+                        else
+                        {
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1));
+                            found.Add(pp.DisplayName);
+                        }
+                    }
+                }
+                sps.Sort((a, b) => b.count.CompareTo(a.count));
+                sps = sps.GetRange(0, 10);
+                return sps;
+            }
+            else
+            {
+                var sps = new List<TopSp>();
+                var found = new HashSet<string>();
+
+                foreach (KeyVaultProperties kv in vaults)
+                {
+                    foreach (PrincipalPermissions pp in kv.AccessPolicies)
+                    {
+                        if ((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
+                        {
+                            var idx = sps.FindIndex(c => c.alias == pp.Alias);
+                            sps[idx].count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
+                        }
+                        else if ((pp.Type.ToLower() == "application" || pp.Type.ToLower() == "service principal") && found.Contains(pp.DisplayName))
+                        {
+                            var idx = sps.FindIndex(c => c.name == pp.DisplayName);
+                            sps[idx].count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
+                        }
+                        else if (pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group")
+                        {
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1, pp.Alias));
+                            found.Add(pp.Alias);
+                        }
+                        else
+                        {
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1));
+                            found.Add(pp.DisplayName);
+                        }
+                    }
+                }
+                sps.Sort((a, b) => b.count.CompareTo(a.count));
+                sps = sps.GetRange(0, 10);
+                return sps;
+            }
+        }
+        internal class TopSp
+        {
+            public string type { get; set; }
+            public string name { get; set; }
+            public string alias { get; set; }
+            public int count { get; set; }
+            public TopSp(string type, string name, int count, string alias = "")
+            {
+                this.type = type;
+                this.name = name;
+                this.alias = alias;
+                this.count = count;
+            }
+        }
         private void RunTopKVs(object sender, RoutedEventArgs e)
         {
             ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
@@ -865,7 +1128,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 return;
             }
             string scope = breakdownScope.Content as string;
-            var cb = MostAccessedSpecifyScopeDropdown as ComboBox;
+            var cb = MostAccessedSpecifyScopeDropdown;
             List<string> selected = getSelectedItemsMostAccessed(cb.Items);
 
             if (scope != "YAML" && selected.Count() == 0)
@@ -891,13 +1154,13 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                     TopKVGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Vault Name";
+                    col1.Header = "Key Vault Name";
                     col1.Binding = new System.Windows.Data.Binding("VaultName");
                     col1.Width = 250;
                     TopKVGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
-                    col2.Header = "Security Principals";
+                    col2.Header = "Security Principals with Access";
                     col2.Binding = new System.Windows.Data.Binding("SecurityPrincipals");
                     col2.Width = 250;
                     TopKVGrid.Columns.Add(col2);
@@ -918,13 +1181,13 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                     TopKVGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Vault Name";
+                    col1.Header = "Key Vault Name";
                     col1.Binding = new System.Windows.Data.Binding("VaultName");
                     col1.Width = 250;
                     TopKVGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
-                    col2.Header = "Total Permissions";
+                    col2.Header = "Permissions Granted in Key Vault";
                     col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
                     col2.Width = 250;
                     TopKVGrid.Columns.Add(col2);
@@ -1060,7 +1323,7 @@ namespace Managing_RBAC_in_AzureListOptions
             int numChecked = selected.Count();
 
             // Make the ComboBox show how many are selected
-            items.Add(new CheckBox()
+            items.Add(new ComboBoxItem()
             {
                 Content = $"{numChecked} selected",
                 Visibility = Visibility.Collapsed
@@ -1116,6 +1379,73 @@ namespace Managing_RBAC_in_AzureListOptions
         private void CloseTopKVResults_Click(object sender, RoutedEventArgs e)
         {
             TopKVResults.IsOpen = false;
+        }
+
+        private void SecurityPrincipalAccessTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Visible;
+            SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Visible;
+        }
+
+        private void SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedItemsSPAccess(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+        }
+
+        private List<string> getSelectedItemsSPAccess(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    SecurityPrincipalAccessSpecifyScopeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+        private void CloseTopSPResults_Click(object sender, RoutedEventArgs e)
+        {
+            TopSPResults.IsOpen = false;
         }
     }
 }
