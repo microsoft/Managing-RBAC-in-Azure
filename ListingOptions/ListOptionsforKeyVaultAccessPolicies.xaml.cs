@@ -1066,7 +1066,11 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                 }
                 sps.Sort((a, b) => b.count.CompareTo(a.count));
-                sps = sps.GetRange(0, 10);
+                if(sps.Count > 10)
+                {
+                    sps = sps.GetRange(0, 10);
+                }
+                
                 return sps;
             }
             else
@@ -1101,7 +1105,10 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                 }
                 sps.Sort((a, b) => b.count.CompareTo(a.count));
-                sps = sps.GetRange(0, 10);
+                if (sps.Count > 10)
+                {
+                    sps = sps.GetRange(0, 10);
+                }
                 return sps;
             }
         }
