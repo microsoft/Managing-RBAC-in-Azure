@@ -53,7 +53,7 @@
             <Setter Property="Width" Value="250"/>
             <Setter Property="Visibility" Value="Hidden"/>
         </Style>
-        
+
         <Style x:Key="FiltersStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Grid.ColumnSpan" Value="2"/>
             <Setter Property="FontFamily" Value="Sitka Display"/>
@@ -180,7 +180,7 @@
         <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
                 Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2"
                 Style="{StaticResource LabelStyleVisible}"/>
-        
+
         <ComboBox Name ="ShorthandPermissionTypesDropdown" 
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
@@ -196,7 +196,7 @@
         <Label Name="ShorthandPermissionsLabel" Content="Choose your shorthand:" 
                Grid.Column="2" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
                Visibility="Hidden"/>
-        
+
         <ComboBox Name="ShorthandPermissionsDropdown"
                   Grid.Column="2" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
@@ -236,14 +236,14 @@
         <ComboBox Name ="SecurityPrincipalSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="8" 
                   Style="{StaticResource ComboBoxStyleHidden}"
-                  SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
-        
+                  DropDownClosed="SecurityPrincipalSpecifyScopeDropdown_DropDownClosed"/>
+
         <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="3" Grid.Row="7"
                Style="{StaticResource LabelStyleHidden}"/>
         <ComboBox Name ="SecurityPrincipalTypeDropdown" 
-                  Grid.Column="3" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleHidden}">
+                  Grid.Column="3" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" SelectionChanged="SecurityPrincipalTypeDropdown_SelectionChanged">
             <ComboBoxItem Content="All"/>
             <ComboBoxItem Content="User"/>
             <ComboBoxItem Content="Group"/>
@@ -251,6 +251,64 @@
             <ComboBoxItem Content="Service Principal" />
         </ComboBox>
 
+        <Label Name="SecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
+               Grid.Column="4" Grid.Row="7" 
+               Style="{StaticResource LabelStyleHidden}"/>
+        <ComboBox Name ="SecurityPrincipalSpecifyTypeDropdown"
+                  Grid.Column="4" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SelectedScopeBreakdownDropdown_DropDownClosed"/>
+
+        <Popup x:Name="SecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupTranslationStyle}" Height="750">
+            <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="SecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True">
+                        <Button Name="CloseSecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="CloseSecurityPrincipal_Clicked" />
+                        <TextBlock Text="Listing Keyvaults by User" Style="{StaticResource ChartTitleStyle}"
+                                   HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline" />
+                        <DataGrid x:Name="SecurityPrincipalDataGrid" 
+                                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False">
+                            <!-- Font Color / Style of Column Headings -->
+                            <DataGrid.Resources>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="Background" Value="AliceBlue"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                    <Setter Property="BorderBrush" Value="Black"/>
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <!-- Column Header Text & Bindings -->
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Vault Name" Binding="{Binding Path=vaultName}"/>
+                                <DataGridTextColumn Header="Display Name" Binding="{Binding Path= displayName}"/>
+                                <DataGridTextColumn Header="Alias" Binding="{Binding Path= alias }"/>
+                                <DataGridTemplateColumn Header="Key Permissions">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ListBox ItemsSource="{Binding Path = keyPermissions}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Secret Permissions">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ListBox ItemsSource="{Binding Path = secretPermissions}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Certificate Permissions">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ListBox ItemsSource="{Binding Path = certificatePermissions}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Popup>
         <!-- Permissions List Option-->
         <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions"
                    Grid.Column="1" Grid.Row="10"
@@ -275,7 +333,7 @@
         <Label Name="PermissionsSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="2" Grid.Row="11" 
                Style="{StaticResource LabelStyleHidden}"/>
-        
+
         <ComboBox Name ="PermissionsSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="12"
                   Style="{StaticResource ComboBoxStyleHidden}" 
@@ -365,7 +423,7 @@
         <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."
                    Grid.Column="1" Grid.Row="18" 
                    Style="{StaticResource FiltersStyle}"/>
-          
+
         <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
                Grid.Column="1" Grid.Row="19"
                Style="{StaticResource LabelStyleVisible}"/>
@@ -417,9 +475,11 @@
                Content="Specify the scope:"
                Grid.Column="2" Grid.Row="23" 
                Style="{StaticResource LabelStyleHidden}"/>
-        
+
         <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="24"
                   Style="{StaticResource ComboBoxStyleHidden}"/>
+ 
+        
     </Grid>
 </Window>

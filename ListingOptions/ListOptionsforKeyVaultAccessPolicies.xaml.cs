@@ -8,6 +8,8 @@ using Constants = RBAC.Constants;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Windows.Media;
+using System.Windows.Input;
+using Microsoft.Extensions.Azure;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -16,9 +18,12 @@ namespace Managing_RBAC_in_AzureListOptions
     /// </summary>
     public partial class MainWindow : Window
     {
+ 
+
         public MainWindow()
         {
             InitializeComponent();
+
         }
 
         // 1. List the Permissions by Shorthand ----------------------------------------------------------------------------------------------------
@@ -148,42 +153,337 @@ namespace Managing_RBAC_in_AzureListOptions
         // 2. List by Security Principal ----------------------------------------------------------------------------------------------------
 
         /// <summary>
-        /// This method populates the "Specify the scope:" dropdown and makes it visible upon a selection.
+        /// This method hides the permissions breakdown selected scope dropdown if this dropdown is re-selected.
         /// </summary>
-        /// <param name="sender">The security principal scope block dropdown</param>
+        /// <param name="sender">The permissions breakdown type dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
         private void SecurityPrincipalScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SecurityPrincipalSpecifyScopeLabel.Visibility == Visibility.Visible ||
-                SecurityPrincipalSpecifyScopeDropdown.Visibility == Visibility.Visible)
-            {
-                SecurityPrincipalSpecifyScopeDropdown.Items.Clear();
-            }
-            else
-            {
-                SecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
-                SecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
-            }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            SecurityPrincipalSpecifyScopeDropdown.Items.Add(item1);
+            SecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Hidden;
 
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            SecurityPrincipalSpecifyScopeDropdown.Items.Add(item2);
+            
+            if (SecurityPrincipalScopeDropdown.SelectedIndex != -1)
+            {
+                ComboBoxItem selectedScope = SecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+
+                try
+                {
+                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                    if (yaml.Count() == 0)
+                    {
+                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                    }
+
+                    if (scope != "YAML")
+                    {
+                        populateSelectedScopeBreakdownSecurityPrincipal(yaml);
+                        SecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
+                        SecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        SecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    SecurityPrincipalScopeDropdown.SelectedIndex = -1;
+                    SecurityPrincipalScopeLabel.Visibility = Visibility.Hidden;
+                    SecurityPrincipalScopeDropdown.Visibility = Visibility.Hidden;
+                    SecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+                }
+            }
 
         }
 
         /// <summary>
-        /// This method populates the "Choose the type:" dropdown and makes it visible upon a selection.
+        /// This method populates the selectedScope dropdown based off of the selected permissions breakdown scope item.
         /// </summary>
-        /// <param name="sender">The security principal specify scope block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void SecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        private void populateSelectedScopeBreakdownSecurityPrincipal(List<KeyVaultProperties> yaml)
         {
+            SecurityPrincipalSpecifyScopeDropdown.Items.Clear();
+
+            ComboBoxItem selectedScope = SecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            List<string> items = new List<string>();
+            if (scope == "Subscription")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
+                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
+                    {
+                        items.Add(kv.SubscriptionId);
+                    }
+                }
+            }
+            else if (scope == "ResourceGroup")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.ResourceGroupName);
+                }
+            }
+            else
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.VaultName);
+                }
+            }
+
+            // Only add distinct items
+            foreach (string item in items.Distinct())
+            {
+                SecurityPrincipalSpecifyScopeDropdown.Items.Add(new CheckBox()
+                {
+                    Content = item
+                });
+            }
+        }
+
+        /// <summary>
+        /// This method allows you to select multiple scopes and shows how many you selected on the ComboBox.
+        /// </summary>
+        /// <param name="sender">The permissions breakdown selected scope dropdown</param>
+        /// <param name="e">The event that occurs when a selection changes</param>
+        private void SecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedItemsSpecifyScopeSecurityPrincipal(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+
             SecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
             SecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
         }
+      
+        /// <summary>
+        /// This method gets the list of selected items from the checkbox selected scope dropdown.
+        /// </summary>
+        /// <param name="items">The ItemCollection from the permissions breakdown selected scope dropdown</param>
+        /// <returns>A list of the selected items</returns>
+        private List<string> getSelectedItemsSpecifyScopeSecurityPrincipal(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = SecurityPrincipalSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    SecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+        private List<string> getSelectedItemsSpecifyTypeSecurityPrincipal(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = SecurityPrincipalSpecifyTypeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    SecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+        private void SecurityPrincipalTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+           
+            if (SecurityPrincipalTypeDropdown.SelectedIndex != -1)
+            {
+                ComboBoxItem selectedtype = SecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedtype.Content as string;
+
+              ComboBoxItem selectedScope = SecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+              string scope = selectedScope.Content as string;
+                // workin here
+
+                ComboBox potentialSpecifyScope = SecurityPrincipalSpecifyScopeDropdown as ComboBox;
+                ComboBox potentialSpecifyTypeScope = SecurityPrincipalSpecifyTypeDropdown as ComboBox;
+
+                List<string> selectedSpecifyScopeItems = getSelectedItemsSpecifyScopeSecurityPrincipal(potentialSpecifyScope.Items);
+                List<string> selectedSpecifyTypeScopeItems = getSelectedItemsSpecifyTypeSecurityPrincipal(potentialSpecifyTypeScope.Items);
+
+               // List<SecurityPrincipalData> spData = new List<SecurityPrincipalData>(); // ADDED CODE HEREEEE
+                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                List<string> items = new List<string>();
+
+                if (scope == "KeyVault")
+                {
+                    // Users
+                    if (type == "User")
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Type == "User")
+                                    {
+                                        items.Add(sp.Alias);
+                                                            
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (string item in items.Distinct())
+                    {
+                        SecurityPrincipalSpecifyTypeDropdown.Items.Add(new CheckBox()
+                        {
+                            Content = item
+                        });
+                    }
+                }
+
+               // SecurityPrincipalDataGrid.Items.Add(spData); // IMPORTANT
+                SecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Visible;
+                SecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Visible;
+            }
+        }
+
+        public void securityPrincipalRun()
+        {
+           // SecurityPrincipalDataGrid.Columns.Clear();
+           SecurityPrincipalDataGrid.Items.Clear();
+           // SecurityPrincipalDataGrid.Items.Refresh();
+
+            ComboBoxItem selectedtype = SecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+            string type = selectedtype.Content as string;
+
+            ComboBoxItem selectedScope = SecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            ComboBox potentialSpecifyScope = SecurityPrincipalSpecifyScopeDropdown as ComboBox;
+            ComboBox potentialSpecifyTypeScope = SecurityPrincipalSpecifyTypeDropdown as ComboBox;
+
+            List<string> selectedSpecifyScopeItems = getSelectedItemsSpecifyScopeSecurityPrincipal(potentialSpecifyScope.Items);
+            List<string> selectedSpecifyTypeScopeItems = getSelectedItemsSpecifyTypeSecurityPrincipal(potentialSpecifyTypeScope.Items);
+
+            // List<SecurityPrincipalData> spData = new List<SecurityPrincipalData>(); // ADDED CODE HEREEEE
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+         
+            if (scope == "KeyVault")
+            {
+                // Users
+                if (type == "User")
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == "User")
+                                {
+                                    if (selectedSpecifyTypeScopeItems.Contains(sp.Alias))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        SecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CloseSecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
+        {
+            SecurityPrincipalPopUp.IsOpen = false;
+
+            SecurityPrincipalScopeDropdown.SelectedIndex = -1;
+
+            SecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+
+            SecurityPrincipalTypeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalTypeDropdown.Visibility = Visibility.Hidden;
+            SecurityPrincipalTypeDropdown.SelectedIndex = -1;
+
+            SecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
+            SecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
+        }
+
 
         // 3. List by Permissions ------------------------------------------------------------------------------------------------------------------------------
 
@@ -360,6 +660,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }
         }
+
+
 
         /// <summary>
         /// This method populates the selectedScope dropdown based off of the selected permissions breakdown scope item.
@@ -787,6 +1089,8 @@ namespace Managing_RBAC_in_AzureListOptions
             else if (btn.Name == "SecurityPrincipalRun")
             {
                 // Execute Code
+                securityPrincipalRun();
+                SecurityPrincipalPopUp.IsOpen = true;
             }
             else if (btn.Name == "PermissionsRun")
             {
@@ -826,6 +1130,47 @@ namespace Managing_RBAC_in_AzureListOptions
         {
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
+        }
+        public class SecurityPrincipalData
+        {
+            public string vaultName {get; set;}
+            public string displayName { get; set; }
+            public string alias { get; set; }
+            public List<string> keyPermissions { get; set; }
+            public List<string> secretPermissions { get; set; }
+            public List<string> certificatePermissions { get; set; }
+
+            public SecurityPrincipalData(string vaultName,string displayName, string alias,
+                string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions)
+            {
+                this.vaultName = vaultName;
+                this.displayName = displayName;
+                this.alias = alias;
+
+                List<string> keyList = new List<string>();
+                for (int i = 0; i < keyPermissions.Length; i++)
+                {               
+                    keyList.Add("- " + keyPermissions[i]);
+                }             
+                this.keyPermissions = keyList;
+
+
+                List<string> secretList = new List<string>();
+                for (int i = 0; i < secretPermissions.Length; i++)
+                {
+                    secretList.Add("- " + secretPermissions[i]);
+                }
+                this.secretPermissions = secretList;
+
+
+                List<string> certificateList = new List<string>();
+                for (int i = 0; i < certificatePermissions.Length; i++)
+                {
+                    certificateList.Add("- " + certificatePermissions[i]);
+                }
+                this.certificatePermissions = certificateList;
+            }
+
         }
     }
 }
