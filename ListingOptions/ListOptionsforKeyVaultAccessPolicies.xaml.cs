@@ -974,7 +974,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     TopSPGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Service Principal Type";
+                    col1.Header = "Security Principal Type";
                     col1.Binding = new System.Windows.Data.Binding("type");
                     col1.Width = 187.5;
                     TopSPGrid.Columns.Add(col1);
@@ -1004,27 +1004,27 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     TopSPGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Service Principal Type";
+                    col1.Header = "Security Principal Type";
                     col1.Binding = new System.Windows.Data.Binding("type");
-                    col1.Width = 125;
+                    col1.Width = 187.5;
                     TopSPGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
                     col2.Header = "Name";
                     col2.Binding = new System.Windows.Data.Binding("name");
-                    col2.Width = 125;
+                    col2.Width = 187.5;
                     TopSPGrid.Columns.Add(col2);
 
                     var col3 = new DataGridTextColumn();
                     col3.Header = "Alias";
                     col3.Binding = new System.Windows.Data.Binding("alias");
-                    col3.Width = 125;
+                    col3.Width = 187.5;
                     TopSPGrid.Columns.Add(col3);
 
                     var col4 = new DataGridTextColumn();
                     col4.Header = "Permissions Granted to Service Principal";
                     col4.Binding = new System.Windows.Data.Binding("count");
-                    col4.Width = 125;
+                    col4.Width = 187.5;
                     TopSPGrid.Columns.Add(col4);
 
                     TopSPGrid.ItemsSource = topSPs;

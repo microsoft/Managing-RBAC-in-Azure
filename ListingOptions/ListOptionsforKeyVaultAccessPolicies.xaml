@@ -476,12 +476,13 @@
                     <StackPanel Name="TopKVStackPanel" Height="Auto" Width="500" Background="White">
                         <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
                         <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="500" Padding="10,10,10,10"
-                             Background="White"
-                            Foreground="#FF197597"
+                            Background="White"
+                            Foreground="Black"
                             FontSize="16"
                             FontWeight="SemiBold"
                             TextAlignment="Center" 
-                            FontFamily="Sitka Subheading"/>
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
                         <DataGrid x:Name="TopKVGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
                             <DataGrid.Resources>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -510,11 +511,12 @@
                         <Button Name="CloseTopSPResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopSPResults_Click" />
                         <TextBlock Text="Top 10 Security Principals by Permission Access" Width="750" Padding="10,10,10,10"
                             Background="White"
-                            Foreground="#FF197597"
+                            Foreground="Black"
                             FontSize="16"
                             FontWeight="SemiBold"
                             TextAlignment="Center" 
-                            FontFamily="Sitka Subheading"/>
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
                         <DataGrid x:Name="TopSPGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
                             <DataGrid.Resources>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
