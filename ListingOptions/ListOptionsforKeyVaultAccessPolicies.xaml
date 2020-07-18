@@ -212,47 +212,54 @@
             </Popup>
 
             <!-- #2 Security Principal List Option-->
-            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal"
+            <TextBlock Name="PermissionsBySecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal"
                    Grid.Column ="0" Grid.Row="6"
                    Style="{StaticResource FiltersStyle}"/>
 
-            <Label Name="SecurityPrincipalScopeLabel" Content="Choose your scope:"
+            <Label Name="PermissionsBySecurityPrincipalScopeLabel" Content="Choose your scope:"
                Grid.Column="0" Grid.Row="7" Style="{StaticResource LabelStyleVisible}"/>
-            <ComboBox Name="SecurityPrincipalScopeDropdown" 
-                  Grid.Column ="0" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleVisible}"   
-                  SelectionChanged="SecurityPrincipalScopeDropdown_SelectionChanged">
+            <ComboBox Name="PermissionsBySecurityPrincipalScopeDropdown" 
+                  Grid.Column ="0" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleVisible}" SelectionChanged="PermissionsBySecurityPrincipalScopeDropdown_SelectionChanged" >
                 <ComboBoxItem Content="YAML"/>
                 <ComboBoxItem Content="Subscription"/>
                 <ComboBoxItem Content="ResourceGroup"/>
                 <ComboBoxItem Content="KeyVault"/>
             </ComboBox>
 
-            <Button Name ="SecurityPrincipalRun"
-                Grid.Column="0" Grid.Row="9" 
-                Style="{StaticResource RunButton}"/>
 
-            <Label Name="SecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
+            <Label Name="PermissionsBySecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="1" Grid.Row="7" 
                Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="SecurityPrincipalSpecifyScopeDropdown"
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyScopeDropdown"
                   Grid.Column="1" Grid.Row="8" 
-                  Style="{StaticResource ComboBoxStyleHidden}"
-                  SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed"
+                      SelectionChanged="PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged"                   
+                      />
 
-
-            <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
+            <Label Name="PermissionsBySecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="2" Grid.Row="7"
                Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="SecurityPrincipalTypeDropdown" 
-                  Grid.Column="2" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleHidden}">
+            <ComboBox Name ="PermissionsBySecurityPrincipalTypeDropdown" 
+                  Grid.Column="2" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" SelectionChanged="PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged">
                 <ComboBoxItem Content="All"/>
                 <ComboBoxItem Content="User"/>
                 <ComboBoxItem Content="Group"/>
-                <ComboBoxItem Content="Application"/>
                 <ComboBoxItem Content="Service Principal" />
             </ComboBox>
+
+            <Label Name="PermissionsBySecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
+               Grid.Column="3" Grid.Row="7" 
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyTypeDropdown"
+                  Grid.Column="3" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed" />
+
+            <Button Name ="PermissionsBySecurityPrincipalRun"
+                Grid.Column="0" Grid.Row="9" 
+                Style="{StaticResource RunButton}"/>
+
 
             <!-- #3 Permissions List Option-->
             <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions"

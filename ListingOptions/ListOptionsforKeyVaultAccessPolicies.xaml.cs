@@ -149,44 +149,6 @@ namespace Managing_RBAC_in_AzureListOptions
 
         // 2. List by Security Principal ----------------------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// This method populates the "Specify the scope:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The security principal scope block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void SecurityPrincipalScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (SecurityPrincipalSpecifyScopeLabel.Visibility == Visibility.Visible ||
-                SecurityPrincipalSpecifyScopeDropdown.Visibility == Visibility.Visible)
-            {
-                SecurityPrincipalSpecifyScopeDropdown.Items.Clear();
-            }
-            else
-            {
-                SecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
-                SecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
-            }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            SecurityPrincipalSpecifyScopeDropdown.Items.Add(item1);
-
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            SecurityPrincipalSpecifyScopeDropdown.Items.Add(item2);
-
-        }
-
-        /// <summary>
-        /// This method populates the "Choose the type:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The security principal specify scope block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void SecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-            SecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
-        }
-
         // 3. List by Permissions ------------------------------------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -1454,5 +1416,395 @@ namespace Managing_RBAC_in_AzureListOptions
         {
             TopSPResults.IsOpen = false;
         }
+
+        // 2. Permissions By Security Principal  ----------------------------------------------------------------------------------------------------
+
+        private void PermissionsBySecurityPrincipalScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            PermissionsBySecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+
+            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Hidden;
+
+            PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
+
+
+            if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex != -1)
+            {
+                ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+
+                try
+                {
+                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                    if (yaml.Count() == 0)
+                    {
+                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                    }
+
+                    if (scope != "YAML")
+                    {
+                        populatePermissionsBySecurityPrincipalSpecifyScope(yaml);
+                        PermissionsBySecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
+                        PermissionsBySecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex = -1;
+                    PermissionsBySecurityPrincipalScopeLabel.Visibility = Visibility.Hidden;
+                    PermissionsBySecurityPrincipalScopeDropdown.Visibility = Visibility.Hidden;
+                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+                }
+            }
+        }
+        private void populatePermissionsBySecurityPrincipalSpecifyScope(List<KeyVaultProperties> yaml)
+        {
+            PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
+
+            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            List<string> items = new List<string>();
+            if (scope == "Subscription")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
+                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
+                    {
+                        items.Add(kv.SubscriptionId);
+                    }
+                }
+            }
+            else if (scope == "ResourceGroup")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.ResourceGroupName);
+                }
+            }
+            else
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.VaultName);
+                }
+            }
+
+            // Only add distinct items
+            foreach (string item in items.Distinct())
+            {
+                PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Add(new CheckBox()
+                {
+                    Content = item
+                });
+            }
+        }
+        private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
+        }
+
+        private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyScope(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+
+            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
+            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+        }
+
+        private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyScope(ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+        private void PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items.Clear();
+
+            if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex != -1)
+            {
+                ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedtype.Content as string;
+
+                ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+                // workin here
+
+                ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
+                ComboBox potentialSpecifyTypeScope = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+
+                List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
+               // List<string> selectedSpecifyTypeScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyTypeScope.Items);
+
+                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                List<string> items = new List<string>();
+
+                if (scope == "Subscription")
+                {
+                    if (type == "All")
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        items.Add(sp.Alias);
+                                    }
+                                    else
+                                    {
+                                        items.Add(sp.DisplayName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Type == type)
+                                    {
+                                        if (sp.Alias != " " && sp.Alias != "")
+                                        {
+                                            items.Add(sp.Alias);
+                                        }
+                                        else
+                                        {
+                                            items.Add(sp.DisplayName);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (scope == "ResourceGroup")
+                {
+                    if (type == "All")
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        items.Add(sp.Alias);
+                                    }
+                                    else
+                                    {
+                                        items.Add(sp.DisplayName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Type == type)
+                                    {
+                                        if (sp.Alias != " " && sp.Alias != "")
+                                        {
+                                            items.Add(sp.Alias);
+                                        }
+                                        else
+                                        {
+                                            items.Add(sp.DisplayName);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (scope == "KeyVault")
+                {
+                    if (type == "All")
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        items.Add(sp.Alias);
+                                    }
+                                    else
+                                    {
+                                        items.Add(sp.DisplayName);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                            {
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                                {
+                                    if (sp.Type == type)
+                                    {
+                                        items.Add(sp.Alias + " " + sp.DisplayName);
+
+                                    }
+                                }
+                            }
+                        }
+                    }                                  
+                }
+
+                foreach (string item in items.Distinct())
+                {
+                    PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items.Add(new CheckBox()
+                    {
+                        Content = item
+                    });
+                }
+
+                // PermissionsBySecurityPrincipalSpecifyScopeDropdown.Text = selected";
+                PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Visible;
+                PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Visible;
+            }
+        }
+        private void PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+
+            ComboBox scopeDropdown = sender as ComboBox;
+            ItemCollection items = scopeDropdown.Items;
+
+            List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyType(items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            scopeDropdown.Text = $"{numChecked} selected";
+
+            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
+            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+        }
+
+        private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyType (ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
+
+                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+    
     }
 }
