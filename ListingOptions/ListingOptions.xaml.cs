@@ -195,7 +195,7 @@ namespace RBAC
         /// <summary>
         /// This method gets the selected scope and populates the "Specify the scope:" dropdown, if applicable.
         /// </summary>
-        /// <param name="sender">The </param>
+        /// <param name="sender">The "Select your scope:" dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
         private void PBPScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -237,11 +237,11 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method populates the "Specify your scope:" dropdown based off of the selected scope item.
         /// </summary>
-        /// <param name="specifyScope"></param>
-        /// <param name="scope"></param>
-        /// <param name="yaml"></param>
+        /// <param name="specifyScope">The "Specify your scope:" dropdown</param>
+        /// <param name="scope">The selected item from the "Select your scope:" dropdown</param>
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         private void populateSelectedScopeTemplate(ComboBox specifyScope, string scope, List<KeyVaultProperties> yaml)
         {
             specifyScope.Items.Clear();
@@ -295,9 +295,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method allows you to select multiple items and displays how many items were selected 
+        /// on the dropdown relating to the specified scope.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">The "Specify your scope:" dropdown</param>
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
@@ -305,9 +306,9 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method populates the key, secret, and certificate dropdowns and makes them visible upon a selection change.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">The "Specify your scope" dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
         private void PBPSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -332,10 +333,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method populates the specified dropdown with the array of permissions. 
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="permissions"></param>
+        /// <param name="items">The ItemCollection from a dropdown</param>
+        /// <param name="permissions">The permissions with which to populate the dropdown</param>
         private void populatePermissionsTemplate(ItemCollection items, string[] permissions)
         {
             items.Clear();
@@ -348,9 +349,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method allows you to select multiple items and displays how many items were selected 
+        /// on the dropdown related to keys.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">The keys dropdown</param>
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPKeysDropdown_DropDownClosed(object sender, EventArgs e)
         {
@@ -358,9 +360,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method allows you to select multiple items and displays how many items were selected 
+        /// on the dropdown related to secrets.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">The secrets dropdown</param>
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPSecretsDropdown_DropDownClosed(object sender, EventArgs e)
         {
@@ -368,9 +371,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method allows you to select multiple items and displays how many items were selected 
+        /// on the dropdown related to certificates.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">The certificates dropdown</param>
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPCertificatesDropdown_DropDownClosed(object sender, EventArgs e)
         {
@@ -378,7 +382,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method allows you to select multiple items and shows how many you selected on the ComboBox.
+        /// This method shows how many items were selected on the dropdown.
         /// </summary>
         /// <param name="sender">The ComboBox for which you want to display the number of selected items</param>
         /// <param name="e">The event that occurs when the dropdown closes</param>
@@ -452,10 +456,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// 
+        /// This method runs the principals by permission list option upon clicking the button.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The 'Run' button for the permissions breakdown</param>
+        /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPrincipalByPermissions_Click(object sender, RoutedEventArgs e)
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
@@ -523,11 +527,12 @@ namespace RBAC
         /// This method returns the dictionary representing each selected permission and the list of principals with those permissions.
         /// </summary>
         /// <param name="up">The UpdatePoliciesFromYaml instance</param>
-        /// <param name="vaultsInScope"></param>
-        /// <param name="keysSelected"></param>
-        /// <param name="secretsSelected"></param>
-        /// <param name="certifsSelected"></param>
-        /// <returns></returns>
+        /// <param name="vaultsInScope">The KeyVaults to parse through, or the scope, to generate the principals by permission results</param>
+        /// <param name="keysSelected">The list of selected key permissions</param>
+        /// <param name="secretsSelected">The list of selected secret permissions</param>
+        /// <param name="certifsSelected">The list of selected certificate permissions</param>
+        /// <returns>A dictionary with each selected permission, the list of principals that have those permissions, 
+        /// and the KeyVault name for which that principal's access policy exists</returns>
         private Dictionary<string, Dictionary<string, List<Tuple<string, PrincipalPermissions>>>> getPrincipalsByPermission(UpdatePoliciesFromYaml up, 
             List<KeyVaultProperties> vaultsInScope, List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected)
         {
@@ -580,7 +585,7 @@ namespace RBAC
         /// <param name="keys">The list of selected key permissions</param>
         /// <param name="secrets">The list of selected secret permissions</param>
         /// <param name="certifs">The list of selected certificate permissions</param>
-        /// <param name="dict">A dictionary initializes with each selected permission as keys</param>
+        /// <param name="dict">A dictionary initialized with each selected permission as keys</param>
         private void populatePrincipalDictKeys(List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected, 
             Dictionary<string, Dictionary<string, List<Tuple<string, PrincipalPermissions>>>> dict)
         {
@@ -611,7 +616,6 @@ namespace RBAC
                 }
             }
         }
-
 
         // 4. Breakdown of Permission Usage by Percentage -------------------------------------------------------------------------------------------
 
