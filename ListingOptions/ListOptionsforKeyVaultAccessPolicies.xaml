@@ -173,7 +173,7 @@
             <TextBlock Name="Header" Text="Listing Options for KeyVault Access Policies" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="6" Style="{StaticResource TitleStyle}"/>
 
             <!-- #1 Shorthand List Option-->
-            <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand" 
+            <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand." 
                    Grid.Column="0" Grid.Row="2"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -212,7 +212,7 @@
             </Popup>
 
             <!-- #2 Security Principal List Option-->
-            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal"
+            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal."
                    Grid.Column ="0" Grid.Row="6"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -255,7 +255,7 @@
             </ComboBox>
 
             <!-- #3 Permissions List Option-->
-            <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions"
+            <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions."
                    Grid.Column="0" Grid.Row="10"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -308,7 +308,7 @@
                   Style="{StaticResource ComboBoxStyleHidden}"/>
 
             <!-- #4 Permission Usage Breakdown Option-->
-            <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
+            <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage." Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
 
             <Label Name="BreakdownTypeDropLabel" Content="By permissions or by shorthands?" Style="{StaticResource LabelStyleVisible}" Grid.Column="0" Grid.Row="15"/>
             <ComboBox Name="BreakdownTypeDropdown" Style="{StaticResource ComboBoxStyleVisible}" Grid.Column="0" Grid.Row="16" SelectionChanged="BreakdownTypeDropdown_SelectionChanged">
@@ -424,21 +424,21 @@
                    Grid.Column="0" Grid.Row="23"
                    Style="{StaticResource FiltersStyle}"/>
             <Label Name="SecurityPrincipalAccessTypeLabel"
-               Content="List by Key Vaults or Permissions:"
+               Content="List by KeyVaults or Permissions:"
                Grid.Column="0" Grid.Row="25"
                Style="{StaticResource LabelStyleVisible}"/>
             <TextBlock Name="SecurityPrincipalAccessExplain"
                Grid.Column="0" Grid.Row="24"
                Grid.ColumnSpan="2" FontSize="11" Padding="30,0,0,0" FontFamily="Sitka Subheading">
-            * The 'Key Vault' options sorts by number of Key Vaults accessed <LineBreak/>
+            * The 'KeyVault' options sorts by number of KeyVaults accessed <LineBreak/>
             * The 'Permissions' option sums up individual permissions to  keys, secrets, and certificates
             </TextBlock>
             <ComboBox Name="SecurityPrincipalAccessTypeDropdown"
                   Grid.Column="0" Grid.Row="26"
                   Style="{StaticResource ComboBoxStyleVisible}" 
                   SelectionChanged="SecurityPrincipalAccessTypeDropdown_SelectionChanged">
-                <ComboBoxItem Content="Key Vault"/>
-                <ComboBoxItem Content="Permission"/>
+                <ComboBoxItem Content="KeyVaults"/>
+                <ComboBoxItem Content="Permissions"/>
             </ComboBox>
             
             <Label Name="SecurityPrincipalAccessScopeLabel"
@@ -457,7 +457,7 @@
 
             <Button Name ="SecurityPrincipalAccessRun" 
                 Grid.Column="0" Grid.Row="27"
-                Style="{StaticResource RunButton}"/>
+                Style="{StaticResource RunButton}" Margin="32,10,195,25"/>
 
             <Label Name="SecurityPrincipalAccessSpecifyScopeLabel"
                Content="Specify the scope:"
@@ -472,10 +472,10 @@
             
             <Popup x:Name="TopKVResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
 
-                <Border BorderThickness="0.3" Height="Auto" Width="500" BorderBrush="#FFE0E0E0">
-                    <StackPanel Name="TopKVStackPanel" Height="Auto" Width="500" Background="White">
+                <Border BorderThickness="0.3" Height="Auto" Width="600" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="TopKVStackPanel" Height="Auto" Width="600" Background="White">
                         <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
-                        <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="500" Padding="10,10,10,10"
+                        <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="600" Padding="10,10,10,10"
                             Background="White"
                             Foreground="Black"
                             FontSize="20"

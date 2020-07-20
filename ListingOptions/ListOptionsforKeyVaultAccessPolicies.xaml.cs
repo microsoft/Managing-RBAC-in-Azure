@@ -768,6 +768,8 @@ namespace Managing_RBAC_in_AzureListOptions
         private void MostAccessedScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var box = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
+            if (box == null)
+                return;
             var choice = box.Content as string;
             if (MostAccessedSpecifyScopeLabel.Visibility == Visibility.Visible ||
                MostAccessedSpecifyScopeDropdown.Visibility == Visibility.Visible)
@@ -781,6 +783,7 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else
             {
+                MostAccessedSpecifyScopeDropdown.Items.Clear();
                 if (choice != "YAML")
                 {
                     MostAccessedSpecifyScopeLabel.Visibility = Visibility.Visible;
@@ -844,6 +847,10 @@ namespace Managing_RBAC_in_AzureListOptions
         private void SecurityPrincipalAccessScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var box = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
+            if(box == null)
+            {
+                return;
+            }
             var choice = box.Content as string;
             if (SecurityPrincipalAccessSpecifyScopeLabel.Visibility == Visibility.Visible ||
               SecurityPrincipalAccessSpecifyScopeDropdown.Visibility == Visibility.Visible)
@@ -857,7 +864,8 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else
             {
-                if(choice != "YAML")
+                SecurityPrincipalAccessSpecifyScopeDropdown.Items.Clear();
+                if (choice != "YAML")
                 {
                     SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Visible;
                     SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Visible;
@@ -970,7 +978,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 string type = typeBox.Content as string;
                 List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
                 var topSPs = getTopSPs(vaults, type);
-                if(type == "Key Vault")
+                if(type == "KeyVaults")
                 {
                     TopSPGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
@@ -992,7 +1000,7 @@ namespace Managing_RBAC_in_AzureListOptions
                     TopSPGrid.Columns.Add(col3);
 
                     var col4 = new DataGridTextColumn();
-                    col4.Header = "Key Vaults Accessed";
+                    col4.Header = "KeyVaults Accessed";
                     col4.Binding = new System.Windows.Data.Binding("count");
                     col4.Width = 187.5;
                     TopSPGrid.Columns.Add(col4);
@@ -1030,12 +1038,19 @@ namespace Managing_RBAC_in_AzureListOptions
                     TopSPGrid.ItemsSource = topSPs;
                     TopSPResults.IsOpen = true;
                 }
+                SecurityPrincipalAccessTypeDropdown.SelectedItem = null;
+                SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Hidden;
+                SecurityPrincipalAccessScopeDropdown.SelectedItem = null;
+                SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Hidden;
+                SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+                SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
+                SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem = null;
             }
         }
 
         private List<TopSp> getTopSPs(List<KeyVaultProperties> vaults, string type)
         {
-            if(type == "Key Vault")
+            if(type == "KeyVaults")
             {
                 var sps = new List<TopSp>();
                 var found = new HashSet<string>();
@@ -1094,12 +1109,12 @@ namespace Managing_RBAC_in_AzureListOptions
                         }
                         else if (pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group")
                         {
-                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1, pp.Alias));
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length, pp.Alias));
                             found.Add(pp.Alias);
                         }
                         else
                         {
-                            sps.Add(new TopSp(pp.Type, pp.DisplayName, 1));
+                            sps.Add(new TopSp(pp.Type, pp.DisplayName, pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length));
                             found.Add(pp.DisplayName);
                         }
                     }
@@ -1161,15 +1176,15 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                     TopKVGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Key Vault Name";
+                    col1.Header = "KeyVault Name";
                     col1.Binding = new System.Windows.Data.Binding("VaultName");
-                    col1.Width = 250;
+                    col1.Width = 300;
                     TopKVGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
                     col2.Header = "Security Principals with Access";
                     col2.Binding = new System.Windows.Data.Binding("SecurityPrincipals");
-                    col2.Width = 250;
+                    col2.Width = 300;
                     TopKVGrid.Columns.Add(col2);
 
                     TopKVGrid.ItemsSource = fill;
@@ -1188,15 +1203,15 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                     TopKVGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
-                    col1.Header = "Key Vault Name";
+                    col1.Header = "KeyVault Name";
                     col1.Binding = new System.Windows.Data.Binding("VaultName");
-                    col1.Width = 250;
+                    col1.Width = 300;
                     TopKVGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
                     col2.Header = "Permissions Granted in Key Vault";
                     col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
-                    col2.Width = 250;
+                    col2.Width = 300;
                     TopKVGrid.Columns.Add(col2);
 
                     TopKVGrid.ItemsSource = fill;
@@ -1204,6 +1219,13 @@ namespace Managing_RBAC_in_AzureListOptions
 
                     
                 }
+                MostAccessedTypeDropdown.SelectedItem = null;
+                MostAccessedScopeLabel.Visibility = Visibility.Hidden;
+                MostAccessedScopeDropdown.Visibility = Visibility.Hidden;
+                MostAccessedScopeDropdown.SelectedItem = null;
+                MostAccessedSpecifyScopeLabel.Visibility = Visibility.Hidden;
+                MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+                MostAccessedSpecifyScopeDropdown.SelectedItem = null;
             }
         }
         internal class TopKVSPClass
@@ -1343,7 +1365,7 @@ namespace Managing_RBAC_in_AzureListOptions
             List<string> selected = new List<string>();
             try
             {
-                ComboBoxItem selectedItem = MostAccessedSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedItem = (ComboBoxItem)MostAccessedSpecifyScopeDropdown.SelectedItem;
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
@@ -1353,10 +1375,10 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 try
                 {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
                     MostAccessedSpecifyScopeDropdown.SelectedIndex = -1;
 
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    if (lastItem.Content.ToString().EndsWith("selected"))
                     {
                         items.RemoveAt(items.Count - 1);
                     }
@@ -1416,7 +1438,7 @@ namespace Managing_RBAC_in_AzureListOptions
             List<string> selected = new List<string>();
             try
             {
-                ComboBoxItem selectedItem = SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedItem = (ComboBoxItem)SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem;
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
@@ -1426,10 +1448,10 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 try
                 {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
                     SecurityPrincipalAccessSpecifyScopeDropdown.SelectedIndex = -1;
 
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
+                    if (lastItem.Content.ToString().EndsWith("selected"))
                     {
                         items.RemoveAt(items.Count - 1);
                     }
