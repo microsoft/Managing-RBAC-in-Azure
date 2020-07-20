@@ -283,6 +283,7 @@
                                 <!-- Column Header Text & Bindings -->
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="KeyVault" Binding="{Binding Path=vaultName}"/>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding Path=type}" Visibility="Hidden"/>
                                     <DataGridTextColumn Header="Display Name" Binding="{Binding Path= displayName}"/>
                                     <DataGridTextColumn Header="Alias" Binding="{Binding Path= alias }"/>
                                     <DataGridTemplateColumn Header="Key Permissions" Width= "200">

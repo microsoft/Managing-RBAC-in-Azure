@@ -1818,52 +1818,30 @@ namespace Managing_RBAC_in_AzureListOptions
             return selected;
         }
 
-        private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
+        private void gridColumnToggleVisibility(String header, Visibility vis)
         {
-            PermissionsBySecurityPrincipalDataGrid.Items.Clear();          
-            foreach(DataGridColumn col in PermissionsBySecurityPrincipalDataGrid.Columns)
+            foreach (DataGridColumn col in PermissionsBySecurityPrincipalDataGrid.Columns)
             {
-                if ( (string)col.Header == "Type")
+                if ((string)col.Header == header)
                 {
-                    PermissionsBySecurityPrincipalDataGrid.Columns.Remove(col);
-                    break;
+                    col.Visibility = vis;
                 }
             }
-            PermissionsBySecurityPrincipalPopUp.IsOpen = false;
+        }
 
-            //PermissionsBySecurityPrincipalDataGrid.Columns.RemoveAt(2);
-            //PermissionsBySecurityPrincipalDataGrid.Columns.Clear();
-            // SecurityPrincipalDataGrid.Items.Refresh();
-            // gvUsers.Columns["ID"].Visibility = false;
-            // gvUsers.Columns.RemoveAt(IndexOfColumn);
+        private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
+        {
+            PermissionsBySecurityPrincipalDataGrid.Items.Clear();
+            gridColumnToggleVisibility("Type", Visibility.Hidden);
+            gridColumnToggleVisibility("Key Permissions", Visibility.Visible);
+            gridColumnToggleVisibility("Secret Permissions", Visibility.Visible);
+            gridColumnToggleVisibility("Certificate Permissions", Visibility.Visible);
+            PermissionsBySecurityPrincipalPopUp.IsOpen = false;
         }
 
         public void permissionsBySecurityPrincipalRunMethod()
         {
-            /*
-            var columnKeyVault = new DataGridTextColumn();
-            columnKeyVault.Header = "KeyVault";
-            columnKeyVault.Binding = new System.Windows.Data.Binding("vaultName");
-            PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnKeyVault);
-
-            var columnDisplayName = new DataGridTextColumn();
-            columnDisplayName.Header = "Display Name";
-            columnDisplayName.Binding = new System.Windows.Data.Binding("displayName");
-            PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnDisplayName);
-
-            var columnAlias = new DataGridTextColumn();
-            columnAlias.Header = "Alias";
-            columnAlias.Binding = new System.Windows.Data.Binding("alias");
-            PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnAlias);
-
-            var columnKeyPermissions = new DataGridTemplateColumn();
-            columnKeyPermissions.Header = "Key Permissions";
-            columnKeyPermissions.Width = 200;
-        //  var listBox = columnKeyPermissions.CellTemplate.DataType = new ListBox();
             
-            PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnKeyPermissions);
-            */
-
             ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedtype.Content as string;
 
@@ -1892,6 +1870,7 @@ namespace Managing_RBAC_in_AzureListOptions
                         PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
                     }
                 }
+                gridColumnToggleVisibility("Type", Visibility.Visible);
             }
 
             else if (scope == "Subscription")
@@ -1925,7 +1904,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
-                    PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnType);
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
                 }
                 else
                 {
@@ -1983,7 +1962,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
-                    PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnType);
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
                 }
                 else
                 {
@@ -2013,12 +1992,7 @@ namespace Managing_RBAC_in_AzureListOptions
             else if (scope == "KeyVault")
             {
                 if (type == "All")
-                {
-                    var columnType= new DataGridTextColumn();
-                    columnType.DisplayIndex = 1;
-                    columnType.Header = "Type";
-                    columnType.Binding = new System.Windows.Data.Binding("type");
-                    columnType.Width = 120;
+                {                  
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
@@ -2040,7 +2014,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
-                    PermissionsBySecurityPrincipalDataGrid.Columns.Add(columnType);
+                    gridColumnToggleVisibility("Type", Visibility.Visible);                 
                 }
                 else
                 {
@@ -2067,7 +2041,16 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                 }
             }
+            // Check Key, secret, and certificate permissions. if all of them is empty, remove the permission block
+
+            foreach (DataGridColumn col in PermissionsBySecurityPrincipalDataGrid.Columns)
+            {
+                
+            }
+
+            
         }
+
 
         public class SecurityPrincipalData
         {
