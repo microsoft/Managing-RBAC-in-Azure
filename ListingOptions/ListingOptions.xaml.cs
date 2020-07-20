@@ -10,6 +10,7 @@ using LiveCharts.Wpf;
 using System.Windows.Media;
 using System.ComponentModel;
 using System.Windows.Data;
+using Microsoft.Azure.Management.CosmosDB.Fluent.Models;
 
 namespace RBAC
 {
@@ -193,6 +194,12 @@ namespace RBAC
         private void PBPScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             PBPSpecifyScopeDropdown.SelectedIndex = -1;
+            PBPKeysLabel.Visibility = Visibility.Hidden;
+            PBPKeysDropdown.Visibility = Visibility.Hidden;
+            PBPSecretsLabel.Visibility = Visibility.Hidden;
+            PBPSecretsDropdown.Visibility = Visibility.Hidden;
+            PBPCertificatesLabel.Visibility = Visibility.Hidden;
+            PBPCertificatesDropdown.Visibility = Visibility.Hidden;
 
             ComboBox dropdown = sender as ComboBox;
             if (dropdown.SelectedIndex != -1)
@@ -210,25 +217,14 @@ namespace RBAC
                         throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
                     }
 
-                    if (scope != "YAML")
-                    {
-                        ComboBox specifyDropdown = PBPSpecifyScopeDropdown as ComboBox;
-                        populateSelectedScopeTemplate(specifyDropdown, scope, yaml);
-
-                        PBPSpecifyScopeLabel.Visibility = Visibility.Visible;
-                        PBPSpecifyScopeDropdown.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-
-                       
-
-                    }
+                    ComboBox specifyDropdown = PBPSpecifyScopeDropdown as ComboBox;
+                    populateSelectedScopeTemplate(specifyDropdown, scope, yaml);
+                    PBPSpecifyScopeLabel.Visibility = Visibility.Visible;
+                    PBPSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
                     dropdown.SelectedIndex = -1;
                 }
             }
@@ -239,39 +235,50 @@ namespace RBAC
             specifyScope.Items.Clear();
 
             List<string> items = new List<string>();
-            if (scope == "Subscription")
+            if (scope == "YAML")
             {
-                foreach (KeyVaultProperties kv in yaml)
+                specifyScope.Items.Add(new ComboBoxItem()
                 {
-                    if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
-                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
-                    {
-                        items.Add(kv.SubscriptionId);
-                    }
-                }
-            }
-            else if (scope == "ResourceGroup")
-            {
-                foreach (KeyVaultProperties kv in yaml)
-                {
-                    items.Add(kv.ResourceGroupName);
-                }
+                    Content = "YAML",
+                    IsSelected = true
+                });
             }
             else
             {
-                foreach (KeyVaultProperties kv in yaml)
+                if (scope == "Subscription")
                 {
-                    items.Add(kv.VaultName);
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
+                            && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
+                        {
+                            items.Add(kv.SubscriptionId);
+                        }
+                    }
                 }
-            }
-
-            // Only add distinct items
-            foreach (string item in items.Distinct())
-            {
-                specifyScope.Items.Add(new CheckBox()
+                else if (scope == "ResourceGroup")
                 {
-                    Content = item
-                });
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        items.Add(kv.ResourceGroupName);
+                    }
+                }
+                else
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        items.Add(kv.VaultName);
+                    }
+                }
+
+                // Only add distinct items
+                foreach (string item in items.Distinct())
+                {
+                    specifyScope.Items.Add(new CheckBox()
+                    {
+                        Content = item
+                    });
+                }
             }
         }
 
@@ -300,17 +307,6 @@ namespace RBAC
                 PBPCertificatesLabel.Visibility = Visibility.Visible;
                 PBPCertificatesDropdown.Visibility = Visibility.Visible;
             }
-            else
-            {
-                PBPKeysLabel.Visibility = Visibility.Hidden;
-                PBPKeysDropdown.Visibility = Visibility.Hidden;
-
-                PBPSecretsLabel.Visibility = Visibility.Hidden;
-                PBPSecretsDropdown.Visibility = Visibility.Hidden;
-
-                PBPCertificatesLabel.Visibility = Visibility.Hidden;
-                PBPCertificatesDropdown.Visibility = Visibility.Hidden;
-            }
         }
 
         private void populatePermissionsTemplate(ItemCollection items, string[] permissions)
@@ -327,7 +323,6 @@ namespace RBAC
 
         private void PBPKeysDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            //neeed to populate with all the keysd
             dropDownClosedTemplate(sender, e);
         }
 
@@ -340,23 +335,24 @@ namespace RBAC
         {
             dropDownClosedTemplate(sender, e);
         }
-
-
         private void dropDownClosedTemplate(object sender, EventArgs e)
         {
             ComboBox dropdown = sender as ComboBox;
             ItemCollection items = dropdown.Items;
 
             List<string> selected = getSelectedItemsTemplate(dropdown, items);
-            int numChecked = selected.Count();
-
-            // Make the ComboBox show how many are selected
-            items.Add(new ComboBoxItem()
+            if (selected != null)
             {
-                Content = $"{numChecked} selected",
-                Visibility = Visibility.Collapsed
-            });
-            dropdown.Text = $"{numChecked} selected";
+                int numChecked = selected.Count();
+
+                // Make the ComboBox show how many are selected
+                items.Add(new ComboBoxItem()
+                {
+                    Content = $"{numChecked} selected",
+                    Visibility = Visibility.Collapsed
+                });
+                dropdown.Text = $"{numChecked} selected";
+            }
         }
 
         private List<string> getSelectedItemsTemplate(ComboBox comboBox, ItemCollection items)
@@ -366,6 +362,10 @@ namespace RBAC
             try
             {
                 ComboBoxItem selectedItem = (ComboBoxItem)comboBox.SelectedItem;
+                if (selectedItem != null && selectedItem.Content.ToString() == "YAML")
+                {
+                    return null;
+                }
                 if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
                 {
                     items.RemoveAt(items.Count - 1);
