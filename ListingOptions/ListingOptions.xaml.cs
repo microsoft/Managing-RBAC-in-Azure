@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.ComponentModel;
 using System.Windows.Data;
 using Microsoft.Azure.Management.CosmosDB.Fluent.Models;
+using System.Runtime.ConstrainedExecution;
 
 namespace RBAC
 {
@@ -319,8 +320,6 @@ namespace RBAC
                 items.Add(item);
             }
         }
-
-
         private void PBPKeysDropdown_DropDownClosed(object sender, EventArgs e)
         {
             dropDownClosedTemplate(sender, e);
@@ -340,7 +339,7 @@ namespace RBAC
             ComboBox dropdown = sender as ComboBox;
             ItemCollection items = dropdown.Items;
 
-            List<string> selected = getSelectedItemsTemplate(dropdown, items);
+            List<string> selected = getSelectedItemsTemplate(dropdown);
             if (selected != null)
             {
                 int numChecked = selected.Count();
@@ -355,10 +354,10 @@ namespace RBAC
             }
         }
 
-        private List<string> getSelectedItemsTemplate(ComboBox comboBox, ItemCollection items)
+        private List<string> getSelectedItemsTemplate(ComboBox comboBox)
         {
+            ItemCollection items = comboBox.Items;
             List<string> selected = new List<string>();
-
             try
             {
                 ComboBoxItem selectedItem = (ComboBoxItem)comboBox.SelectedItem;
@@ -376,7 +375,7 @@ namespace RBAC
                 try
                 {
                     ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
-                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+                    comboBox.SelectedIndex = -1;
 
                     if (lastItem.Content.ToString().EndsWith("selected"))
                     {
@@ -399,31 +398,150 @@ namespace RBAC
             return selected;
         }
 
-       
+        private void RunPrincipalByPermissions_Click(object sender, RoutedEventArgs e)
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
-       
+            if (yaml.Count() == 0)
+            {
+                MessageBox.Show("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.", "InvalidFilePath Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
+            ComboBox keysDropdown = PBPKeysDropdown as ComboBox;
+            List<string> keysSelected = getSelectedItemsTemplate(keysDropdown);
+            ComboBox secretsDropdown = PBPSecretsDropdown as ComboBox;
+            List<string> secretsSelected = getSelectedItemsTemplate(secretsDropdown);
+            ComboBox certifsDropdown = PBPCertificatesDropdown as ComboBox;
+            List<string> certifsSelected = getSelectedItemsTemplate(certifsDropdown);
 
+            if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
+            {
+                MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
+            ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
+            List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
+            if (scope.Content.ToString() == "YAML")
+            {
+                vaultsInScope = yaml;
+            }
+            else
+            {
+                ComboBox specifyScopeDropdown = PBPSpecifyScopeDropdown as ComboBox;
+                List<string> selected = getSelectedItemsTemplate(specifyScopeDropdown);
 
+                if (selected.Count() == 0)
+                {
+                    MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                ILookup<string, KeyVaultProperties> lookup;
+                if (scope.Content.ToString() == "Subscription")
+                {
+                    lookup = yaml.ToLookup(kv => kv.SubscriptionId);
+                }
+                else if (scope.Content.ToString() == "ResourceGroup")
+                {
+                    lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
+                }
+                else
+                {
+                    lookup = yaml.ToLookup(kv => kv.VaultName);
+                }
 
+                foreach (var specifiedScope in selected)
+                {
+                    vaultsInScope.AddRange(lookup[specifiedScope].ToList());
+                }
+            }
 
+            Dictionary<string, Dictionary<string, List<PrincipalPermissions>>> data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
+            //PUT DATA IN DATAGRID
 
+            // Once close datagrid, reset dropdowns
+            PBPScopeDropdown.SelectedIndex = -1;
+            PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+        }
 
+        private Dictionary<string, Dictionary<string, List<PrincipalPermissions>>> getPrincipalsByPermission(UpdatePoliciesFromYaml up, List<KeyVaultProperties> vaultsInScope,
+            List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected)
+        {
+            Dictionary<string, Dictionary<string, List<PrincipalPermissions>>> principalsByPermission = new Dictionary<string, Dictionary<string, List<PrincipalPermissions>>>();
+            populatePrincipalDictKeys(keysSelected, secretsSelected, certifsSelected, principalsByPermission);
 
+            foreach (KeyVaultProperties kv in vaultsInScope)
+            {
+                foreach (PrincipalPermissions principal in kv.AccessPolicies)
+                {
+                    up.translateShorthands(principal);
+                    if (keysSelected.Count != 0)
+                    {
+                        foreach (string key in keysSelected)
+                        {
+                            if (principal.PermissionsToKeys.Contains(key.ToLower()))
+                            {
+                                principalsByPermission["Keys"][key].Add(principal);
+                            }
+                        }
+                    }
+                    if (secretsSelected.Count() != 0)
+                    {
+                        foreach (string secret in secretsSelected)
+                        {
+                            if (principal.PermissionsToKeys.Contains(secret.ToLower()))
+                            {
+                                principalsByPermission["Secrets"][secret].Add(principal);
+                            }
+                        }
+                    }
+                    if (certifsSelected.Count() != 0)
+                    {
+                        foreach (string certif in certifsSelected)
+                        {
+                            if (principal.PermissionsToKeys.Contains(certif.ToLower()))
+                            {
+                                principalsByPermission["Certificates"][certif].Add(principal);
+                            }
+                        }
+                    }
+                }
+            }
+            return principalsByPermission;
+        }
 
+        private void populatePrincipalDictKeys(List<string> keys, List<string> secrets, List<string> certifs, Dictionary<string, Dictionary<string, List<PrincipalPermissions>>> dict)
+        {
+            dict["Keys"] = new Dictionary<string, List<PrincipalPermissions>>();
+            if (keys.Count != 0)
+            {
+                foreach (string key in keys)
+                {
+                    dict["Keys"][key] = new List<PrincipalPermissions>();
+                }
+            }
 
+            dict["Secrets"] = new Dictionary<string, List<PrincipalPermissions>>();
+            if (secrets.Count != 0)
+            {
+                foreach (string secret in secrets)
+                {
+                    dict["Secrets"][secret] = new List<PrincipalPermissions>();
+                }
+            }
 
-
-
-
-
-
-
-
-
-
-
+            dict["Certificates"] = new Dictionary<string, List<PrincipalPermissions>>();
+            if (certifs.Count() != 0)
+            {
+                foreach (string certif in certifs)
+                {
+                    dict["Certificates"][certif] = new List<PrincipalPermissions>();
+                }
+            }
+        }
 
 
         // 4. Breakdown of Permission Usage by Percentage -------------------------------------------------------------------------------------------
@@ -638,54 +756,61 @@ namespace RBAC
         /// <param name="selected">The list of selected items from the permissions breakdown selected scope dropdown, if applicable</param>
         private void calculatePermissionBreakdown(string scope, List<string> selected)
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
-
-            if (yaml.Count() == 0)
+            try
             {
-                throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
-            }
+                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
-            ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
-            string type = selectedType.Content as string;
-
-            Dictionary<string, Dictionary<string, int>> count;
-            if (scope == "YAML")
-            {
-                count = countPermissions(yaml, type);
-            }
-            else
-            {
-                ILookup<string, KeyVaultProperties> lookup;
-                if (scope == "Subscription")
+                if (yaml.Count() == 0)
                 {
-                    lookup = yaml.ToLookup(kv => kv.SubscriptionId);
+                    throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
                 }
-                else if (scope == "ResourceGroup")
+
+                ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedType.Content as string;
+
+                Dictionary<string, Dictionary<string, int>> count;
+                if (scope == "YAML")
                 {
-                    lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
+                    count = countPermissions(yaml, type);
                 }
                 else
                 {
-                    lookup = yaml.ToLookup(kv => kv.VaultName);
+                    ILookup<string, KeyVaultProperties> lookup;
+                    if (scope == "Subscription")
+                    {
+                        lookup = yaml.ToLookup(kv => kv.SubscriptionId);
+                    }
+                    else if (scope == "ResourceGroup")
+                    {
+                        lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
+                    }
+                    else
+                    {
+                        lookup = yaml.ToLookup(kv => kv.VaultName);
+                    }
+
+                    List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
+                    foreach (var specifiedScope in selected)
+                    {
+                        vaultsInScope.AddRange(lookup[specifiedScope].ToList());
+                    }
+                    count = countPermissions(vaultsInScope, type);
                 }
 
-                List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
-                foreach (var specifiedScope in selected)
-                {
-                    vaultsInScope.AddRange(lookup[specifiedScope].ToList());
-                }
-                count = countPermissions(vaultsInScope, type);
+                PieChart keys = (LiveCharts.Wpf.PieChart)PermissionsToKeysChart;
+                setChartData(keys, count["keyBreakdown"]);
+                PieChart secrets = (LiveCharts.Wpf.PieChart)PermissionsToSecretsChart;
+                setChartData(secrets, count["secretBreakdown"]);
+                PieChart certificates = (LiveCharts.Wpf.PieChart)PermissionsToCertificatesChart;
+                setChartData(certificates, count["certificateBreakdown"]);
+
+                PermissionBreakdownResults.IsOpen = true;
             }
-
-            PieChart keys = (LiveCharts.Wpf.PieChart)PermissionsToKeysChart;
-            setChartData(keys, count["keyBreakdown"]);
-            PieChart secrets = (LiveCharts.Wpf.PieChart)PermissionsToSecretsChart;
-            setChartData(secrets, count["secretBreakdown"]);
-            PieChart certificates = (LiveCharts.Wpf.PieChart)PermissionsToCertificatesChart;
-            setChartData(certificates, count["certificateBreakdown"]);
-
-            PermissionBreakdownResults.IsOpen = true;
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "InvalidFilePath Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -966,7 +1091,7 @@ namespace RBAC
             }
             else if (btn.Name == "PermissionsRun")
             {
-                // Execute Code
+                RunPrincipalByPermissions_Click(sender, e);
             }
             else if (btn.Name == "BreakdownRun")
             {
@@ -1003,6 +1128,7 @@ namespace RBAC
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
+
 
     }
 }
