@@ -20,7 +20,7 @@ namespace RBAC
             Console.WriteLine("Refer to 'Config/Log.log' for more details should an error be thrown.\n");
             Console.ResetColor();
 
-            Console.WriteLine("Reading input file...");
+            Console.WriteLine("Reading input files...");
             ap.verifyFileExtensions(Constants.JSON_FILE_PATH, Constants.YAML_FILE_PATH);
             JsonInput vaultList = ap.readJsonFile(Constants.JSON_FILE_PATH);
             Console.WriteLine("Finished!");

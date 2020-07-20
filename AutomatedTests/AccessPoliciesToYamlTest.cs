@@ -8,12 +8,12 @@ namespace RBAC
 {
     [TestClass]
     /// <summary>
-    /// This class is the Phase 1 testing class
+    /// This class is the testing class for AccessPoliciesToYaml.
     /// </summary>
     public class AccessPoliciesToYamlTest
     {
         /// <summary>
-        /// This is a wrapper class that is used for testing purposes
+        /// This is a wrapper class that is used for testing purposes.
         /// </summary>
         public class Testing <T>
         {
@@ -35,7 +35,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Main args work
+        /// This method verifies that valid file extensions work.
         /// </summary>
         public void TestVerifyFileExtensionsValid()
         {
@@ -60,7 +60,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in invalid Main args are handled
+        /// This method verifies that invalid file extensions are handled.
         /// </summary>
         public void TestVerifyFileExtensionsInvalid()
         {
@@ -68,8 +68,8 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "Could not find file 'file.jsn'."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "Could not find file 'file.yaml'.")
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The file path for JSON_FILE_PATH does not have the .json extension."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The file path for YAML_FILE_PATH does not have the .yml extension.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
@@ -86,7 +86,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that a valid Json file is consistent with an expected json file
+        /// This method verifies that a valid Json file is consistent with an expected json file.
         /// </summary>
         public void TestReadJsonFileValid()
         {
@@ -98,7 +98,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Json fields work
+        /// This method verifies that reading in valid Json fields work.
         /// </summary>
         public void TestCheckJsonFieldsValid()
         {
@@ -124,7 +124,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null)
+        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null).
         /// </summary>
         public void TestCheckJsonFieldsInvalid()
         {
@@ -181,7 +181,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Resource fields work
+        /// This method verifies that reading in valid Resource fields work.
         /// </summary>
         public void TestCheckMissingResourceFieldsValid()
         {
@@ -208,7 +208,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading invalid Resource Fields are handled
+        /// This method verifies that reading invalid Resource Fields are handled.
         /// </summary>
         public void TestCheckMissingResourceFieldsInvalid()
         {
@@ -241,7 +241,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Tests getVaults() method.
+        /// This method tests the getVaults() method.
         /// </summary>
         public void TestGetVaults()
         {
@@ -265,7 +265,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// Tests convertToYaml method
+        /// This method tests the convertToYaml() method.
         /// </summary>
         public void TestConvertToYaml()
         {

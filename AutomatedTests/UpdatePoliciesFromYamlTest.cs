@@ -8,12 +8,12 @@ namespace RBAC
 {
     [TestClass]
     /// <summary>
-    /// This class is the Phase 2 testing class
+    /// This class is the testing class for UpdatePoliciesFromYaml.
     /// </summary>
     public class UpdatePoliciesFromYamlTest
     {
         /// <summary>
-        /// This is a wrapper class that is used for testing purposes
+        /// This is a wrapper class that is used for testing purposes.
         /// </summary>
         public class Testing<T>
         {
@@ -34,7 +34,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that a valid yaml is able to deserialize properly
+        /// This method verifies that a valid yaml is able to deserialize properly.
         /// </summary>
         public void TestYamlDeserializationValid()
         {
@@ -46,7 +46,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that the program handles if there are invalid fields 
+        /// This method verifies that the program handles if there are invalid fields
         /// or changes made in the yaml other than those in the AccessPolicies.
         /// </summary>
         public void TestCheckVaultChangesValid()
@@ -605,10 +605,11 @@ namespace RBAC
                 }
             }
         }
-        /// <summary>
-        /// Tests translateShorthand() valid cases.
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests valid cases for the translateShorthand() method.
+        /// </summary>
         public void TestTranslateShorthandValid()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
@@ -648,10 +649,11 @@ namespace RBAC
             Assert.IsTrue(Constants.MANAGEMENT_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("management", "certificate")));
             Assert.IsTrue(Constants.STORAGE_CERTIFICATE_PERMISSIONS.SequenceEqual(up.getShorthandPermissions("storage", "certificate")));
         }
-        /// <summary>
-        /// Tests verifySecurityPrincipal() valid cases
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests valid cases for the verifySecurityPrincipal() method.
+        /// </summary>
         public void TestValidVerifySecurityPrincipal()
         {
             var up = new UpdatePoliciesFromYaml(true);
@@ -669,10 +671,11 @@ namespace RBAC
                 Assert.AreEqual(t.testObject["ObjectId"], t.error);
             }
         }
-        /// <summary>
-        /// Tests verifySecurityPrincipal() invalid cases
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests invalid cases for the verifySecurityPrincipal() method.
+        /// </summary>
         public void TestInvalidVerifySecurityPrincipal()
         {
             var up = new UpdatePoliciesFromYaml(true);
@@ -723,12 +726,12 @@ namespace RBAC
                 up.verifySecurityPrincipal(t.testObject, t.testObject.Type.ToLower(), tgc);
                 Assert.AreEqual(t.error, up.error);
             }
-
         }
-        /// <summary>
-        /// Tests updateVaults() method. 
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests the updateVaults() method. 
+        /// </summary>
         public void TestUpdateVaults()
         {
             var up = new UpdatePoliciesFromYaml(true);
@@ -755,8 +758,8 @@ namespace RBAC
             Assert.AreEqual(8, updated.Updated[0].AccessPolicies[0].PermissionsToKeys.Length);
             Assert.AreEqual(6, updated.Updated[0].AccessPolicies[0].PermissionsToSecrets.Length);
             Assert.AreEqual(14, updated.Updated[0].AccessPolicies[0].PermissionsToCertificates.Length);
-
         }
+
         /// <summary>
         /// This method creates the expected yamlVaults list of KeyVaultProperties from the deserialized yaml.
         /// </summary>

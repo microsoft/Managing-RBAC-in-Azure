@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using System.IO;
 
 namespace RBAC
 {
@@ -33,22 +34,32 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the file arguments valid.
+        /// This method verifies that the file extensions are valid.
         /// </summary>
         /// <param name="jsonPath">The json file path specified in the Constants.cs file</param>
         /// <param name="yamlPath">The yaml file path specified in the Constants.cs file</param>
         public void verifyFileExtensions(string jsonPath, string yamlPath)
         {
-            log.Info("Checking file extensions...");
+            log.Info("Verifying the file paths...");
             try
             {
-                var json = jsonPath;
-                var yaml = yamlPath;
+                DirectoryInfo jsonDir = new DirectoryInfo(Path.GetFullPath(jsonPath));
+                DirectoryInfo yamlDir = new DirectoryInfo(Path.GetFullPath(yamlPath));
+
+                if (jsonDir.Extension != ".json")
+                {
+                    throw new Exception("The file path for JSON_FILE_PATH does not have the .json extension.");
+                }
+                if (yamlDir.Extension != ".yml")
+                {
+                    throw new Exception("The file path for YAML_FILE_PATH does not have the .yml extension.");
+                }
+                log.Info("File paths verified!");
             }
             catch (Exception e)
             {
-                log.Error("FileNotFound", e);
-                log.Debug("The file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                log.Error("InvalidArgs", e);
+                log.Debug($"The file paths must be specified in the Constants.cs file. Please ensure these paths and their extensions are correct before proceeding.");
                 Exit(e.Message);
             }
         }

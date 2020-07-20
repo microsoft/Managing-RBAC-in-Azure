@@ -189,112 +189,242 @@ namespace RBAC
 
         // 3. List by Permissions ------------------------------------------------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// This method populates the "Specify the scope:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The permissions scope block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void PermissionsScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+        private void PBPScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PermissionsSpecifyScopeLabel.Visibility == Visibility.Visible ||
-                PermissionsSpecifyScopeDropdown.Visibility == Visibility.Visible)
+            PBPSpecifyScopeDropdown.SelectedIndex = -1;
+
+            ComboBox dropdown = sender as ComboBox;
+            if (dropdown.SelectedIndex != -1)
             {
-                PermissionsSpecifyScopeDropdown.Items.Clear();
+                ComboBoxItem selectedScope = dropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+
+                try
+                {
+                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+                    if (yaml.Count() == 0)
+                    {
+                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                    }
+
+                    if (scope != "YAML")
+                    {
+                        ComboBox specifyDropdown = PBPSpecifyScopeDropdown as ComboBox;
+                        populateSelectedScopeTemplate(specifyDropdown, scope, yaml);
+
+                        PBPSpecifyScopeLabel.Visibility = Visibility.Visible;
+                        PBPSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+
+                       
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
+                    dropdown.SelectedIndex = -1;
+                }
+            }
+        }
+
+        private void populateSelectedScopeTemplate(ComboBox specifyScope, string scope, List<KeyVaultProperties> yaml)
+        {
+            specifyScope.Items.Clear();
+
+            List<string> items = new List<string>();
+            if (scope == "Subscription")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
+                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
+                    {
+                        items.Add(kv.SubscriptionId);
+                    }
+                }
+            }
+            else if (scope == "ResourceGroup")
+            {
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.ResourceGroupName);
+                }
             }
             else
             {
-                PermissionsSpecifyScopeLabel.Visibility = Visibility.Visible;
-                PermissionsSpecifyScopeDropdown.Visibility = Visibility.Visible;
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    items.Add(kv.VaultName);
+                }
             }
-            ComboBoxItem item1 = new ComboBoxItem();
-            item1.Content = "Test1";
-            PermissionsSpecifyScopeDropdown.Items.Add(item1);
 
-            ComboBoxItem item2 = new ComboBoxItem();
-            item2.Content = "Test2";
-            PermissionsSpecifyScopeDropdown.Items.Add(item2);
-        }
-
-        /// <summary>
-        /// This method populates the "Key Permissions:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The specify scope block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void PermissionsSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            KeyPermissionsDropdown.Items.Clear();
-            string[] allKeyPermissions = Constants.ALL_KEY_PERMISSIONS;
-
-            ComboBoxItem item = new ComboBoxItem();
-            item.Content = "All";
-            KeyPermissionsDropdown.Items.Add(item);
-            item = new ComboBoxItem();
-            item.Content = "None";
-            KeyPermissionsDropdown.Items.Add(item);
-
-            foreach (string permission in allKeyPermissions)
+            // Only add distinct items
+            foreach (string item in items.Distinct())
             {
-                item = new ComboBoxItem();
-                item.Content = permission;
-                KeyPermissionsDropdown.Items.Add(item);
+                specifyScope.Items.Add(new CheckBox()
+                {
+                    Content = item
+                });
             }
-            KeyPermissionsLabel.Visibility = Visibility.Visible;
-            KeyPermissionsDropdown.Visibility = Visibility.Visible;
         }
 
-        /// <summary>
-        /// This method populates the "Secret Permissions:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The key permissions block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void KeyPermissionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PBPSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            SecretPermissionsDropdown.Items.Clear();
-            string[] allSecretPermissions = Constants.ALL_SECRET_PERMISSIONS;
-
-            ComboBoxItem item = new ComboBoxItem();
-            item.Content = "All";
-            SecretPermissionsDropdown.Items.Add(item);
-            item = new ComboBoxItem();
-            item.Content = "None";
-            SecretPermissionsDropdown.Items.Add(item);
-
-            foreach (string permission in allSecretPermissions)
-            {
-                item = new ComboBoxItem();
-                item.Content = permission;
-                SecretPermissionsDropdown.Items.Add(item);
-            }
-            SecretPermissionsLabel.Visibility = Visibility.Visible;
-            SecretPermissionsDropdown.Visibility = Visibility.Visible;
+            dropDownClosedTemplate(sender, e);
         }
 
-        /// <summary>
-        /// This method populates the "Certificate Permissions:" dropdown and makes it visible upon a selection.
-        /// </summary>
-        /// <param name="sender">The secret permissions block dropdown</param>
-        /// <param name="e">The event that occurs when a selection changes</param>
-        private void SecretPermissionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PBPSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CertificatePermissionsDropdown.Items.Clear();
-            string[] allCertificatePermissions = Constants.ALL_CERTIFICATE_PERMISSIONS;
-
-            ComboBoxItem item = new ComboBoxItem();
-            item.Content = "All";
-            CertificatePermissionsDropdown.Items.Add(item);
-            item = new ComboBoxItem();
-            item.Content = "None";
-            CertificatePermissionsDropdown.Items.Add(item);
-
-            foreach (string permission in allCertificatePermissions)
+            ComboBox dropdown = sender as ComboBox;
+            if (dropdown.SelectedIndex != -1)
             {
-                item = new ComboBoxItem();
-                item.Content = permission;
-                CertificatePermissionsDropdown.Items.Add(item);
+                ComboBox keys = PBPKeysDropdown as ComboBox;
+                populatePermissionsTemplate(keys.Items, Constants.ALL_KEY_PERMISSIONS);
+                PBPKeysLabel.Visibility = Visibility.Visible;
+                PBPKeysDropdown.Visibility = Visibility.Visible;
+
+                ComboBox secrets = PBPSecretsDropdown as ComboBox;
+                populatePermissionsTemplate(secrets.Items, Constants.ALL_SECRET_PERMISSIONS);
+                PBPSecretsLabel.Visibility = Visibility.Visible;
+                PBPSecretsDropdown.Visibility = Visibility.Visible;
+
+                ComboBox certifs = PBPCertificatesDropdown as ComboBox;
+                populatePermissionsTemplate(certifs.Items, Constants.ALL_CERTIFICATE_PERMISSIONS);
+                PBPCertificatesLabel.Visibility = Visibility.Visible;
+                PBPCertificatesDropdown.Visibility = Visibility.Visible;
             }
-            CertificatePermissionsLabel.Visibility = Visibility.Visible;
-            CertificatePermissionsDropdown.Visibility = Visibility.Visible;
+            else
+            {
+                PBPKeysLabel.Visibility = Visibility.Hidden;
+                PBPKeysDropdown.Visibility = Visibility.Hidden;
+
+                PBPSecretsLabel.Visibility = Visibility.Hidden;
+                PBPSecretsDropdown.Visibility = Visibility.Hidden;
+
+                PBPCertificatesLabel.Visibility = Visibility.Hidden;
+                PBPCertificatesDropdown.Visibility = Visibility.Hidden;
+            }
         }
+
+        private void populatePermissionsTemplate(ItemCollection items, string[] permissions)
+        {
+            items.Clear();
+            foreach (string keyword in permissions)
+            {
+                CheckBox item = new CheckBox();
+                item.Content = keyword.Substring(0, 1).ToUpper() + keyword.Substring(1);
+                items.Add(item);
+            }
+        }
+
+
+        private void PBPKeysDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            //neeed to populate with all the keysd
+            dropDownClosedTemplate(sender, e);
+        }
+
+        private void PBPSecretsDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            dropDownClosedTemplate(sender, e);
+        }
+
+        private void PBPCertificatesDropdown_DropDownClosed(object sender, EventArgs e)
+        {
+            dropDownClosedTemplate(sender, e);
+        }
+
+
+        private void dropDownClosedTemplate(object sender, EventArgs e)
+        {
+            ComboBox dropdown = sender as ComboBox;
+            ItemCollection items = dropdown.Items;
+
+            List<string> selected = getSelectedItemsTemplate(dropdown, items);
+            int numChecked = selected.Count();
+
+            // Make the ComboBox show how many are selected
+            items.Add(new ComboBoxItem()
+            {
+                Content = $"{numChecked} selected",
+                Visibility = Visibility.Collapsed
+            });
+            dropdown.Text = $"{numChecked} selected";
+        }
+
+        private List<string> getSelectedItemsTemplate(ComboBox comboBox, ItemCollection items)
+        {
+            List<string> selected = new List<string>();
+
+            try
+            {
+                ComboBoxItem selectedItem = (ComboBoxItem)comboBox.SelectedItem;
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
+                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+
+                    if (lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+       
+
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // 4. Breakdown of Permission Usage by Percentage -------------------------------------------------------------------------------------------
 
@@ -873,6 +1003,7 @@ namespace RBAC
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
+
     }
 }
 

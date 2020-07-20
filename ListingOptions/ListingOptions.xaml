@@ -252,56 +252,32 @@
             </ComboBox>
 
             <!-- #3 Permissions List Option-->
-            <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions"
-                   Grid.Column="0" Grid.Row="10"
-                   Style="{StaticResource FiltersStyle}"/>
+            <TextBlock Name="PrincipalByPermissions" Text="3. List Security Principal by Assigned Permissions" Grid.Column="0" Grid.Row="10" Style="{StaticResource FiltersStyle}"/>
 
-            <Label Name="PermissionsScopeLabel" Content="Choose your scope:" 
-               Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}"/>
-            <ComboBox Name="PermissionsScopeDropdown" 
-                  Grid.Column="0" Grid.Row="12" 
-                  SelectionChanged="PermissionsScopeDropdown_SelectionChanged"
-                  Style="{StaticResource ComboBoxStyleVisible}">
+            <Label Name="PBPScopeLabel" Content="Choose your scope:" Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}"/>
+            <ComboBox Name="PBPScopeDropdown" Grid.Column="0" Grid.Row="12" Style="{StaticResource ComboBoxStyleVisible}" SelectionChanged="PBPScopeDropdown_SelectionChanged">
                 <ComboBoxItem Content="YAML"/>
                 <ComboBoxItem Content="Subscription"/>
                 <ComboBoxItem Content="ResourceGroup"/>
                 <ComboBoxItem Content="KeyVault"/>
             </ComboBox>
 
-            <Button Name ="PermissionsRun"
-                Grid.Column="0" Grid.Row="13"
-                Style="{StaticResource RunButton}"/>
+            <Label Name="PBPSpecifyScopeLabel" Content="Specify the scope:" Grid.Column="1" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PBPSpecifyScopeDropdown" Grid.Column="1" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSpecifyScopeDropdown_DropDownClosed" SelectionChanged="PBPSpecifyScopeDropdown_SelectionChanged"/>
 
-            <Label Name="PermissionsSpecifyScopeLabel" Content="Specify the scope:"
-               Grid.Column="1" Grid.Row="11" 
-               Style="{StaticResource LabelStyleHidden}"/>
+            <Label Name="PBPKeysLabel" Content="Select key permissions:" Grid.Column="2" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name="PBPKeysDropdown" Grid.Column="2" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPKeysDropdown_DropDownClosed"/>
 
-            <ComboBox Name ="PermissionsSpecifyScopeDropdown"
-                  Grid.Column="1" Grid.Row="12"
-                  Style="{StaticResource ComboBoxStyleHidden}" 
-                  SelectionChanged="PermissionsSpecifyScopeDropdown_SelectionChanged"/>
+            <Label Name="PBPSecretsLabel" Content="Select secret permissions:" Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
 
-            <Label Name="KeyPermissionsLabel" Content="Key Permissions:"
-               Grid.Column="2" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name="KeyPermissionsDropdown"
-                  Grid.Column="2" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}"        
-                   Visibility="Hidden"
-                  SelectionChanged="KeyPermissionsDropdown_SelectionChanged"/>
+            <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PBPCertificatesDropdown" Grid.Column="4" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPCertificatesDropdown_DropDownClosed"/>
 
-            <Label Name="SecretPermissionsLabel" Content="Secret Permissions:"
-               Grid.Column="3" Grid.Row="11"
-               Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="SecretPermissionsDropdown"
-                  Grid.Column="3" Grid.Row="12"
-                  Visibility = "Hidden" Style="{StaticResource ComboBoxStyleHidden}"
-                  SelectionChanged="SecretPermissionsDropdown_SelectionChanged"/>
+            
+            
 
-            <Label Name="CertificatePermissionsLabel" Content="Certificate Permissions:"
-               Grid.Column="4" Grid.Row="11"
-               Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="CertificatePermissionsDropdown"
-                  Grid.Column="4" Grid.Row="12"
-                  Style="{StaticResource ComboBoxStyleHidden}"/>
+            <Button Name ="PermissionsRun" Grid.Column="0" Grid.Row="13" Style="{StaticResource RunButton}"/>
 
             <!-- #4 Permission Usage Breakdown Option-->
             <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
@@ -321,7 +297,7 @@
             </ComboBox>
 
             <Label Name="SelectedScopeBreakdownLabel" Content="Specify the scope:" Style="{StaticResource LabelStyleHidden}" Grid.Column="2" Grid.Row="15"/>
-            <ComboBox Name="SelectedScopeBreakdownDropdown" Style="{StaticResource ComboBoxStyleHidden}" Visibility="Hidden" DropDownClosed="SelectedScopeBreakdownDropdown_DropDownClosed" Grid.Column="2" Grid.Row="16"/>
+            <ComboBox Name="SelectedScopeBreakdownDropdown" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SelectedScopeBreakdownDropdown_DropDownClosed" Grid.Column="2" Grid.Row="16"/>
 
             <Button Name="BreakdownRun" Style="{StaticResource RunButton}" Grid.Column="0" Grid.Row="17"/>
 
