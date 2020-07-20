@@ -889,9 +889,11 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 ShorthandPermissionsTranslation.IsOpen = true;
             }
-            else if (btn.Name == "SecurityPrincipalRun")
+            else if (btn.Name == "PermissionsBySecurityPrincipalRun")
             {
                 // Execute Code
+                PermissionsBySecurityPrincipalPopUp.IsOpen = true;
+                permissionsBySecurityPrincipalRunMethod();
             }
             else if (btn.Name == "PermissionsRun")
             {
@@ -1724,7 +1726,14 @@ namespace Managing_RBAC_in_AzureListOptions
                                 {
                                     if (sp.Type == type)
                                     {
-                                        items.Add(sp.Alias + " " + sp.DisplayName);
+                                        if (sp.Alias != " " && sp.Alias != "")
+                                        {
+                                            items.Add(sp.Alias);
+                                        }
+                                        else
+                                        {
+                                            items.Add(sp.DisplayName);
+                                        }
 
                                     }
                                 }
@@ -1805,6 +1814,271 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             return selected;
         }
-    
+
+        private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
+        {
+            PermissionsBySecurityPrincipalPopUp.IsOpen = false;
+        }
+
+        public void permissionsBySecurityPrincipalRunMethod()
+        {
+            PermissionsBySecurityPrincipalDataGrid.Items.Clear();
+            // SecurityPrincipalDataGrid.Columns.Clear();
+
+            // SecurityPrincipalDataGrid.Items.Refresh();
+
+            ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+            string type = selectedtype.Content as string;
+
+            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
+            ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+
+            List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
+            List<string> selectedSpecifyTypeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyType.Items);
+
+            // List<SecurityPrincipalData> spData = new List<SecurityPrincipalData>(); // ADDED CODE HEREEEE
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+            if (scope == "Yaml")
+            {
+
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                    }
+                }
+            }
+
+            else if (scope == "Subscription")
+            {
+                if (type == "All")
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Alias != " " && sp.Alias != "")
+                                {
+                                    if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                                else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                {
+                                    SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                    PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == type)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                        {
+                                            SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                            PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                        }
+                                    }
+                                    else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (scope == "ResourceGroup")
+            {
+                if (type == "All")
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Alias != " " && sp.Alias != "")
+                                {
+                                    if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                                else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                {
+                                    SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                    PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == type)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                        {
+                                            SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                            PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                        }
+                                    }
+                                    else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (scope == "KeyVault")
+            {
+                if (type == "All")
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Alias != " " && sp.Alias != "")
+                                {
+                                    if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                                else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                {
+                                    SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                    PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == type)
+                                {
+                                    if (sp.Alias != " " && sp.Alias != "")
+                                    {
+                                        if (selectedSpecifyTypeItems.Contains(sp.Alias))
+                                        {
+                                            SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                            PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                        }
+                                    }
+                                    else if (selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                    {
+                                        SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
+                                        PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public class SecurityPrincipalData
+        {
+            public string vaultName { get; set; }
+            public string displayName { get; set; }
+            public string alias { get; set; }
+            public List<string> keyPermissions { get; set; }
+            public List<string> secretPermissions { get; set; }
+            public List<string> certificatePermissions { get; set; }
+
+            public SecurityPrincipalData(string vaultName, string displayName, string alias,
+                string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions)
+            {
+                this.vaultName = vaultName;
+                this.displayName = displayName;
+                this.alias = alias;
+
+                List<string> keyList = new List<string>();
+                for (int i = 0; i < keyPermissions.Length; i++)
+                {
+                    keyList.Add("- " + keyPermissions[i]);
+                }
+                this.keyPermissions = keyList;
+
+
+                List<string> secretList = new List<string>();
+                for (int i = 0; i < secretPermissions.Length; i++)
+                {
+                    secretList.Add("- " + secretPermissions[i]);
+                }
+                this.secretPermissions = secretList;
+
+
+                List<string> certificateList = new List<string>();
+                for (int i = 0; i < certificatePermissions.Length; i++)
+                {
+                    certificateList.Add("- " + certificatePermissions[i]);
+                }
+                this.certificatePermissions = certificateList;
+            }
+
+        }
     }
 }
