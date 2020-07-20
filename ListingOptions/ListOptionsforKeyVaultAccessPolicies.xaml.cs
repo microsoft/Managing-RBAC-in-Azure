@@ -1615,11 +1615,11 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    if (sp.Alias != " " && sp.Alias != "")
+                                    if (sp.Type == "User" || sp.Type == "Group")
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else
+                                    else if (sp.Type == "Service Principal")
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -1635,16 +1635,13 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    if (sp.Type == type)
+                                    if (sp.Type == type && (sp.Type == "User" || sp.Type == "Group"))
                                     {
-                                        if (sp.Alias != " " && sp.Alias != "")
-                                        {
-                                            items.Add(sp.Alias);
-                                        }
-                                        else
-                                        {
-                                            items.Add(sp.DisplayName);
-                                        }
+                                        items.Add(sp.Alias);
+                                    }
+                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    {
+                                        items.Add(sp.DisplayName);
                                     }
                                 }
                             }
@@ -1661,11 +1658,11 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    if (sp.Alias != " " && sp.Alias != "")
+                                    if (sp.Type == "User" || sp.Type == "Group")
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else
+                                    else if (sp.Type == "Service Principal")
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -1681,16 +1678,13 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    if (sp.Type == type)
+                                    if (sp.Type == type && (sp.Type == "User" || sp.Type == "Group"))
                                     {
-                                        if (sp.Alias != " " && sp.Alias != "")
-                                        {
-                                            items.Add(sp.Alias);
-                                        }
-                                        else
-                                        {
-                                            items.Add(sp.DisplayName);
-                                        }
+                                        items.Add(sp.Alias);
+                                    }
+                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    {
+                                        items.Add(sp.DisplayName);
                                     }
                                 }
                             }
@@ -1706,12 +1700,12 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (selectedSpecifyScopeItems.Contains(kv.VaultName))
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                                {
-                                    if (sp.Alias != " " && sp.Alias != "")
+                                {                                   
+                                    if (sp.Type == "User" || sp.Type == "Group")
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else
+                                    else if (sp.Type == "Service Principal")
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -1727,18 +1721,15 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    if (sp.Type == type)
+                                    if (sp.Type == type && (sp.Type == "User" || sp.Type == "Group"))
                                     {
-                                        if (sp.Alias != " " && sp.Alias != "")
-                                        {
-                                            items.Add(sp.Alias);
-                                        }
-                                        else
-                                        {
-                                            items.Add(sp.DisplayName);
-                                        }
-
+                                        items.Add(sp.Alias);
                                     }
+                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    {
+                                        items.Add(sp.DisplayName);
+                                    }
+
                                 }
                             }
                         }
@@ -1832,6 +1823,7 @@ namespace Managing_RBAC_in_AzureListOptions
         private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
         {
             PermissionsBySecurityPrincipalDataGrid.Items.Clear();
+            gridColumnToggleVisibility("Alias", Visibility.Visible);
             gridColumnToggleVisibility("Type", Visibility.Hidden);
             gridColumnToggleVisibility("Key Permissions", Visibility.Visible);
             gridColumnToggleVisibility("Secret Permissions", Visibility.Visible);
@@ -1860,6 +1852,7 @@ namespace Managing_RBAC_in_AzureListOptions
 
             if (scope == "Yaml")
             {
+                gridColumnToggleVisibility("Type", Visibility.Visible);
 
                 foreach (KeyVaultProperties kv in yaml)
                 {
@@ -1870,19 +1863,14 @@ namespace Managing_RBAC_in_AzureListOptions
                         PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
                     }
                 }
-                gridColumnToggleVisibility("Type", Visibility.Visible);
             }
 
             else if (scope == "Subscription")
             {
                 if (type == "All")
                 {
-                    var columnType = new DataGridTextColumn();
-                    columnType.DisplayIndex = 1;
-                    columnType.Header = "Type";
-                    columnType.Binding = new System.Windows.Data.Binding("type");
-                    columnType.Width = 120;
-
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
+             
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -1904,7 +1892,6 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
-                    gridColumnToggleVisibility("Type", Visibility.Visible);
                 }
                 else
                 {
@@ -1922,6 +1909,7 @@ namespace Managing_RBAC_in_AzureListOptions
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
+                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
@@ -1935,12 +1923,8 @@ namespace Managing_RBAC_in_AzureListOptions
             {
                 if (type == "All")
                 {
-                    var columnType = new DataGridTextColumn();
-                    columnType.DisplayIndex = 1;
-                    columnType.Header = "Type";
-                    columnType.Binding = new System.Windows.Data.Binding("type");
-                    columnType.Width = 120;
-
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
+               
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -1962,7 +1946,6 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
-                    gridColumnToggleVisibility("Type", Visibility.Visible);
                 }
                 else
                 {
@@ -1980,6 +1963,7 @@ namespace Managing_RBAC_in_AzureListOptions
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
+                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
@@ -1992,7 +1976,9 @@ namespace Managing_RBAC_in_AzureListOptions
             else if (scope == "KeyVault")
             {
                 if (type == "All")
-                {                  
+                {
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
@@ -2009,15 +1995,16 @@ namespace Managing_RBAC_in_AzureListOptions
                                 {
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+                                    PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);                                   
                                 }
                             }
                         }
-                    }
-                    gridColumnToggleVisibility("Type", Visibility.Visible);                 
+                    }                                 
                 }
                 else
                 {
+                    bool certificatePermissionsHidden = true;
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
@@ -2029,9 +2016,16 @@ namespace Managing_RBAC_in_AzureListOptions
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
+
+                                    if (! sp.PermissionsToCertificates.Equals(new string[] { "*o0" }))                                       
+                                    {
+                                        certificatePermissionsHidden = false;
+                                    }
+
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
+                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
@@ -2039,36 +2033,33 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                         }
                     }
+                    if (certificatePermissionsHidden == true)
+                    {
+                        gridColumnToggleVisibility("Certificate Permissions", Visibility.Hidden);
+                    }
                 }
             }
             // Check Key, secret, and certificate permissions. if all of them is empty, remove the permission block
-
-            foreach (DataGridColumn col in PermissionsBySecurityPrincipalDataGrid.Columns)
-            {
-                
-            }
-
-            
         }
-
 
         public class SecurityPrincipalData
         {
             public string vaultName { get; set; }
+            public string type { get; set; }
             public string displayName { get; set; }
             public string alias { get; set; }
             public List<string> keyPermissions { get; set; }
             public List<string> secretPermissions { get; set; }
             public List<string> certificatePermissions { get; set; }
-            public string type { get; set; }
+            
 
             public SecurityPrincipalData(string vaultName, string displayName, string alias,
                 string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions, string type=null)
             {
                 this.vaultName = vaultName;
+                this.type = type;
                 this.displayName = displayName;
                 this.alias = alias;
-                this.type = type;
 
                 List<string> keyList = new List<string>();
                 for (int i = 0; i < keyPermissions.Length; i++)
