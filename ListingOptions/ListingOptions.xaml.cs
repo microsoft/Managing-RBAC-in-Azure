@@ -513,9 +513,9 @@ namespace RBAC
             }
 
             var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
-            var print = new List<ListSpResults>();
+           // var print = new List<ListSpResults>();
             //PUT DATA IN DATAGRID
-            foreach(var s in data.Keys)
+           /* foreach (var s in data.Keys)
             {
                 var a = data[s];
                 var b = new ListSpResults()
@@ -524,10 +524,10 @@ namespace RBAC
                     Sps = new List<SpsWithPermission>()
                 };
 
-                foreach(var t in a)
+                foreach (var t in a)
                 {
                     var sps = new StringBuilder();
-                    foreach(var sp in t.Value)
+                    foreach (var sp in t.Value)
                     {
                         sps.Append($"{sp.Item2.Type} {((sp.Item2.Alias == null || sp.Item2.Alias.Length == 0) ? sp.Item2.DisplayName : sp.Item2.Alias)} in {sp.Item1}\n");
                     }
@@ -540,7 +540,7 @@ namespace RBAC
                 print.Add(b);
             }
             ListSPGrid.ItemsSource = print;
-            ListSPPopup.IsOpen = true;
+            ListSPPopup.IsOpen = true;*/
             // Once close datagrid, reset dropdowns
             PBPScopeDropdown.SelectedIndex = -1;
             PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
@@ -549,7 +549,7 @@ namespace RBAC
         internal class ListSpResults
         {
             public string PermissionType { get; set; }
-            public List<SpsWithPermission> Sps { get; set;}
+            public List<SpsWithPermission> Sps { get; set; }
         }
         internal class SpsWithPermission
         {
@@ -566,10 +566,10 @@ namespace RBAC
         /// <param name="certifsSelected">The list of selected certificate permissions</param>
         /// <returns>A dictionary with each selected permission, the list of principals that have those permissions, 
         /// and the KeyVault name for which that principal's access policy exists</returns>
-        private Dictionary<string, Dictionary<string, List<Tuple<string, PrincipalPermissions>>>> getPrincipalsByPermission(UpdatePoliciesFromYaml up, 
+        private Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>> getPrincipalsByPermission(UpdatePoliciesFromYaml up,
             List<KeyVaultProperties> vaultsInScope, List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected)
         {
-            var principalsByPermission = new Dictionary<string, Dictionary<string, List<Tuple<string, PrincipalPermissions>>>>();
+            var principalsByPermission = new Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>>();
             populatePrincipalDictKeys(keysSelected, secretsSelected, certifsSelected, principalsByPermission);
 
             foreach (KeyVaultProperties kv in vaultsInScope)
@@ -579,31 +579,60 @@ namespace RBAC
                     up.translateShorthands(principal);
                     if (keysSelected.Count != 0)
                     {
+                        
                         foreach (string key in keysSelected)
                         {
+                            List<PrincipalPermissions> keyPrincipals = new List<PrincipalPermissions>();
                             if (principal.PermissionsToKeys.Contains(key.ToLower()))
                             {
-                                principalsByPermission["Keys"][key].Add(new Tuple<string, PrincipalPermissions>(kv.VaultName, principal));
+                                var lookup = principalsByPermission["Keys"][key].ToLookup(key => key.Item1)[kv.VaultName].ToList();
+                                if (lookup.Count == 0)
+                                {
+                                    keyPrincipals.Add(principal);
+                                    principalsByPermission["Keys"][key].Add(new Tuple<string, List<PrincipalPermissions>>(kv.VaultName, keyPrincipals));
+                                }
+                                else
+                                {
+                                    lookup[0].Item2.Add(principal);
+                                }
                             }
                         }
+                        
                     }
                     if (secretsSelected.Count() != 0)
                     {
                         foreach (string secret in secretsSelected)
                         {
+                            List<PrincipalPermissions> secretPrincipals = new List<PrincipalPermissions>();
                             if (principal.PermissionsToKeys.Contains(secret.ToLower()))
                             {
-                                principalsByPermission["Secrets"][secret].Add(new Tuple<string, PrincipalPermissions>(kv.VaultName, principal));
+                                var lookup = principalsByPermission["Secrets"][secret].ToLookup(se => se.Item1)[kv.VaultName].ToList();
+                                if (lookup.Count == 0)
+                                {
+                                    secretPrincipals.Add(principal);
+                                    principalsByPermission["Secrets"][secret].Add(new Tuple<string, List<PrincipalPermissions>>(kv.VaultName, secretPrincipals));
+                                }
+                                else
+                                {
+                                    lookup[0].Item2.Add(principal);
+                                }
                             }
                         }
                     }
                     if (certifsSelected.Count() != 0)
                     {
+                        List<PrincipalPermissions> certifPrincipals = new List<PrincipalPermissions>();
                         foreach (string certif in certifsSelected)
                         {
-                            if (principal.PermissionsToKeys.Contains(certif.ToLower()))
+                            var lookup = principalsByPermission["Certificates"][certif].ToLookup(cert => cert.Item1)[kv.VaultName].ToList();
+                            if (lookup.Count == 0)
                             {
-                                principalsByPermission["Certificates"][certif].Add(new Tuple<string, PrincipalPermissions>(kv.VaultName, principal));
+                                certifPrincipals.Add(principal);
+                                principalsByPermission["Certificates"][certif].Add(new Tuple<string, List<PrincipalPermissions>>(kv.VaultName, certifPrincipals));
+                            }
+                            else
+                            {
+                                lookup[0].Item2.Add(principal);
                             }
                         }
                     }
@@ -619,33 +648,33 @@ namespace RBAC
         /// <param name="secrets">The list of selected secret permissions</param>
         /// <param name="certifs">The list of selected certificate permissions</param>
         /// <param name="dict">A dictionary initialized with each selected permission as keys</param>
-        private void populatePrincipalDictKeys(List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected, 
-            Dictionary<string, Dictionary<string, List<Tuple<string, PrincipalPermissions>>>> dict)
+        private void populatePrincipalDictKeys(List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected,
+            Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>> dict)
         {
-            dict["Keys"] = new Dictionary<string, List<Tuple<string, PrincipalPermissions>>>();
+            dict["Keys"] = new Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>();
             if (keysSelected.Count != 0)
             {
                 foreach (string key in keysSelected)
                 {
-                    dict["Keys"][key] = new List<Tuple<string, PrincipalPermissions>>();
+                    dict["Keys"][key] = new List<Tuple<string, List<PrincipalPermissions>>>();
                 }
             }
 
-            dict["Secrets"] = new Dictionary<string, List<Tuple<string, PrincipalPermissions>>>();
+            dict["Secrets"] = new Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>();
             if (secretsSelected.Count != 0)
             {
                 foreach (string secret in secretsSelected)
                 {
-                    dict["Secrets"][secret] = new List<Tuple<string, PrincipalPermissions>>();
+                    dict["Secrets"][secret] = new List<Tuple<string, List<PrincipalPermissions>>>();
                 }
             }
 
-            dict["Certificates"] = new Dictionary<string, List<Tuple<string, PrincipalPermissions>>>();
+            dict["Certificates"] = new Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>();
             if (certifsSelected.Count() != 0)
             {
                 foreach (string certif in certifsSelected)
                 {
-                    dict["Certificates"][certif] = new List<Tuple<string, PrincipalPermissions>>();
+                    dict["Certificates"][certif] = new List<Tuple<string, List<PrincipalPermissions>>>();
                 }
             }
         }
@@ -1027,7 +1056,7 @@ namespace RBAC
                MostAccessedSpecifyScopeDropdown.Visibility == Visibility.Visible)
             {
                 MostAccessedSpecifyScopeDropdown.Items.Clear();
-                if(choice == "YAML")
+                if (choice == "YAML")
                 {
                     MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Hidden;
                     MostAccessedSpecifyScopeLabel.Visibility = Visibility.Hidden;
@@ -1046,14 +1075,14 @@ namespace RBAC
             List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
             if (choice == "KeyVault")
             {
-                foreach(KeyVaultProperties kv in yaml)
+                foreach (KeyVaultProperties kv in yaml)
                 {
                     CheckBox item = new CheckBox();
                     item.Content = kv.VaultName;
                     MostAccessedSpecifyScopeDropdown.Items.Add(item);
                 }
             }
-            if(choice == "ResourceGroup")
+            if (choice == "ResourceGroup")
             {
                 var rgs = new HashSet<string>();
                 foreach (KeyVaultProperties kv in yaml)
@@ -1063,7 +1092,7 @@ namespace RBAC
                         rgs.Add(kv.ResourceGroupName);
                     }
                 }
-                foreach(string s in rgs)
+                foreach (string s in rgs)
                 {
                     CheckBox item = new CheckBox();
                     item.Content = s;
@@ -1099,7 +1128,7 @@ namespace RBAC
         private void SecurityPrincipalAccessScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var box = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
-            if(box == null)
+            if (box == null)
             {
                 return;
             }
@@ -1122,7 +1151,7 @@ namespace RBAC
                     SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Visible;
                     SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
-                
+
             }
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
             List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
@@ -1230,7 +1259,7 @@ namespace RBAC
                 string type = typeBox.Content as string;
                 List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
                 var topSPs = getTopSPs(vaults, type);
-                if(type == "KeyVaults")
+                if (type == "KeyVaults")
                 {
                     TopSPGrid.Columns.Clear();
                     var col1 = new DataGridTextColumn();
@@ -1302,7 +1331,7 @@ namespace RBAC
 
         private List<TopSp> getTopSPs(List<KeyVaultProperties> vaults, string type)
         {
-            if(type == "KeyVaults")
+            if (type == "KeyVaults")
             {
                 var sps = new List<TopSp>();
                 var found = new HashSet<string>();
@@ -1333,11 +1362,11 @@ namespace RBAC
                     }
                 }
                 sps.Sort((a, b) => b.count.CompareTo(a.count));
-                if(sps.Count > 10)
+                if (sps.Count > 10)
                 {
                     sps = sps.GetRange(0, 10);
                 }
-                
+
                 return sps;
             }
             else
@@ -1396,7 +1425,7 @@ namespace RBAC
         private void RunTopKVs(object sender, RoutedEventArgs e)
         {
             ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
-            if(breakdownScope == null)
+            if (breakdownScope == null)
             {
                 MessageBox.Show("Please specify scope type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -1415,7 +1444,7 @@ namespace RBAC
                 string type = typeBox.Content as string;
                 List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
                 var topVaults = getTopKVs(vaults, type);
-                if(type == "Security Principal")
+                if (type == "Security Principal")
                 {
                     var fill = new List<TopKVSPClass>();
                     for (int i = 0; i < topVaults.Count; i++)
@@ -1469,7 +1498,7 @@ namespace RBAC
                     TopKVGrid.ItemsSource = fill;
                     TopKVResults.IsOpen = true;
 
-                    
+
                 }
                 MostAccessedTypeDropdown.SelectedItem = null;
                 MostAccessedScopeLabel.Visibility = Visibility.Hidden;
@@ -1502,7 +1531,7 @@ namespace RBAC
         }
         private List<KeyValuePair<string, int>> getTopKVs(List<KeyVaultProperties> vaults, string type)
         {
-            if(type == "Security Principal")
+            if (type == "Security Principal")
             {
                 var kvs = new Dictionary<string, int>();
                 foreach (KeyVaultProperties kv in vaults)
@@ -1540,9 +1569,9 @@ namespace RBAC
             {
                 return yamlVaults;
             }
-            else if(scope == "KeyVault")
+            else if (scope == "KeyVault")
             {
-                foreach(var kv in yamlVaults)
+                foreach (var kv in yamlVaults)
                 {
                     if (selected.Contains(kv.VaultName))
                     {
@@ -1550,7 +1579,7 @@ namespace RBAC
                     }
                 }
             }
-            else if(scope == "ResourceGroup")
+            else if (scope == "ResourceGroup")
             {
                 foreach (var kv in yamlVaults)
                 {
