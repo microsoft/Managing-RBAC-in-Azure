@@ -263,52 +263,11 @@
             <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="750">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True">
+                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="750" Width="750" Background="White" CanVerticallyScroll="True"
+                                    VerticalAlignment="Top">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
-                            <TextBlock Text="Listing Keyvaults " Style="{StaticResource ChartTitleStyle}"
-                                   HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline" />
-                            <DataGrid x:Name="PermissionsBySecurityPrincipalDataGrid"
-                                  IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False">
-                                <!-- Font Color / Style of Column Headings -->
-                                <DataGrid.Resources>
-                                    <Style TargetType="{x:Type DataGridColumnHeader}">
-                                        <Setter Property="Background" Value="#FF197597"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
-                                        <Setter Property="BorderBrush" Value="Black"/>
-                                    </Style>
-                                </DataGrid.Resources>
-
-                                <!-- Column Header Text & Bindings -->
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="KeyVault" Binding="{Binding Path=vaultName}"/>
-                                    <DataGridTextColumn Header="Type" Binding="{Binding Path=type}" Visibility="Hidden"/>
-                                    <DataGridTextColumn Header="Display Name" Binding="{Binding Path= displayName}"/>
-                                    <DataGridTextColumn Header="Alias" Binding="{Binding Path= alias }"/>
-                                    <DataGridTemplateColumn Header="Key Permissions" Width= "200">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ListBox ItemsSource="{Binding Path = keyPermissions}"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Secret Permissions" Width= "200">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ListBox ItemsSource="{Binding Path = secretPermissions}"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Certificate Permissions" Width= "200">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ListBox ItemsSource="{Binding Path = certificatePermissions}"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <TextBlock Text="Listing Permissions by Security Principal " Style="{StaticResource ChartTitleStyle}"
+                                   HorizontalAlignment="Center" FontSize="30" TextDecorations="Underline" />
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
