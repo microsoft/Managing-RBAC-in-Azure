@@ -608,10 +608,6 @@ namespace RBAC
             ListSPCertificate.ItemsSource = certificates;
             ListSPSecret.ItemsSource = secrets;
             ListSPPopup.IsOpen = true;
-            // Once close datagrid, reset dropdowns
-            PBPScopeDropdown.SelectedIndex = -1;
-            PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
-            PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
         }
         internal class ListSpResults
         {
@@ -1683,6 +1679,10 @@ namespace RBAC
         private void CloseListSPPopup_Click(object sender, RoutedEventArgs e)
         {
             ListSPPopup.IsOpen = false;
+
+            PBPScopeDropdown.SelectedIndex = -1;
+            PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
         }
         private void MostAccessedSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {

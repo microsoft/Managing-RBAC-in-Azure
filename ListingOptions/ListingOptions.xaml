@@ -447,12 +447,12 @@
             <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="26"
                   Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed"/>
-            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" >
-                <Border BorderThickness="0.3" Height="Auto" Width="1000" BorderBrush="#FFE0E0E0">
+            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" Height="700">
+                <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="1000" Background="White" CanVerticallyScroll="True">
+                        <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True">
                             <Button x:Name="CloseListSPPopup" Style="{StaticResource ClosePopupButton}" Click="CloseListSPPopup_Click"/>
-                            <TextBlock Text="Security Principals with Assigned Permissions" Width="1000" Padding="10,10,10,10"
+                            <TextBlock Text="Security Principals with Assigned Permissions" Width="Auto" Padding="10,10,10,10"
                                 Background="White"
                                 Foreground="Black"
                                 FontSize="20"
