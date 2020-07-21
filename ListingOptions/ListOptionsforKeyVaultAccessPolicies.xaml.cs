@@ -1209,7 +1209,7 @@ namespace Managing_RBAC_in_AzureListOptions
                     TopKVGrid.Columns.Add(col1);
 
                     var col2 = new DataGridTextColumn();
-                    col2.Header = "Permissions Granted in Key Vault";
+                    col2.Header = "Permissions Granted in KeyVault";
                     col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
                     col2.Width = 300;
                     TopKVGrid.Columns.Add(col2);
