@@ -617,8 +617,103 @@ namespace RBAC
             var res = up.translateShorthand("all", "Key", case1.testObject, Constants.ALL_KEY_PERMISSIONS, Constants.VALID_KEY_PERMISSIONS, Constants.SHORTHANDS_KEYS);
             Assert.AreEqual(1, res.Length);
             Assert.AreEqual(case1.error, res[0]);
+            var vaults = createExpectedYamlVaults();
+
+
+            //TopSP Policies
+            var sps = new List<TopSp>();
+            var found = new HashSet<string>();
+            var validTypes = new string[] { "user", "application" };
+            foreach (KeyVaultProperties kv in vaults)
+            {
+                foreach(PrincipalPermissions pp in kv.AccessPolicies)
+                {
+                    if (!validTypes.Contains(pp.Type.ToLower()))
+                    {
+
+                    }
+                    else if ((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
+                    {
+                        var idx = sps.FindIndex(c => c.alias == pp.Alias);
+                        sps[idx].count++;
+                    }
+                    else if((pp.Type.ToLower() == "application" || pp.Type.ToLower() == "service principal") && found.Contains(pp.DisplayName))
+                    {
+                        var idx = sps.FindIndex(c => c.name == pp.DisplayName);
+                        sps[idx].count++;
+                    }
+                    else if (pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group")
+                    {
+                        sps.Add(new TopSp(pp.Type, pp.DisplayName, 1, pp.Alias));
+                        found.Add(pp.Alias);
+                    }
+                    else
+                    {
+                        sps.Add(new TopSp(pp.Type, pp.DisplayName, 1));
+                        found.Add(pp.DisplayName);
+                    }
+                }
+            }
+            sps.Sort((a, b) => b.count.CompareTo(a.count));
+            foreach(var v in sps)
+            {
+                Console.WriteLine($"{v.type} {v.name} with alias {v.alias} has {v.count} policies\n");
+            }
+
+            //TopSP Permissions
+            sps = new List<TopSp>();
+            found = new HashSet<string>();
+            
+            foreach (KeyVaultProperties kv in vaults)
+            {
+                foreach (PrincipalPermissions pp in kv.AccessPolicies)
+                {
+                    if (!validTypes.Contains(pp.Type.ToLower()))
+                    {
+
+                    }
+                    else if ((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
+                    {
+                        var idx = sps.FindIndex(c => c.alias == pp.Alias);
+                        sps[idx].count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
+                    }
+                    else if ((pp.Type.ToLower() == "application" || pp.Type.ToLower() == "service principal") && found.Contains(pp.DisplayName))
+                    {
+                        var idx = sps.FindIndex(c => c.name == pp.DisplayName);
+                        sps[idx].count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
+                    }
+                    else if (pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group")
+                    {
+                        sps.Add(new TopSp(pp.Type, pp.DisplayName, 1, pp.Alias));
+                        found.Add(pp.Alias);
+                    }
+                    else
+                    {
+                        sps.Add(new TopSp(pp.Type, pp.DisplayName, 1));
+                        found.Add(pp.DisplayName);
+                    }
+                }
+            }
+            sps.Sort((a, b) => b.count.CompareTo(a.count));
+            foreach (var v in sps)
+            {
+                Console.WriteLine($"{v.type} {v.name} with alias {v.alias} has {v.count} permissions\n");
+            }
         }
-      
+        internal class TopSp
+        {
+            public string type { get; set; }
+            public string name { get; set; }
+            public string alias { get; set; }
+            public int count { get; set; }
+            public TopSp(string type, string name, int count, string alias = "")
+            {
+                this.type = type;
+                this.name = name;
+                this.alias = alias;
+                this.count = count;
+            }
+        }
         [TestMethod]
         /// <summary>
         /// This method verifies that the correct permissions are being identified by the shorthand keyword.

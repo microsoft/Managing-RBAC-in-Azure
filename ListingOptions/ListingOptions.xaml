@@ -34,7 +34,7 @@
             <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
             <EventSetter Event="Click" Handler="Run_Click"/>
         </Style>
-
+        
         <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="12"/>
@@ -79,7 +79,6 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
         </Style>
-
         <Style x:Key="ClosePopupButton" TargetType="{x:Type Button}">
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -173,13 +172,14 @@
             <TextBlock Name="Header" Text="Listing Options for KeyVault Access Policies" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="6" Style="{StaticResource TitleStyle}"/>
 
             <!-- #1 Shorthand List Option-->
-            <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand" 
+            <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand." 
                    Grid.Column="0" Grid.Row="2"
                    Style="{StaticResource FiltersStyle}"/>
 
             <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
                 Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
                 Style="{StaticResource LabelStyleVisible}"/>
+
 
             <ComboBox Name ="ShorthandPermissionTypesDropdown" 
                   Grid.Column="0" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
@@ -197,6 +197,7 @@
                Grid.Column="1" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
                Visibility="Hidden"/>
 
+
             <ComboBox Name="ShorthandPermissionsDropdown"
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
@@ -210,7 +211,7 @@
             </Popup>
 
             <!-- #2 Security Principal List Option-->
-            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal"
+            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal."
                    Grid.Column ="0" Grid.Row="6"
                    Style="{StaticResource FiltersStyle}"/>
 
@@ -238,6 +239,7 @@
                   Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
 
+
             <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="2" Grid.Row="7"
                Style="{StaticResource LabelStyleHidden}"/>
@@ -252,7 +254,10 @@
             </ComboBox>
 
             <!-- #3 Permissions List Option-->
-            <TextBlock Name="PrincipalByPermissions" Text="3. List Security Principal by Assigned Permissions" Grid.Column="0" Grid.Row="10" Style="{StaticResource FiltersStyle}"/>
+
+            <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions."
+                   Grid.Column="0" Grid.Row="10"
+                   Style="{StaticResource FiltersStyle}"/>
 
             <Label Name="PBPScopeLabel" Content="Choose your scope:" Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}"/>
             <ComboBox Name="PBPScopeDropdown" Grid.Column="0" Grid.Row="12" Style="{StaticResource ComboBoxStyleVisible}" SelectionChanged="PBPScopeDropdown_SelectionChanged">
@@ -269,9 +274,10 @@
             <ComboBox Name="PBPKeysDropdown" Grid.Column="2" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPKeysDropdown_DropDownClosed"/>
 
             <Label Name="PBPSecretsLabel" Content="Select secret permissions:" Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
+                <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
 
-            <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+
+                <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name ="PBPCertificatesDropdown" Grid.Column="4" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPCertificatesDropdown_DropDownClosed"/>
 
             
@@ -281,7 +287,7 @@
             <Button Name ="PermissionsRun" Grid.Column="0" Grid.Row="13" Style="{StaticResource RunButton}"/>
 
             <!-- #4 Permission Usage Breakdown Option-->
-            <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
+            <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage." Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
 
             <Label Name="BreakdownTypeDropLabel" Content="By permissions or by shorthands?" Style="{StaticResource LabelStyleVisible}" Grid.Column="0" Grid.Row="15"/>
             <ComboBox Name="BreakdownTypeDropdown" Style="{StaticResource ComboBoxStyleVisible}" Grid.Column="0" Grid.Row="16" SelectionChanged="BreakdownTypeDropdown_SelectionChanged">
@@ -346,12 +352,31 @@
                    Grid.Column="0" Grid.Row="18" 
                    Style="{StaticResource FiltersStyle}"/>
 
-            <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
+            <TextBlock Name="MostAccessedExplain"
                Grid.Column="0" Grid.Row="19"
+               Grid.ColumnSpan="2" FontSize="11" Padding="30,0,0,0" FontFamily="Sitka Subheading">
+            * Security Principals are Users, Groups, Applications, or Service Principals <LineBreak/>
+            * The 'Permissions' option sums up each security principal's access to  keys, secrets, and certificates
+            </TextBlock>
+
+            <Label Name="MostAccessedTypeLabel" Content="List by security principal or permissions:"
+               Grid.Column="0" Grid.Row="20"
                Style="{StaticResource LabelStyleVisible}"/>
-            <ComboBox Name="MostAccessedScopeDropdown"
-                  Grid.Column="0" Grid.Row="20"
+
+            <ComboBox Name="MostAccessedTypeDropdown"
+                  Grid.Column="0" Grid.Row="21"
                   Style="{StaticResource ComboBoxStyleVisible}"
+                  SelectionChanged="MostAccessedTypeDropdown_SelectionChanged">
+                <ComboBoxItem Content="Security Principal"/>
+                <ComboBoxItem Content="Permissions"/>
+            </ComboBox>
+
+            <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
+               Grid.Column="1" Grid.Row="20"
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name="MostAccessedScopeDropdown"
+                  Grid.Column="1" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
                   SelectionChanged="MostAccessedScopeDropdown_SelectionChanged">
                 <ComboBoxItem Content="YAML"/>
                 <ComboBoxItem Content="Subscription"/>
@@ -360,28 +385,48 @@
             </ComboBox>
 
             <Button Name ="MostAccessedRun" 
-                Grid.Column="0" Grid.Row="21"
+                Grid.Column="0" Grid.Row="22"
                 Style="{StaticResource RunButton}"/>
 
             <Label Name="MostAccessedSpecifyScopeLabel" Content="Specify the Scope:"
-               Grid.Column="1" Grid.Row="19" 
+               Grid.Column="2" Grid.Row="20" 
                Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name ="MostAccessedSpecifyScopeDropdown"
-                  Grid.Column="1" Grid.Row="20"
-                  Style="{StaticResource ComboBoxStyleHidden}"/>
+                  Grid.Column="2" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
+                  DropDownClosed="MostAccessedSpecifyScopeDropdown_DropDownClosed"/>
 
             <!-- #6 Ranked Security Principal List Option-->
             <TextBlock Name="SecurityPrincipalAccess"
+
                    Text="6. List Top 10 Security Principals by Permission Access."
-                   Grid.Column="0" Grid.Row="22"
+                   Grid.Column="0" Grid.Row="23"
                    Style="{StaticResource FiltersStyle}"/>
+            <Label Name="SecurityPrincipalAccessTypeLabel"
+               Content="List by KeyVaults or Permissions:"
+               Grid.Column="0" Grid.Row="25"
+               Style="{StaticResource LabelStyleVisible}"/>
+            <TextBlock Name="SecurityPrincipalAccessExplain"
+               Grid.Column="0" Grid.Row="24"
+               Grid.ColumnSpan="2" FontSize="11" Padding="30,0,0,0" FontFamily="Sitka Subheading">
+            * The 'KeyVault' options sorts by number of KeyVaults accessed <LineBreak/>
+            * The 'Permissions' option sums up individual permissions to  keys, secrets, and certificates
+            </TextBlock>
+            <ComboBox Name="SecurityPrincipalAccessTypeDropdown"
+                  Grid.Column="0" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleVisible}" 
+                  SelectionChanged="SecurityPrincipalAccessTypeDropdown_SelectionChanged">
+                <ComboBoxItem Content="KeyVaults"/>
+                <ComboBoxItem Content="Permissions"/>
+            </ComboBox>
+            
             <Label Name="SecurityPrincipalAccessScopeLabel"
                Content="Choose your scope:"
-               Grid.Column="0" Grid.Row="23"
-               Style="{StaticResource LabelStyleVisible}"/>
+               Grid.Column="1" Grid.Row="25"
+               Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name="SecurityPrincipalAccessScopeDropdown"
-                  Grid.Column="0" Grid.Row="24"
-                  Style="{StaticResource ComboBoxStyleVisible}" 
+                  Grid.Column="1" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleHidden}" 
                   SelectionChanged="SecurityPrincipalAccessScopeDropdown_SelectionChanged">
                 <ComboBoxItem Content="YAML"/>
                 <ComboBoxItem Content="Subscription"/>
@@ -390,18 +435,170 @@
             </ComboBox>
 
             <Button Name ="SecurityPrincipalAccessRun" 
-                Grid.Column="0" Grid.Row="25"
+                Grid.Column="0" Grid.Row="27"
                 Style="{StaticResource RunButton}" Margin="32,10,195,25"/>
 
             <Label Name="SecurityPrincipalAccessSpecifyScopeLabel"
                Content="Specify the scope:"
-               Grid.Column="1" Grid.Row="23" 
+
+               Grid.Column="2" Grid.Row="25" 
                Style="{StaticResource LabelStyleHidden}"/>
 
             <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
-                  Grid.Column="1" Grid.Row="24"
-                  Style="{StaticResource ComboBoxStyleHidden}"/>
+                  Grid.Column="2" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed"/>
+            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" >
+                <Border BorderThickness="0.3" Height="Auto" Width="1000" BorderBrush="#FFE0E0E0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="1000" Background="White" CanVerticallyScroll="True">
+                            <Button x:Name="CloseListSPPopup" Style="{StaticResource ClosePopupButton}" Click="CloseListSPPopup_Click"/>
+                            <TextBlock Text="Security Principals with Assigned Permissions" Width="1000" Padding="10,10,10,10"
+                                Background="White"
+                                Foreground="Black"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                TextAlignment="Center" 
+                                FontFamily="Sitka Subheading"
+                                TextDecorations="Underline"/>
+                            <DataGrid x:Name="ListSPGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Hidden">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission Type" Width="250">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding PermissionType}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Permission" Width="250">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding Sps}" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="None">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="*">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Permission}" VerticalAlignment="Center" />
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Security Principals" Width="500">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding Sps}" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="None">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="*">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Sps}"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Popup>
+
+
+
+            <Popup x:Name="TopKVResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
+
+                <Border BorderThickness="0.3" Height="Auto" Width="600" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="TopKVStackPanel" Height="Auto" Width="600" Background="White">
+                        <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
+                        <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="600" Padding="10,10,10,10"
+                            Background="White"
+                            Foreground="Black"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            TextAlignment="Center" 
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
+                        <DataGrid x:Name="TopKVGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.Resources>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                    <Setter Property="BorderBrush" Value="Black"/>
+                                    <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                    <Setter Property="Background" Value="#FF197597"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                                <Style TargetType="{x:Type DataGridCell}">
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontFamily" Value="Sitka Text"/>
+                                </Style>
+                            </DataGrid.Resources>
+                        </DataGrid>
+
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <Popup x:Name="TopSPResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
+
+                <Border BorderThickness="0.3" Height="Auto" Width="750" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="TopSPStackPanel" Height="Auto" Width="750" Background="White">
+                        <Button Name="CloseTopSPResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopSPResults_Click" />
+                        <TextBlock Text="Top 10 Security Principals by Permission Access" Width="750" Padding="10,10,10,10"
+                            Background="White"
+                            Foreground="Black"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            TextAlignment="Center" 
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
+                        <DataGrid x:Name="TopSPGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.Resources>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                    <Setter Property="BorderBrush" Value="Black"/>
+                                    <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                    <Setter Property="Background" Value="#FF197597"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                                <Style TargetType="{x:Type DataGridCell}">
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontFamily" Value="Sitka Text"/>
+                                </Style>
+                            </DataGrid.Resources>
+                        </DataGrid>
+
+                    </StackPanel>
+                </Border>
+            </Popup>
         </Grid>
+
     </Viewbox>
 
 </Window>
