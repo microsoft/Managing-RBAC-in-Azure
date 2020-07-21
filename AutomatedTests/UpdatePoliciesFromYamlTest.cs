@@ -700,6 +700,7 @@ namespace RBAC
                 Console.WriteLine($"{v.type} {v.name} with alias {v.alias} has {v.count} permissions\n");
             }
         }
+
         internal class TopSp
         {
             public string type { get; set; }
@@ -714,6 +715,7 @@ namespace RBAC
                 this.count = count;
             }
         }
+
         [TestMethod]
         /// <summary>
         /// This method verifies that the correct permissions are being identified by the shorthand keyword.

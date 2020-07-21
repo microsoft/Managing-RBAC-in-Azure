@@ -1319,13 +1319,6 @@ namespace RBAC
                     TopSPGrid.ItemsSource = topSPs;
                     TopSPResults.IsOpen = true;
                 }
-                SecurityPrincipalAccessTypeDropdown.SelectedItem = null;
-                SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Hidden;
-                SecurityPrincipalAccessScopeDropdown.SelectedItem = null;
-                SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Hidden;
-                SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Hidden;
-                SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
-                SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem = null;
             }
         }
 
@@ -1497,16 +1490,7 @@ namespace RBAC
 
                     TopKVGrid.ItemsSource = fill;
                     TopKVResults.IsOpen = true;
-
-
                 }
-                MostAccessedTypeDropdown.SelectedItem = null;
-                MostAccessedScopeLabel.Visibility = Visibility.Hidden;
-                MostAccessedScopeDropdown.Visibility = Visibility.Hidden;
-                MostAccessedScopeDropdown.SelectedItem = null;
-                MostAccessedSpecifyScopeLabel.Visibility = Visibility.Hidden;
-                MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Hidden;
-                MostAccessedSpecifyScopeDropdown.SelectedItem = null;
             }
         }
         internal class TopKVSPClass
@@ -1641,6 +1625,14 @@ namespace RBAC
         private void CloseTopKVResults_Click(object sender, RoutedEventArgs e)
         {
             TopKVResults.IsOpen = false;
+
+            MostAccessedTypeDropdown.SelectedItem = null;
+            MostAccessedScopeLabel.Visibility = Visibility.Hidden;
+            MostAccessedScopeDropdown.Visibility = Visibility.Hidden;
+            MostAccessedScopeDropdown.SelectedItem = null;
+            MostAccessedSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+            MostAccessedSpecifyScopeDropdown.SelectedItem = null;
         }
 
         private void SecurityPrincipalAccessTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1657,6 +1649,14 @@ namespace RBAC
         private void CloseTopSPResults_Click(object sender, RoutedEventArgs e)
         {
             TopSPResults.IsOpen = false;
+
+            SecurityPrincipalAccessTypeDropdown.SelectedItem = null;
+            SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Hidden;
+            SecurityPrincipalAccessScopeDropdown.SelectedItem = null;
+            SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalAccessSpecifyScopeDropdown.Visibility = Visibility.Hidden;
+            SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
+            SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem = null;
         }
     }
 }
