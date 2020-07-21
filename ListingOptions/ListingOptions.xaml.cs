@@ -13,6 +13,7 @@ using System.Windows.Data;
 using Microsoft.Azure.Management.CosmosDB.Fluent.Models;
 using System.Runtime.ConstrainedExecution;
 using Microsoft.Azure.Management.Sql.Fluent.Models;
+using System.Text;
 
 namespace RBAC
 {
@@ -510,15 +511,50 @@ namespace RBAC
                 }
             }
 
-           var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
+            var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
+            var print = new List<ListSpResults>();
             //PUT DATA IN DATAGRID
+            foreach(var s in data.Keys)
+            {
+                var a = data[s];
+                var b = new ListSpResults()
+                {
+                    PermissionType = s,
+                    Sps = new List<SpsWithPermission>()
+                };
 
+                foreach(var t in a)
+                {
+                    var sps = new StringBuilder();
+                    foreach(var sp in t.Value)
+                    {
+                        sps.Append($"{sp.Item2.Type} {((sp.Item2.Alias == null || sp.Item2.Alias.Length == 0) ? sp.Item2.DisplayName : sp.Item2.Alias)} in {sp.Item1}\n");
+                    }
+                    b.Sps.Add(new SpsWithPermission()
+                    {
+                        Permission = t.Key,
+                        Sps = sps.ToString()
+                    });
+                }
+                print.Add(b);
+            }
+            ListSPGrid.ItemsSource = print;
+            ListSPPopup.IsOpen = true;
             // Once close datagrid, reset dropdowns
             PBPScopeDropdown.SelectedIndex = -1;
             PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
             PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
         }
-
+        internal class ListSpResults
+        {
+            public string PermissionType { get; set; }
+            public List<SpsWithPermission> Sps { get; set;}
+        }
+        internal class SpsWithPermission
+        {
+            public string Permission { get; set; }
+            public string Sps { get; set; }
+        }
         /// <summary>
         /// This method returns the dictionary representing each selected permission and the list of principals with those permissions.
         /// </summary>
@@ -1090,7 +1126,10 @@ namespace RBAC
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
 
-
+        private void CloseListSPPopup_Click(object sender, RoutedEventArgs e)
+        {
+            ListSPPopup.IsOpen = false;
+        }
     }
 }
 
