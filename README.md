@@ -64,8 +64,8 @@ This phase reads in a **MasterConfig.json** file, retrieves the specified KeyVau
 
 ## Running AccessPoliciesToYaml
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. 
-2. Define your file paths by modifying **JSON_FILE_PATH** and **YAML_FILE_PATH** in the **Constants.cs** file.
-3. Hit CTRL-ALT-L to open the Solution Explorer. on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+2. Define your file paths by modifying **JSON_FILE_PATH** and **YAML_FILE_PATH** in **AccessPoliciesToYaml/Constants.cs**.
+3. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
 We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
@@ -116,12 +116,12 @@ To ease the usability aspect of the automation, we have made shorthands, or comm
 - **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
    - Note that a space must be added after the shorthand keyword.
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-- All of the shorthands are defined in the **Constants.cs** file and can be modified
+- All of the shorthands are defined in **AccessPoliciesToYaml/Constants.cs** and can be modified
 
 ## Design Considerations
 
-#### Global Constants
-In the **Constants.cs** file, we have defined:
+### Global Constants
+In **AccessPoliciesToYaml/Constants.cs**, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
   - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users 
@@ -132,7 +132,7 @@ In the **Constants.cs** file, we have defined:
 
 All of these constants can be modified should they need to change.
 
-#### DeletePolicies.yml
+### DeletePolicies.yml
 A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml** and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
 
 ## Running UpdatePoliciesFromYaml
