@@ -449,7 +449,7 @@
                   Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed"/>
             <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" >
                 <Border BorderThickness="0.3" Height="Auto" Width="1000" BorderBrush="#FFE0E0E0">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="1000" Background="White" CanVerticallyScroll="True">
                             <Button x:Name="CloseListSPPopup" Style="{StaticResource ClosePopupButton}" Click="CloseListSPPopup_Click"/>
                             <TextBlock Text="Security Principals with Assigned Permissions" Width="1000" Padding="10,10,10,10"
@@ -460,7 +460,16 @@
                                 TextAlignment="Center" 
                                 FontFamily="Sitka Subheading"
                                 TextDecorations="Underline"/>
-                            <DataGrid x:Name="ListSPGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Hidden">
+                            
+                            <TextBlock Text="Key Permissions" Padding="10,10,10,10"
+                                Background="White"
+                                Foreground="Black"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                TextAlignment="Center" 
+                                FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPKey" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
                                 <DataGrid.Resources>
                                     <Style TargetType="{x:Type DataGridColumnHeader}">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -477,24 +486,55 @@
                                     </Style>
                                 </DataGrid.Resources>
                                 <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="Permission Type" Width="250">
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Grid>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding PermissionType}"/>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Permission" Width="250">
+                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <DataGrid ItemsSource="{Binding Sps}" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="None">
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
                                                     <DataGrid.Columns>
-                                                        <DataGridTemplateColumn Width="*">
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Text="{Binding Permission}" VerticalAlignment="Center" />
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
                                                                 </DataTemplate>
                                                             </DataGridTemplateColumn.CellTemplate>
                                                         </DataGridTemplateColumn>
@@ -503,15 +543,168 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Security Principals" Width="500">
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            
+                            <TextBlock Text="Secret Permissions" Padding="10,10,10,10"
+                                    Background="White"
+                                    Foreground="Black"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center" 
+                                    FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPSecret" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <DataGrid ItemsSource="{Binding Sps}" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="None">
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
                                                     <DataGrid.Columns>
-                                                        <DataGridTemplateColumn Width="*">
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Text="{Binding Sps}"/>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock Text="Certificate Permissions" Padding="10,10,10,10"
+                                    Background="White"
+                                    Foreground="Black"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center" 
+                                    FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPCertificate" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                  <DataGrid.Resources>
+                                        <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Setter Property="FontSize" Value="16"/>
+                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                <Setter Property="Background" Value="#FF197597"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                        </Style>
+                                        <Style TargetType="{x:Type DataGridCell}">
+                                                <Setter Property="FontSize" Value="13.5"/>
+                                                <Setter Property="FontFamily" Value="Sitka Text"/>
+                                        </Style>
+                                  </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
                                                                 </DataTemplate>
                                                             </DataGridTemplateColumn.CellTemplate>
                                                         </DataGridTemplateColumn>
