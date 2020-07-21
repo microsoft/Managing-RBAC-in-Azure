@@ -1744,7 +1744,6 @@ namespace Managing_RBAC_in_AzureListOptions
                     });
                 }
 
-                // PermissionsBySecurityPrincipalSpecifyScopeDropdown.Text = selected";
                 PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Visible;
                 PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Visible;
             }
@@ -2003,7 +2002,6 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
-                    bool certificatePermissionsHidden = true;
 
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -2016,12 +2014,6 @@ namespace Managing_RBAC_in_AzureListOptions
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     PermissionsBySecurityPrincipalDataGrid.Items.Add(newAddition);
-
-                                    if (! sp.PermissionsToCertificates.Equals(new string[] { "*o0" }))                                       
-                                    {
-                                        certificatePermissionsHidden = false;
-                                    }
-
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
@@ -2032,14 +2024,9 @@ namespace Managing_RBAC_in_AzureListOptions
                                 }
                             }
                         }
-                    }
-                    if (certificatePermissionsHidden == true)
-                    {
-                        gridColumnToggleVisibility("Certificate Permissions", Visibility.Hidden);
-                    }
+                    }               
                 }
             }
-            // Check Key, secret, and certificate permissions. if all of them is empty, remove the permission block
         }
 
         public class SecurityPrincipalData
