@@ -513,34 +513,101 @@ namespace RBAC
             }
 
             var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
-           // var print = new List<ListSpResults>();
-            //PUT DATA IN DATAGRID
-           /* foreach (var s in data.Keys)
-            {
-                var a = data[s];
-                var b = new ListSpResults()
-                {
-                    PermissionType = s,
-                    Sps = new List<SpsWithPermission>()
-                };
+            var keys = new List<ListSpResults>();
+            var secrets = new List<ListSpResults>();
+            var certificates = new List<ListSpResults>();
 
-                foreach (var t in a)
+            var k = data["Keys"];
+            var s = data["Secrets"];
+            var c = data["Certificates"];
+
+            foreach(var key in k.Keys)
+            {
+                var a = new ListSpResults
                 {
-                    var sps = new StringBuilder();
-                    foreach (var sp in t.Value)
+                    Permission = key,
+                    KeyVaults = new List<KVsWithPermission>()
+                };
+                foreach(var p in k[key])
+                {
+                    var toAdd = new KVsWithPermission
                     {
-                        sps.Append($"{sp.Item2.Type} {((sp.Item2.Alias == null || sp.Item2.Alias.Length == 0) ? sp.Item2.DisplayName : sp.Item2.Alias)} in {sp.Item1}\n");
+                        VaultName = p.Item1,
+                        SecurityPrincipals = new List<SecPrincipals>()
+                    };
+                    foreach(var sp in p.Item2)
+                    {
+                        toAdd.SecurityPrincipals.Add(new SecPrincipals
+                        {
+                            Type = sp.Type,
+                            Name = sp.DisplayName,
+                            Alias = sp.Alias
+                        });
                     }
-                    b.Sps.Add(new SpsWithPermission()
-                    {
-                        Permission = t.Key,
-                        Sps = sps.ToString()
-                    });
+                    a.KeyVaults.Add(toAdd);
                 }
-                print.Add(b);
+                keys.Add(a);
             }
-            ListSPGrid.ItemsSource = print;
-            ListSPPopup.IsOpen = true;*/
+
+            foreach (var key in s.Keys)
+            {
+                var a = new ListSpResults
+                {
+                    Permission = key,
+                    KeyVaults = new List<KVsWithPermission>()
+                };
+                foreach (var p in s[key])
+                {
+                    var toAdd = new KVsWithPermission
+                    {
+                        VaultName = p.Item1,
+                        SecurityPrincipals = new List<SecPrincipals>()
+                    };
+                    foreach (var sp in p.Item2)
+                    {
+                        toAdd.SecurityPrincipals.Add(new SecPrincipals
+                        {
+                            Type = sp.Type,
+                            Name = sp.DisplayName,
+                            Alias = sp.Alias
+                        });
+                    }
+                    a.KeyVaults.Add(toAdd);
+                }
+                secrets.Add(a);
+            }
+
+            foreach (var key in c.Keys)
+            {
+                var a = new ListSpResults
+                {
+                    Permission = key,
+                    KeyVaults = new List<KVsWithPermission>()
+                };
+                foreach (var p in c[key])
+                {
+                    var toAdd = new KVsWithPermission
+                    {
+                        VaultName = p.Item1,
+                        SecurityPrincipals = new List<SecPrincipals>()
+                    };
+                    foreach (var sp in p.Item2)
+                    {
+                        toAdd.SecurityPrincipals.Add(new SecPrincipals
+                        {
+                            Type = sp.Type,
+                            Name = sp.DisplayName,
+                            Alias = sp.Alias
+                        });
+                    }
+                    a.KeyVaults.Add(toAdd);
+                }
+                certificates.Add(a);
+            }
+            ListSPKey.ItemsSource = keys;
+            ListSPCertificate.ItemsSource = certificates;
+            ListSPSecret.ItemsSource = secrets;
+            ListSPPopup.IsOpen = true;
             // Once close datagrid, reset dropdowns
             PBPScopeDropdown.SelectedIndex = -1;
             PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
@@ -548,13 +615,19 @@ namespace RBAC
         }
         internal class ListSpResults
         {
-            public string PermissionType { get; set; }
-            public List<SpsWithPermission> Sps { get; set; }
-        }
-        internal class SpsWithPermission
-        {
             public string Permission { get; set; }
-            public string Sps { get; set; }
+            public List<KVsWithPermission> KeyVaults { get; set; }
+        }
+        internal class KVsWithPermission
+        {
+            public string VaultName { get; set; }
+            public List<SecPrincipals> SecurityPrincipals { get; set; }
+        }
+        internal class SecPrincipals
+        {
+            public string Type { get; set; }
+            public string Name { get; set; }
+            public string Alias { get; set; }
         }
         /// <summary>
         /// This method returns the dictionary representing each selected permission and the list of principals with those permissions.
