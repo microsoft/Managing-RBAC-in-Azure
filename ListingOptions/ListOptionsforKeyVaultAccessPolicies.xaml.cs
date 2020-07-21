@@ -895,8 +895,7 @@ namespace Managing_RBAC_in_AzureListOptions
             }
             else if (btn.Name == "PermissionsBySecurityPrincipalRun")
             {
-                // Execute Code
-                PermissionsBySecurityPrincipalPopUp.IsOpen = true;
+                // Execute Code            
                 permissionsBySecurityPrincipalRunMethod();
             }
             else if (btn.Name == "PermissionsRun")
@@ -1832,14 +1831,31 @@ namespace Managing_RBAC_in_AzureListOptions
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
             List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
+            if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
+            {
+                MessageBox.Show("No Scope Selected!", "Error");
+                return;
+            }
+
             ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
             ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
+           
+            if (scope != "YAML" && PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility == Visibility.Hidden)
+            {
+                MessageBox.Show("Specify Type hidden!", "Error");
+                return;
+            }
+            else if (scope != "YAML" && getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
+            {
+                MessageBox.Show("Specify Type not selected!", "Error");
+                return;
+            }
+
+            PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
             if (scope == "YAML")
-            {
-                
-
+            {             
                 TextBlock yamlTextBlock = createDataGridHeader($"Listing by YAML: ");
                 DataGrid yamlDataGrid = createDataGrid();
                 PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlTextBlock);
@@ -1867,6 +1883,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 return;
             }
+            
+            
             ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedtype.Content as string;
             ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
