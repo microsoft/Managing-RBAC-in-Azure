@@ -614,16 +614,28 @@ namespace RBAC
             ListSPSecret.ItemsSource = secrets;
             ListSPPopup.IsOpen = true;
         }
+        /// <summary>
+        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// It stores a Permission and a list of KeyVaults with access policies containing the permission.
+        /// </summary>
         internal class ListSpResults
         {
             public string Permission { get; set; }
             public List<KVsWithPermission> KeyVaults { get; set; }
         }
+        /// <summary>
+        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// It stores a KeyVault and a List of Security Principals with a certain permission
+        /// </summary>
         internal class KVsWithPermission
         {
             public string VaultName { get; set; }
             public List<SecPrincipals> SecurityPrincipals { get; set; }
         }
+        /// <summary>
+        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// It stores a Security Principal's type, name, and alias
+        /// </summary>
         internal class SecPrincipals
         {
             public string Type { get; set; }
@@ -1331,6 +1343,11 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method runs the code that finds the Security Principals with the most Access.
+        /// </summary>
+        /// <param name="sender">The Button that runs option 6</param>
+        /// <param name="e">The event that occurs when run button is clicked</param>
         private void RunTopSPs(object sender, RoutedEventArgs e)
         {
             ComboBoxItem breakdownScope = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
@@ -1415,6 +1432,12 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method gets the Security Principals with the most accesses in a scope.
+        /// </summary>
+        /// <param name="vaults">Vaults in scope selected</param>
+        /// <param name="type">Sort by "KeyVaults" or "Permissions"</param>
+        /// <returns></returns>
         private List<TopSp> getTopSPs(List<KeyVaultProperties> vaults, string type)
         {
             if (type == "KeyVaults")
@@ -1494,6 +1517,10 @@ namespace RBAC
                 return sps;
             }
         }
+        /// <summary>
+        /// This class is used to list the top Security Principals in a data grid.
+        /// It stores each principals's type, name, alias, and number of permissions/kevaults.
+        /// </summary>
         internal class TopSp
         {
             public string type { get; set; }
@@ -1508,6 +1535,11 @@ namespace RBAC
                 this.count = count;
             }
         }
+        /// <summary>
+        /// This method runs the code that finds the most accessible KeyVaults.
+        /// </summary>
+        /// <param name="sender">The Button that runs option 5</param>
+        /// <param name="e">The event that occurs when run button is clicked</param>
         private void RunTopKVs(object sender, RoutedEventArgs e)
         {
             ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
@@ -1586,6 +1618,10 @@ namespace RBAC
                 }
             }
         }
+        /// <summary>
+        /// This class is used to list the Top KeyVaults in a data grid.
+        /// It stores the VaultName and number of principals with access.
+        /// </summary>
         internal class TopKVSPClass
         {
             public string VaultName { get; set; }
@@ -1596,6 +1632,10 @@ namespace RBAC
                 SecurityPrincipals = count;
             }
         }
+        /// <summary>
+        /// This class is used to list the Top KeyVaults in a data grid.
+        /// It stores the VaultName and number of individual permissions granted.
+        /// </summary>
         internal class TopKVPermClass
         {
             public string VaultName { get; set; }
@@ -1606,9 +1646,15 @@ namespace RBAC
                 TotalPermissions = count;
             }
         }
+        /// <summary>
+        /// This method gets the most accessible KeyVaults within a scope.
+        /// </summary>
+        /// <param name="vaults">List of vaults in the scope</param>
+        /// <param name="type">Sort by "Security Principals" or "Permissions"</param>
+        /// <returns></returns>
         private List<KeyValuePair<string, int>> getTopKVs(List<KeyVaultProperties> vaults, string type)
         {
-            if (type == "Security Principal")
+            if (type == "Security Principals")
             {
                 var kvs = new Dictionary<string, int>();
                 foreach (KeyVaultProperties kv in vaults)
@@ -1637,6 +1683,12 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// Gets list of KeyVaults within a specified scope
+        /// </summary>
+        /// <param name="scope">Type of scope</param>
+        /// <param name="selected">Items specified in scope</param>
+        /// <returns></returns>
         private List<KeyVaultProperties> getScopeKVs(string scope, List<string> selected)
         {
             List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
@@ -1699,6 +1751,11 @@ namespace RBAC
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
+        /// <summary>
+        /// This method closes popup for results of listing security principals by permissions.
+        /// </summary>
+        /// <param name="sender">The Close button</param>
+        /// <param name="e">The event from clicking the button</param>
         private void CloseListSPPopup_Click(object sender, RoutedEventArgs e)
         {
             ListSPPopup.IsOpen = false;
@@ -1707,17 +1764,30 @@ namespace RBAC
             PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
             PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
         }
+        /// <summary>
+        /// This method updates dropdown when a new item is selected.
+        /// </summary>
+        /// <param name="sender">MostAccessedSpecifyDropdown</param>
+        /// <param name="e">Event triggered from Item selected</param>
         private void MostAccessedSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
             dropDownClosedTemplate(sender, e);
         }
-
+        /// <summary>
+        /// This method shows more options when type is specified for Option 5.
+        /// </summary>
+        /// <param name="sender">MostAccessedTypeDropdown</param>
+        /// <param name="e">Event triggered from choosing option</param>
         private void MostAccessedTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             MostAccessedScopeDropdown.Visibility = Visibility.Visible;
             MostAccessedScopeLabel.Visibility = Visibility.Visible;
         }
-
+        /// <summary>
+        /// This method closes the popup for listing the top KeyVaults and closes all dropdowns
+        /// </summary>
+        /// <param name="sender">CloseTopKVResults button</param>
+        /// <param name="e">Event triggered from clicking button</param>
         private void CloseTopKVResults_Click(object sender, RoutedEventArgs e)
         {
             TopKVResults.IsOpen = false;
@@ -1731,17 +1801,31 @@ namespace RBAC
             MostAccessedSpecifyScopeDropdown.SelectedItem = null;
         }
 
+        /// <summary>
+        /// This method shows more options when type is specified for Option 6.
+        /// </summary>
+        /// <param name="sender">SecurityPrincipalAccessTypeDropdown</param>
+        /// <param name="e">Event triggered from choosing option</param>
         private void SecurityPrincipalAccessTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Visible;
             SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Visible;
         }
-
+        /// <summary>
+        /// This method updates dropdown when a new item is selected.
+        /// </summary>
+        /// <param name="sender">SecurityPrincipalAccessSpecifyScopeDropdown</param>
+        /// <param name="e">Event triggered from Item selected</param>
         private void SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
             dropDownClosedTemplate(sender, e);
-        }
+                }
 
+        /// <summary>
+        /// This method closes the popup for listing the top Security Principals and closes all dropdowns
+        /// </summary>
+        /// <param name="sender">CloseTopSPResults button</param>
+        /// <param name="e">Event triggered from clicking button</param>
         private void CloseTopSPResults_Click(object sender, RoutedEventArgs e)
         {
             TopSPResults.IsOpen = false;

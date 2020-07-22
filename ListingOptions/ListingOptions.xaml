@@ -367,7 +367,7 @@
                   Grid.Column="0" Grid.Row="21"
                   Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="MostAccessedTypeDropdown_SelectionChanged">
-                <ComboBoxItem Content="Security Principal"/>
+                <ComboBoxItem Content="Security Principals"/>
                 <ComboBoxItem Content="Permissions"/>
             </ComboBox>
 
