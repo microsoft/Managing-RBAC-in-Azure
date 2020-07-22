@@ -1440,6 +1440,11 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
 
+            if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == 0)
+            {
+                PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
+                PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+            }
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex != -1)
             {
@@ -1635,7 +1640,44 @@ namespace Managing_RBAC_in_AzureListOptions
 
                 List<string> items = new List<string>();
 
-                if (scope == "Subscription")
+                if (scope == "YAML")
+                {
+                    if (type == "All")
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == "User" || sp.Type == "Group")
+                                {
+                                    items.Add(sp.Alias);
+                                }
+                                else if (sp.Type == "Service Principal")
+                                {
+                                    items.Add(sp.DisplayName);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyVaultProperties kv in yaml)
+                        {
+                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                            {
+                                if (sp.Type == type && (sp.Type == "User" || sp.Type == "Group"))
+                                {
+                                    items.Add(sp.Alias);
+                                }
+                                else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                {
+                                    items.Add(sp.DisplayName);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (scope == "Subscription")
                 {
                     if (type == "All")
                     {
@@ -1853,15 +1895,15 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="header">The header name of a column </param>
         /// <param name="vis">The visibility of an object</param>
         private void gridColumnToggleVisibility(string header, Visibility vis)
-        {   
+        {
             foreach (DataGridColumn col in getLastStackPanelDataGrid().Columns)
             {
                 if ((string)col.Header == header)
                 {
                     col.Visibility = vis;
                 }
-            }  
-            
+            }
+
         }
 
         /// <summary>
@@ -1880,29 +1922,39 @@ namespace Managing_RBAC_in_AzureListOptions
         /// </summary>
         public void permissionsBySecurityPrincipalRunMethod()
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            if (PermissionsBySecurityPrincipalPopUp.IsOpen)
+            {
+                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+            }
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
-            string scope = selectedScope.Content as string;
-            ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
-           
-            if (scope != "YAML" && PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility == Visibility.Hidden)
+          
+            if (PermissionsBySecurityPrincipalTypeDropdown.Visibility == Visibility.Hidden
+                || PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            else if (scope != "YAML" && getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
+            else if (getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
             {
-                MessageBox.Show("Please specify as least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
+            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+
+            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+            string scope = selectedScope.Content as string;
+
+            ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+            string type = selectedtype.Content as string;
+            ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+            List<string> selectedSpecifyTypeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyType.Items);
 
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
@@ -1913,36 +1965,59 @@ namespace Managing_RBAC_in_AzureListOptions
                 PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlTextBlock);
                 PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlDataGrid);
                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-                gridColumnToggleVisibility("Type", Visibility.Visible);
-
-                foreach (KeyVaultProperties kv in yaml)
+                
+                if (type == "All")
                 {
-                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                    gridColumnToggleVisibility("Type", Visibility.Visible);
+                    foreach (KeyVaultProperties kv in yaml)
                     {
-                        if (sp.Type == "User" || sp.Type == "Group")
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
                         {
-                            SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
-                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                            getLastStackPanelDataGrid().Items.Add(newAddition);
-                        }
-                        else if ( sp.Type == "Service Principal" )
-                        {
-                            SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
+                            if ( (sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias) )
+                            {
+                                SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                            getLastStackPanelDataGrid().Items.Add(newAddition);
-                        }                    
+                                getLastStackPanelDataGrid().Items.Add(newAddition);
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName) )
+                            {
+                                SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
+                                getLastStackPanelDataGrid().Items.Add(newAddition);
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
+                                getLastStackPanelDataGrid().Items.Add(newAddition);
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                                SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
+                                getLastStackPanelDataGrid().Items.Add(newAddition);
+                            }
+                        }
+                    }
+                }
+                
                 return;
             }
-            
-            
-            ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
-            string type = selectedtype.Content as string;
-            ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
 
+
+            ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
             List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
-            List<string> selectedSpecifyTypeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyType.Items);
+            
       
             if (scope == "Subscription")
             {
