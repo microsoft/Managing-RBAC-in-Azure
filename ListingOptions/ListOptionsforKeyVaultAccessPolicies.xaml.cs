@@ -14,6 +14,7 @@ using Microsoft.Azure.Management.CosmosDB.Fluent.Models;
 using System.IO;
 using Microsoft.Graph;
 using System.Drawing.Printing;
+using System.Windows.Controls.Primitives;
 
 namespace Managing_RBAC_in_AzureListOptions
 {
@@ -1618,6 +1619,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+         
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items.Clear();
 
             if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex != -1)
@@ -2049,7 +2051,6 @@ namespace Managing_RBAC_in_AzureListOptions
                                 }
                                 else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
-                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     SecurityPrincipalData newAddition = new SecurityPrincipalData(kv.VaultName, sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
@@ -2268,6 +2269,7 @@ namespace Managing_RBAC_in_AzureListOptions
         public DataGrid createDataGrid() {
 
             DataGrid dataGrid = new DataGrid();
+            dataGrid.ColumnHeaderStyle = (Style)Resources["DataGridHeaderStyle"];
 
             DataGridTextColumn columnKeyVault = new DataGridTextColumn();
             columnKeyVault.Header = "KeyVault";
@@ -2293,14 +2295,13 @@ namespace Managing_RBAC_in_AzureListOptions
             columnAlias.Binding = new System.Windows.Data.Binding("alias");
             columnAlias.Width = 150;
             dataGrid.Columns.Add(columnAlias);
-
+          
             DataGridTextColumn columnKeyPermissions = new DataGridTextColumn();
             columnKeyPermissions.Header = "Key Permissions";
             columnKeyPermissions.Binding = new System.Windows.Data.Binding("keyPermissions");
             columnKeyPermissions.Width = 200;
             dataGrid.Columns.Add(columnKeyPermissions);
-            //  var listBox = columnKeyPermissions.CellTemplate.DataType = new ListBox();
-
+        
             DataGridTextColumn columnSecretPermissions = new DataGridTextColumn();
             columnSecretPermissions.Header = "Secret Permissions";
             columnSecretPermissions.Binding = new System.Windows.Data.Binding("secretPermissions");
@@ -2312,7 +2313,7 @@ namespace Managing_RBAC_in_AzureListOptions
             columnCertificatePermissions.Binding = new System.Windows.Data.Binding("certificatePermissions");
             columnCertificatePermissions.Width = 200;
             dataGrid.Columns.Add(columnCertificatePermissions);
-           
+                    
             return dataGrid;
         }
 
@@ -2333,9 +2334,9 @@ namespace Managing_RBAC_in_AzureListOptions
             public string type { get; set; }
             public string displayName { get; set; }
             public string alias { get; set; }
-            public List<string> keyPermissions { get; set; }
-            public List<string> secretPermissions { get; set; }
-            public List<string> certificatePermissions { get; set; }
+            public string keyPermissions { get; set; }
+            public string secretPermissions { get; set; }
+            public string certificatePermissions { get; set; }
 
             /// <summary>
             /// Constructor to create an instance of the SecurityPrincipalData class that's used for datagrids in listing option 2
@@ -2354,30 +2355,29 @@ namespace Managing_RBAC_in_AzureListOptions
                 this.displayName = displayName;
                 this.alias = alias;
 
-                List<string> keyList = new List<string>();
+                string keyString = "";
                 for (int i = 0; i < keyPermissions.Length; i++)
                 {
-                    keyList.Add("- " + keyPermissions[i]);
+                    keyString += "- " + keyPermissions[i] + "\n";
                 }
-                this.keyPermissions = keyList;
+                this.keyPermissions = keyString;
 
 
-                List<string> secretList = new List<string>();
+                string secretString = "";
                 for (int i = 0; i < secretPermissions.Length; i++)
                 {
-                    secretList.Add("- " + secretPermissions[i]);
+                    secretString += "- " + secretPermissions[i] + "\n";
                 }
-                this.secretPermissions = secretList;
+                this.secretPermissions = secretString;
 
 
-                List<string> certificateList = new List<string>();
+                string certificateString = "";
                 for (int i = 0; i < certificatePermissions.Length; i++)
                 {
-                    certificateList.Add("- " + certificatePermissions[i]);
+                    certificateString += "- " + certificatePermissions[i] + "\n";
                 }
-                this.certificatePermissions = certificateList;
+                this.certificatePermissions = certificateString;
             }
-
         }
     }
 }
