@@ -463,20 +463,13 @@ namespace RBAC
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
             List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
 
-            ComboBox keysDropdown = PBPKeysDropdown as ComboBox;
-            List<string> keysSelected = getSelectedItemsTemplate(keysDropdown);
-            ComboBox secretsDropdown = PBPSecretsDropdown as ComboBox;
-            List<string> secretsSelected = getSelectedItemsTemplate(secretsDropdown);
-            ComboBox certifsDropdown = PBPCertificatesDropdown as ComboBox;
-            List<string> certifsSelected = getSelectedItemsTemplate(certifsDropdown);
-
-            if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
+            ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
+            if (scope == null)
             {
-                MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
             List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
             if (scope.Content.ToString() == "YAML")
             {
@@ -510,6 +503,19 @@ namespace RBAC
                 {
                     vaultsInScope.AddRange(lookup[specifiedScope].ToList());
                 }
+            }
+
+            ComboBox keysDropdown = PBPKeysDropdown as ComboBox;
+            List<string> keysSelected = getSelectedItemsTemplate(keysDropdown);
+            ComboBox secretsDropdown = PBPSecretsDropdown as ComboBox;
+            List<string> secretsSelected = getSelectedItemsTemplate(secretsDropdown);
+            ComboBox certifsDropdown = PBPCertificatesDropdown as ComboBox;
+            List<string> certifsSelected = getSelectedItemsTemplate(certifsDropdown);
+
+            if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
+            {
+                MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
 
             var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
@@ -1283,7 +1289,20 @@ namespace RBAC
 
             if (btn.Name == "ShorthandPermissionsRun")
             {
-                ShorthandPermissionsTranslation.IsOpen = true;
+                ComboBoxItem selectedBlock = ShorthandPermissionTypesDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedShorthand = ShorthandPermissionsDropdown.SelectedItem as ComboBoxItem;
+                if (selectedBlock == null)
+                {
+                    MessageBox.Show("Please specify the permission block prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else if (selectedShorthand == null)
+                {
+                    MessageBox.Show("Please specify the shorthand prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    ShorthandPermissionsTranslation.IsOpen = true;
+                }
             }
             else if (btn.Name == "SecurityPrincipalRun")
             {
@@ -1295,7 +1314,20 @@ namespace RBAC
             }
             else if (btn.Name == "BreakdownRun")
             {
-                RunPermissionsBreakdown_Click(sender, e);
+                ComboBoxItem selectedType = BreakdownTypeDropdown.SelectedItem as ComboBoxItem;
+                ComboBoxItem selectedScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
+                if (selectedType == null)
+                {
+                    MessageBox.Show("Please specify the permission type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else if (selectedScope == null)
+                {
+                    MessageBox.Show("Please specify scope to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    RunPermissionsBreakdown_Click(sender, e);
+                }
             }
             else if (btn.Name == "MostAccessedRun")
             {
@@ -1312,7 +1344,7 @@ namespace RBAC
             ComboBoxItem breakdownScope = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
             if (breakdownScope == null)
             {
-                MessageBox.Show("Please specify scope type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             string scope = breakdownScope.Content as string;
@@ -1489,7 +1521,7 @@ namespace RBAC
             ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
             if (breakdownScope == null)
             {
-                MessageBox.Show("Please specify scope type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             string scope = breakdownScope.Content as string;
