@@ -1619,7 +1619,6 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-         
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items.Clear();
 
             if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex != -1)
