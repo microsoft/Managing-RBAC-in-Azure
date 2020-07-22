@@ -522,93 +522,126 @@ namespace RBAC
             var secrets = new List<ListSpResults>();
             var certificates = new List<ListSpResults>();
 
+            KeyTitle.Visibility = Visibility.Visible;
+            ListSPKey.Visibility = Visibility.Visible;
+            SecTitle.Visibility = Visibility.Visible;
+            ListSPSecret.Visibility = Visibility.Visible;
+            CertTitle.Visibility = Visibility.Visible;
+            ListSPCertificate.Visibility = Visibility.Visible;
+
             var k = data["Keys"];
             var s = data["Secrets"];
             var c = data["Certificates"];
-
-            foreach (var key in k.Keys)
+            if(k.Count == 0)
             {
-                var a = new ListSpResults
-                {
-                    Permission = key,
-                    KeyVaults = new List<KVsWithPermission>()
-                };
-                foreach (var p in k[key])
-                {
-                    var toAdd = new KVsWithPermission
-                    {
-                        VaultName = p.Item1,
-                        SecurityPrincipals = new List<SecPrincipals>()
-                    };
-                    foreach (var sp in p.Item2)
-                    {
-                        toAdd.SecurityPrincipals.Add(new SecPrincipals
-                        {
-                            Type = sp.Type,
-                            Name = sp.DisplayName,
-                            Alias = sp.Alias
-                        });
-                    }
-                    a.KeyVaults.Add(toAdd);
-                }
-                keys.Add(a);
+                KeyTitle.Visibility = Visibility.Collapsed;
+                ListSPKey.Visibility = Visibility.Collapsed;
             }
-
-            foreach (var key in s.Keys)
+            else
             {
-                var a = new ListSpResults
+                foreach (var key in k.Keys)
                 {
-                    Permission = key,
-                    KeyVaults = new List<KVsWithPermission>()
-                };
-                foreach (var p in s[key])
-                {
-                    var toAdd = new KVsWithPermission
+                    var a = new ListSpResults
                     {
-                        VaultName = p.Item1,
-                        SecurityPrincipals = new List<SecPrincipals>()
+                        Permission = key,
+                        KeyVaults = new List<KVsWithPermission>()
                     };
-                    foreach (var sp in p.Item2)
+                    foreach (var p in k[key])
                     {
-                        toAdd.SecurityPrincipals.Add(new SecPrincipals
+                        var toAdd = new KVsWithPermission
                         {
-                            Type = sp.Type,
-                            Name = sp.DisplayName,
-                            Alias = sp.Alias
-                        });
+                            VaultName = p.Item1,
+                            SecurityPrincipals = new List<SecPrincipals>()
+                        };
+                        foreach (var sp in p.Item2)
+                        {
+                            toAdd.SecurityPrincipals.Add(new SecPrincipals
+                            {
+                                Type = sp.Type,
+                                Name = sp.DisplayName,
+                                Alias = sp.Alias
+                            });
+                        }
+                        a.KeyVaults.Add(toAdd);
                     }
-                    a.KeyVaults.Add(toAdd);
+                    keys.Add(a);
                 }
-                secrets.Add(a);
             }
-
-            foreach (var key in c.Keys)
+            if (s.Count == 0)
             {
-                var a = new ListSpResults
-                {
-                    Permission = key,
-                    KeyVaults = new List<KVsWithPermission>()
-                };
-                foreach (var p in c[key])
-                {
-                    var toAdd = new KVsWithPermission
-                    {
-                        VaultName = p.Item1,
-                        SecurityPrincipals = new List<SecPrincipals>()
-                    };
-                    foreach (var sp in p.Item2)
-                    {
-                        toAdd.SecurityPrincipals.Add(new SecPrincipals
-                        {
-                            Type = sp.Type,
-                            Name = sp.DisplayName,
-                            Alias = sp.Alias
-                        });
-                    }
-                    a.KeyVaults.Add(toAdd);
-                }
-                certificates.Add(a);
+                SecTitle.Visibility = Visibility.Collapsed;
+                ListSPSecret.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                foreach (var key in s.Keys)
+                {
+                    var a = new ListSpResults
+                    {
+                        Permission = key,
+                        KeyVaults = new List<KVsWithPermission>()
+                    };
+                    foreach (var p in s[key])
+                    {
+                        var toAdd = new KVsWithPermission
+                        {
+                            VaultName = p.Item1,
+                            SecurityPrincipals = new List<SecPrincipals>()
+                        };
+                        foreach (var sp in p.Item2)
+                        {
+                            toAdd.SecurityPrincipals.Add(new SecPrincipals
+                            {
+                                Type = sp.Type,
+                                Name = sp.DisplayName,
+                                Alias = sp.Alias
+                            });
+                        }
+                        a.KeyVaults.Add(toAdd);
+                    }
+                    secrets.Add(a);
+                }
+            }
+            if (c.Count == 0)
+            {
+                CertTitle.Visibility = Visibility.Collapsed;
+                ListSPCertificate.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                foreach (var key in c.Keys)
+                {
+                    var a = new ListSpResults
+                    {
+                        Permission = key,
+                        KeyVaults = new List<KVsWithPermission>()
+                    };
+                    foreach (var p in c[key])
+                    {
+                        var toAdd = new KVsWithPermission
+                        {
+                            VaultName = p.Item1,
+                            SecurityPrincipals = new List<SecPrincipals>()
+                        };
+                        foreach (var sp in p.Item2)
+                        {
+                            toAdd.SecurityPrincipals.Add(new SecPrincipals
+                            {
+                                Type = sp.Type,
+                                Name = sp.DisplayName,
+                                Alias = sp.Alias
+                            });
+                        }
+                        a.KeyVaults.Add(toAdd);
+                    }
+                    certificates.Add(a);
+                }
+            }
+            
+
+            
+
+            
             ListSPKey.ItemsSource = keys;
             ListSPCertificate.ItemsSource = certificates;
             ListSPSecret.ItemsSource = secrets;
@@ -690,7 +723,7 @@ namespace RBAC
                         foreach (string secret in secretsSelected)
                         {
                             List<PrincipalPermissions> secretPrincipals = new List<PrincipalPermissions>();
-                            if (principal.PermissionsToKeys.Contains(secret.ToLower()))
+                            if (principal.PermissionsToSecrets.Contains(secret.ToLower()))
                             {
                                 var lookup = principalsByPermission["Secrets"][secret].ToLookup(se => se.Item1)[kv.VaultName].ToList();
                                 if (lookup.Count == 0)
@@ -706,19 +739,22 @@ namespace RBAC
                         }
                     }
                     if (certifsSelected.Count() != 0)
-                    {
-                        List<PrincipalPermissions> certifPrincipals = new List<PrincipalPermissions>();
+                    { 
                         foreach (string certif in certifsSelected)
                         {
-                            var lookup = principalsByPermission["Certificates"][certif].ToLookup(cert => cert.Item1)[kv.VaultName].ToList();
-                            if (lookup.Count == 0)
+                            List<PrincipalPermissions> certifPrincipals = new List<PrincipalPermissions>();
+                            if (principal.PermissionsToCertificates.Contains(certif.ToLower()))
                             {
-                                certifPrincipals.Add(principal);
-                                principalsByPermission["Certificates"][certif].Add(new Tuple<string, List<PrincipalPermissions>>(kv.VaultName, certifPrincipals));
-                            }
-                            else
-                            {
-                                lookup[0].Item2.Add(principal);
+                                var lookup = principalsByPermission["Certificates"][certif].ToLookup(cert => cert.Item1)[kv.VaultName].ToList();
+                                if (lookup.Count == 0)
+                                {
+                                    certifPrincipals.Add(principal);
+                                    principalsByPermission["Certificates"][certif].Add(new Tuple<string, List<PrincipalPermissions>>(kv.VaultName, certifPrincipals));
+                                }
+                                else
+                                {
+                                    lookup[0].Item2.Add(principal);
+                                }
                             }
                         }
                     }
