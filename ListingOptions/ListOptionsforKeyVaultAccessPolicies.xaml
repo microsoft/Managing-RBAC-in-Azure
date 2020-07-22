@@ -267,7 +267,8 @@
                                     VerticalAlignment="Top">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
                             <TextBlock Text="Listing Permissions by Security Principal " Style="{StaticResource ChartTitleStyle}"
-                                   HorizontalAlignment="Center" FontSize="30" TextDecorations="Underline" VerticalAlignment="Top"/>
+                                       Margin="0,20,0,40"
+                                   HorizontalAlignment="Center" FontSize="26" TextDecorations="Underline" VerticalAlignment="Top" />
                             <Separator x:Name= "PermissionsBySecurityPrincipalTitleSeperator" VerticalAlignment="Top"/>
                         </StackPanel>
                     </ScrollViewer>

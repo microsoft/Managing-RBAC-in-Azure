@@ -1885,7 +1885,7 @@ namespace Managing_RBAC_in_AzureListOptions
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
             {
-                MessageBox.Show("No Scope Selected!", "Error");
+                MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1895,12 +1895,12 @@ namespace Managing_RBAC_in_AzureListOptions
            
             if (scope != "YAML" && PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility == Visibility.Hidden)
             {
-                MessageBox.Show("Specify Type hidden!", "Error");
+                MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             else if (scope != "YAML" && getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
             {
-                MessageBox.Show("Specify Type not selected!", "Error");
+                MessageBox.Show("Please specify as least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
