@@ -1424,6 +1424,11 @@ namespace Managing_RBAC_in_AzureListOptions
 
         // 2. Permissions By Security Principal  ----------------------------------------------------------------------------------------------------
 
+        /// <summary>
+        /// This method populates the specify scope dropdown and makes the dropdown/label visible when the scope dropdown is changed
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             PermissionsBySecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Hidden;
@@ -1472,6 +1477,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }
         }
+
+        /// <summary>
+        /// This method populates the specify scope dropdown
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void populatePermissionsBySecurityPrincipalSpecifyScope(List<KeyVaultProperties> yaml)
         {
             PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
@@ -1515,13 +1526,23 @@ namespace Managing_RBAC_in_AzureListOptions
                 });
             }
         }
+
+        /// <summary>
+        /// This method makes the type label/dropdown visible when the specify scope selection changes
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
             PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
         }
 
+        /// <summary>
+        /// This method makes the specify scope dropdown indicate how many items were selected when the dropdown is close
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
             ComboBox scopeDropdown = sender as ComboBox;
@@ -1542,6 +1563,10 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// This method gets a list of selected specify scopes
+        /// </summary>
+        /// <param name="items">A collection of items in a combobox</param>
         private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyScope(ItemCollection items)
         {
             List<string> selected = new List<string>();
@@ -1581,6 +1606,11 @@ namespace Managing_RBAC_in_AzureListOptions
             return selected;
         }
 
+        /// <summary>
+        /// This method populates the specify type dropdown and make the specify type dropdown/label visible when a selection change occurs in the type dropdown
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items.Clear();
@@ -1748,9 +1778,14 @@ namespace Managing_RBAC_in_AzureListOptions
                 PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Visible;
             }
         }
+
+        /// <summary>
+        /// This method makes the specify type dropdown indicate how many items were selected when the dropdown is closed
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-
             ComboBox scopeDropdown = sender as ComboBox;
             ItemCollection items = scopeDropdown.Items;
 
@@ -1769,7 +1804,11 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
         }
 
-        private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyType(ItemCollection items)
+        /// <summary>
+        /// This method gets a list of selected security principals
+        /// </summary>
+        /// <param name="items">A list of security principals </param>
+        public List<string> getSelectedPermissionsBySecurityPrincipalSpecifyType(ItemCollection items)
         {
             List<string> selected = new List<string>();
             try
@@ -1808,6 +1847,11 @@ namespace Managing_RBAC_in_AzureListOptions
             return selected;
         }
 
+        /// <summary>
+        /// This method gets the last datagrid, cycles through the columns, and changes the visibility of column with the "header" param name
+        /// </summary>
+        /// <param name="header">The header name of a column </param>
+        /// <param name="vis">The visibility of an object</param>
         private void gridColumnToggleVisibility(string header, Visibility vis)
         {   
             foreach (DataGridColumn col in getLastStackPanelDataGrid().Columns)
@@ -1820,12 +1864,20 @@ namespace Managing_RBAC_in_AzureListOptions
             
         }
 
+        /// <summary>
+        /// This method closes the pop up and clears all datagrid content
+        /// </summary>
+        /// <param name="sender">Button</param>
+        /// <param name="e">Mouse event</param>
         private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
         {
             PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             PermissionsBySecurityPrincipalPopUp.IsOpen = false;
         }
 
+        /// <summary>
+        /// This method populates all the dataGrids and opens the pop up. It executes when the Run button is clicked
+        /// </summary>
         public void permissionsBySecurityPrincipalRunMethod()
         {
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
@@ -2098,6 +2150,11 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }          
         }
+
+        /// <summary>
+        /// This method returns the last added datagrid
+        /// </summary>
+        /// <returns>Last added datagrid.</returns>
         public DataGrid getLastStackPanelDataGrid()
         {
             int start = 0;
@@ -2114,6 +2171,11 @@ namespace Managing_RBAC_in_AzureListOptions
             return null;
         }
 
+        /// <summary>
+        /// This method creates and returns a data grid header with a specified text
+        /// </summary>
+        /// <param name="text">The Display of the TextBlock </param>
+        /// <returns>A TextBlock </returns>
         public TextBlock createDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
@@ -2124,7 +2186,10 @@ namespace Managing_RBAC_in_AzureListOptions
             textBlock.FontSize = 22;
             return textBlock;
         }
-
+        /// <summary>
+        /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns
+        /// </summary>
+        /// <returns>Data Grid </returns>
         public DataGrid createDataGrid() {
 
             DataGrid dataGrid = new DataGrid();
@@ -2141,7 +2206,6 @@ namespace Managing_RBAC_in_AzureListOptions
             columnType.Binding = new System.Windows.Data.Binding("type");
             columnType.Width = 150;
             dataGrid.Columns.Add(columnType);
-
 
             DataGridTextColumn columnDisplayName = new DataGridTextColumn();
             columnDisplayName.Header = "Display Name";
@@ -2177,6 +2241,10 @@ namespace Managing_RBAC_in_AzureListOptions
             return dataGrid;
         }
 
+        /// <summary>
+        /// This method creates a seperator thats used to seperate grids
+        /// </summary>
+        /// <returns>A Seperator</returns>
         public LiveCharts.Wpf.Separator seperateDataGrids()
         {
             LiveCharts.Wpf.Separator sep = new LiveCharts.Wpf.Separator();
@@ -2193,8 +2261,16 @@ namespace Managing_RBAC_in_AzureListOptions
             public List<string> keyPermissions { get; set; }
             public List<string> secretPermissions { get; set; }
             public List<string> certificatePermissions { get; set; }
-            
 
+            /// <summary>
+            /// Constructor to create an instance of the SecurityPrincipalData class that's used for datagrids in listing option 2
+            /// </summary>
+            /// <param name="vaultName">KeyVault name used for DataGrid info.</param>
+            /// <param name="displayName">Display Name used for DataGrid info.</param>
+            /// <param name="alias">Alias used for DataGrid info.</param>
+            /// <param name="keyPermissions">Key permissions list used for DataGrid info.</param>
+            /// <param name="secretPermissions">Secret permissions list used for DataGrid info.</param>
+            /// <param name="certificatePermissions">Certificate permissions list used for DataGrid info.</param>
             public SecurityPrincipalData(string vaultName, string displayName, string alias,
                 string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions, string type=null)
             {
