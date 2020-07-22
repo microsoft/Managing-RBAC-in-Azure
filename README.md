@@ -99,7 +99,7 @@ To ease the usability aspect of the automation, we have made shorthands, or comm
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
   - **Storage**: Import, Recover, Backup, and Restore Access
-  - **Crypto**: All cryptographic operations i.e. Decrypt, Encrypt, UnwrapKey, WrapKey, Veryfy, and Sign
+  - **Crypto**: All cryptographic operations i.e. Decrypt, Encrypt, UnwrapKey, WrapKey, Verify, and Sign
 - ***Secrets:***
   - **All**: all Secret permissions
   - **Read**: Get and List Access

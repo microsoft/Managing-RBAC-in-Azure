@@ -11,6 +11,8 @@ using System.Windows.Media;
 using System.Windows.Data;
 using System.Text;
 using System.ComponentModel;
+using System.Windows.Input;
+using YamlDotNet.Serialization;
 
 namespace RBAC
 {
@@ -112,8 +114,7 @@ namespace RBAC
                     permissionType = "certificate";
                 }
 
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                string[] shorthandPermissions = up.getShorthandPermissions(shorthand.ToLower(), permissionType);
+                string[] shorthandPermissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand.ToLower(), permissionType);
                 shorthandPermissions = shorthandPermissions.Select(val => (val.Substring(0, 1).ToUpper() + val.Substring(1))).ToArray();
 
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
@@ -213,8 +214,7 @@ namespace RBAC
 
                 try
                 {
-                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
                     if (yaml.Count() == 0)
                     {
@@ -460,8 +460,7 @@ namespace RBAC
         /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPrincipalByPermissions_Click(object sender, RoutedEventArgs e)
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
             ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
             if (scope == null)
@@ -518,7 +517,7 @@ namespace RBAC
                 return;
             }
 
-            var data = getPrincipalsByPermission(up, vaultsInScope, keysSelected, secretsSelected, certifsSelected);
+            var data = getPrincipalsByPermission(vaultsInScope, keysSelected, secretsSelected, certifsSelected);
             var keys = new List<ListSpResults>();
             var secrets = new List<ListSpResults>();
             var certificates = new List<ListSpResults>();
@@ -527,21 +526,21 @@ namespace RBAC
             var s = data["Secrets"];
             var c = data["Certificates"];
 
-            foreach(var key in k.Keys)
+            foreach (var key in k.Keys)
             {
                 var a = new ListSpResults
                 {
                     Permission = key,
                     KeyVaults = new List<KVsWithPermission>()
                 };
-                foreach(var p in k[key])
+                foreach (var p in k[key])
                 {
                     var toAdd = new KVsWithPermission
                     {
                         VaultName = p.Item1,
                         SecurityPrincipals = new List<SecPrincipals>()
                     };
-                    foreach(var sp in p.Item2)
+                    foreach (var sp in p.Item2)
                     {
                         toAdd.SecurityPrincipals.Add(new SecPrincipals
                         {
@@ -631,18 +630,18 @@ namespace RBAC
             public string Name { get; set; }
             public string Alias { get; set; }
         }
+
         /// <summary>
         /// This method returns the dictionary representing each selected permission and the list of principals with those permissions.
         /// </summary>
-        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="vaultsInScope">The KeyVaults to parse through, or the scope, to generate the principals by permission results</param>
         /// <param name="keysSelected">The list of selected key permissions</param>
         /// <param name="secretsSelected">The list of selected secret permissions</param>
         /// <param name="certifsSelected">The list of selected certificate permissions</param>
         /// <returns>A dictionary with each selected permission, the list of principals that have those permissions, 
         /// and the KeyVault name for which that principal's access policy exists</returns>
-        private Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>> getPrincipalsByPermission(UpdatePoliciesFromYaml up,
-            List<KeyVaultProperties> vaultsInScope, List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected)
+        private Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>> getPrincipalsByPermission(List<KeyVaultProperties> vaultsInScope, 
+            List<string> keysSelected, List<string> secretsSelected, List<string> certifsSelected)
         {
             var principalsByPermission = new Dictionary<string, Dictionary<string, List<Tuple<string, List<PrincipalPermissions>>>>>();
             populatePrincipalDictKeys(keysSelected, secretsSelected, certifsSelected, principalsByPermission);
@@ -651,10 +650,10 @@ namespace RBAC
             {
                 foreach (PrincipalPermissions principal in kv.AccessPolicies)
                 {
-                    up.translateShorthands(principal);
+                    DeserializedYaml.upInstance.translateShorthands(principal);
                     if (keysSelected.Count != 0)
                     {
-                        
+
                         foreach (string key in keysSelected)
                         {
                             List<PrincipalPermissions> keyPrincipals = new List<PrincipalPermissions>();
@@ -672,7 +671,7 @@ namespace RBAC
                                 }
                             }
                         }
-                        
+
                     }
                     if (secretsSelected.Count() != 0)
                     {
@@ -790,8 +789,7 @@ namespace RBAC
 
                 try
                 {
-                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
                     if (yaml.Count() == 0)
                     {
@@ -863,8 +861,7 @@ namespace RBAC
         /// <param name="selected">The list of selected items from the permissions breakdown selected scope dropdown, if applicable</param>
         private void calculatePermissionBreakdown(string scope, List<string> selected)
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
             if (yaml.Count() == 0)
             {
@@ -923,7 +920,6 @@ namespace RBAC
         private Dictionary<string, Dictionary<string, int>> countPermissions(List<KeyVaultProperties> vaultsInScope, string type)
         {
             Dictionary<string, Dictionary<string, int>> usages = new Dictionary<string, Dictionary<string, int>>();
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
 
             if (type == "Permissions")
             {
@@ -935,7 +931,7 @@ namespace RBAC
                 {
                     foreach (PrincipalPermissions principal in kv.AccessPolicies)
                     {
-                        checkForPermissions(up, usages, principal);
+                        checkForPermissions(usages, principal);
                     }
                 }
             }
@@ -949,7 +945,7 @@ namespace RBAC
                 {
                     foreach (PrincipalPermissions principal in kv.AccessPolicies)
                     {
-                        checkForShorthands(up, usages, principal);
+                        checkForShorthands(usages, principal);
                     }
                 }
             }
@@ -974,12 +970,11 @@ namespace RBAC
         /// <summary>
         /// This method counts the occurrences of each permission type and stores the results in a dictionary.
         /// </summary>
-        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="usages">The dictionary that stores the permission breakdown usages for each permission block</param>
         /// <param name="principal">The current PrincipalPermissions object</param>
-        private void checkForPermissions(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
-            up.translateShorthands(principal);
+            DeserializedYaml.upInstance.translateShorthands(principal);
             foreach (string key in principal.PermissionsToKeys)
             {
                 ++usages["keyBreakdown"][key];
@@ -997,15 +992,14 @@ namespace RBAC
         /// <summary>
         /// This method counts the occurrences of each shorthand type and stores the results in a dictionary.
         /// </summary>
-        /// <param name="up">The UpdatePoliciesFromYaml instance</param>
         /// <param name="usages">A dictionary that stores the permission breakdown usages for each permission block</param>
         /// <param name="principal">The current PrincipalPermissions object</param>
-        private void checkForShorthands(UpdatePoliciesFromYaml up, Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
+        private void checkForShorthands(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
-            up.translateShorthands(principal);
+            DeserializedYaml.upInstance.translateShorthands(principal);
             foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
-                var permissions = up.getShorthandPermissions(shorthand, "key");
+                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "key");
                 if (principal.PermissionsToKeys.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["keyBreakdown"][shorthand];
@@ -1014,7 +1008,7 @@ namespace RBAC
 
             foreach (string shorthand in Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray())
             {
-                var permissions = up.getShorthandPermissions(shorthand, "secret");
+                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "secret");
                 if (principal.PermissionsToSecrets.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["secretBreakdown"][shorthand];
@@ -1023,7 +1017,7 @@ namespace RBAC
 
             foreach (string shorthand in Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray())
             {
-                var permissions = up.getShorthandPermissions(shorthand, "certificate");
+                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "certificate");
                 if (principal.PermissionsToCertificates.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["certificateBreakdown"][shorthand];
@@ -1146,8 +1140,7 @@ namespace RBAC
                     MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
             }
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
             if (choice == "KeyVault")
             {
                 foreach (KeyVaultProperties kv in yaml)
@@ -1228,8 +1221,7 @@ namespace RBAC
                 }
 
             }
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
             if (choice == "KeyVault")
             {
                 foreach (KeyVaultProperties kv in yaml)
@@ -1647,16 +1639,15 @@ namespace RBAC
 
         private List<KeyVaultProperties> getScopeKVs(string scope, List<string> selected)
         {
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            var yamlVaults = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
             var ret = new List<KeyVaultProperties>();
             if (scope == "YAML")
             {
-                return yamlVaults;
+                return yaml;
             }
             else if (scope == "KeyVault")
             {
-                foreach (var kv in yamlVaults)
+                foreach (var kv in yaml)
                 {
                     if (selected.Contains(kv.VaultName))
                     {
@@ -1666,7 +1657,7 @@ namespace RBAC
             }
             else if (scope == "ResourceGroup")
             {
-                foreach (var kv in yamlVaults)
+                foreach (var kv in yaml)
                 {
                     if (selected.Contains(kv.ResourceGroupName))
                     {
@@ -1676,7 +1667,7 @@ namespace RBAC
             }
             else if (scope == "Subscription")
             {
-                foreach (var kv in yamlVaults)
+                foreach (var kv in yaml)
                 {
                     if (selected.Contains(kv.SubscriptionId))
                     {
@@ -1763,6 +1754,15 @@ namespace RBAC
             SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
             SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem = null;
         }
+    }
+
+    /// <summary>
+    /// This class creates static instances of UpdatePoliciesFromYaml and the deserialized yaml.
+    /// </summary>
+    public static class DeserializedYaml
+    {
+        public static UpdatePoliciesFromYaml upInstance = new UpdatePoliciesFromYaml(false);
+        public static List<KeyVaultProperties> Yaml = upInstance.deserializeYaml(Constants.YAML_FILE_PATH);
     }
 }
 

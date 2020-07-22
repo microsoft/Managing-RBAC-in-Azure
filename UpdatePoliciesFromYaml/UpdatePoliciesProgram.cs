@@ -10,9 +10,9 @@ namespace RBAC
         /// </summary>
         static void Main(string[] args)
         {
-            runProgram(false);
+            runProgram(args, false);
         }
-        public static List<KeyVaultProperties> runProgram(bool testing)
+        public static List<KeyVaultProperties> runProgram(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
 
@@ -21,8 +21,8 @@ namespace RBAC
             Console.ResetColor();
 
             Console.WriteLine("Reading input files...");
-            ap.verifyFileExtensions(Constants.JSON_FILE_PATH, Constants.YAML_FILE_PATH);
-            JsonInput vaultList = ap.readJsonFile(Constants.JSON_FILE_PATH);
+            ap.verifyFileExtensions(args);
+            JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Grabbing secrets...");
@@ -43,7 +43,7 @@ namespace RBAC
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(testing);
 
             Console.WriteLine("Reading yaml file...");
-            List<KeyVaultProperties> yamlVaults = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yamlVaults = up.deserializeYaml(args[1]);
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Updating key vaults...");

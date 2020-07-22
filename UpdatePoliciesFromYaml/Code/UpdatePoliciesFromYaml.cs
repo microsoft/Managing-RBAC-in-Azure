@@ -26,14 +26,14 @@ namespace RBAC
         /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
         /// </summary>
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
-        /// <param name="yamlPath">The yaml file path specified in the Constants.cs file</param>
-        public List<KeyVaultProperties> deserializeYaml(string yamlPath)
+        /// <param name="yamlDirectory">The directory of the yaml file</param>
+        public List<KeyVaultProperties> deserializeYaml(string yamlDirectory)
         {
             List<KeyVaultProperties> yamlVaults = new List<KeyVaultProperties>();
             try
             {
                 log.Info("Reading YAML file...");
-                string yaml = System.IO.File.ReadAllText(yamlPath);
+                string yaml = System.IO.File.ReadAllText(yamlDirectory);
                 log.Info("YAML successfully read!");
                 log.Info("Deserializing YAML file...");
                 var deserializer = new DeserializerBuilder().Build();

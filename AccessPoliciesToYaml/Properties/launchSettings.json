@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AccessPoliciesToYaml": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml"
+    }
+  }
+}

@@ -17,8 +17,8 @@ namespace RBAC
             Console.ResetColor();
 
             Console.WriteLine("Reading input file...");
-            ap.verifyFileExtensions(Constants.JSON_FILE_PATH, Constants.YAML_FILE_PATH);
-            JsonInput vaultList = ap.readJsonFile(Constants.JSON_FILE_PATH);
+            ap.verifyFileExtensions(args);
+            JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Finished!");
           
             Console.WriteLine("Grabbing secrets...");
@@ -37,7 +37,7 @@ namespace RBAC
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Generating YAML output...");
-            ap.convertToYaml(vaultsRetrieved, Constants.YAML_FILE_PATH);
+            ap.convertToYaml(vaultsRetrieved, args[1]);
             Console.WriteLine("Finished!");
         }
     }

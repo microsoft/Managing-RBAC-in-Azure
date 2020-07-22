@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "UpdatePoliciesFromYaml": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml"
+    }
+  }
+}

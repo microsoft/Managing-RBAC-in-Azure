@@ -49,7 +49,7 @@ namespace RBAC
             {
                 try
                 {
-                    ap.verifyFileExtensions(testCase.testObject[0], testCase.testObject[1]);
+                    ap.verifyFileExtensions(testCase.testObject);
                 }
                 catch
                 {
@@ -68,14 +68,17 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The file path for JSON_FILE_PATH does not have the .json extension."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The file path for YAML_FILE_PATH does not have the .yml extension.")
+                new Testing <string[]> (new string[] {}, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file.json" }, "Missing 1 input file."),
+                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json" }, "Too many input files. Maximum needed is 2."),
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The 1st argument is not a .json file."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The 2nd argument is not a .yml file.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
                 try
                 {
-                    ap.verifyFileExtensions(testCase.testObject[0], testCase.testObject[1]);
+                    ap.verifyFileExtensions(testCase.testObject);
                 }
                 catch (Exception e)
                 {
