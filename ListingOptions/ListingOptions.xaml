@@ -447,7 +447,7 @@
             <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
                   Grid.Column="2" Grid.Row="26"
                   Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed"/>
-            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" Height="700">
+            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" Height="1000">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True">
@@ -460,8 +460,8 @@
                                 TextAlignment="Center" 
                                 FontFamily="Sitka Subheading"
                                 TextDecorations="Underline"/>
-                            
-                            <TextBlock Text="Key Permissions" Padding="10,10,10,10"
+
+                            <TextBlock x:Name="KeyTitle" Text="Key Permissions:" Padding="20,20,20,20"
                                 Background="White"
                                 Foreground="Black"
                                 FontSize="18"
@@ -479,6 +479,7 @@
                                         <Setter Property="FontFamily" Value="Sitka Subheading"/>
                                         <Setter Property="Background" Value="#FF197597"/>
                                         <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     </Style>
                                     <Style TargetType="{x:Type DataGridCell}">
                                         <Setter Property="FontSize" Value="13.5"/>
@@ -490,12 +491,12 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Grid>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
@@ -503,7 +504,7 @@
                                                         <DataGridTemplateColumn Width="200" Header="KeyVault Name">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                                 </DataTemplate>
                                                             </DataGridTemplateColumn.CellTemplate>
                                                         </DataGridTemplateColumn>
@@ -511,25 +512,35 @@
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
                                                                     <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
                                                                         <DataGrid.Columns>
                                                                             <DataGridTemplateColumn Width="150" Header="Type">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
                                                                             <DataGridTemplateColumn Width="225" Header="Name">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
                                                                             <DataGridTemplateColumn Width="225" Header="Alias">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
@@ -545,8 +556,8 @@
                                     </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
-                            
-                            <TextBlock Text="Secret Permissions" Padding="10,10,10,10"
+
+                            <TextBlock x:Name="SecTitle" Text="Secret Permissions:" Padding="20,20,20,20"
                                     Background="White"
                                     Foreground="Black"
                                     FontSize="18"
@@ -564,6 +575,7 @@
                                         <Setter Property="FontFamily" Value="Sitka Subheading"/>
                                         <Setter Property="Background" Value="#FF197597"/>
                                         <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     </Style>
                                     <Style TargetType="{x:Type DataGridCell}">
                                         <Setter Property="FontSize" Value="13.5"/>
@@ -575,12 +587,12 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Grid>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
@@ -588,7 +600,7 @@
                                                         <DataGridTemplateColumn Width="200" Header="KeyVault Name">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                                 </DataTemplate>
                                                             </DataGridTemplateColumn.CellTemplate>
                                                         </DataGridTemplateColumn>
@@ -596,25 +608,35 @@
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
                                                                     <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
                                                                         <DataGrid.Columns>
                                                                             <DataGridTemplateColumn Width="150" Header="Type">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
                                                                             <DataGridTemplateColumn Width="225" Header="Name">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
-                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias" >
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
@@ -631,7 +653,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <TextBlock Text="Certificate Permissions" Padding="10,10,10,10"
+                            <TextBlock x:Name="CertTitle" Text="Certificate Permissions:" Padding="20,20,20,20"
                                     Background="White"
                                     Foreground="Black"
                                     FontSize="18"
@@ -640,32 +662,33 @@
                                     FontFamily="Sitka Subheading"/>
 
                             <DataGrid x:Name="ListSPCertificate" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
-                                  <DataGrid.Resources>
-                                        <Style TargetType="{x:Type DataGridColumnHeader}">
-                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                                <Setter Property="FontSize" Value="16"/>
-                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
-                                                <Setter Property="BorderBrush" Value="Black"/>
-                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
-                                                <Setter Property="Background" Value="#FF197597"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                        </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
-                                                <Setter Property="FontSize" Value="13.5"/>
-                                                <Setter Property="FontFamily" Value="Sitka Text"/>
-                                        </Style>
-                                  </DataGrid.Resources>
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="Permission" Width="200">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Grid>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}"/>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn  Width="800" Header="KeyVaults">
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details" >
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
@@ -673,7 +696,7 @@
                                                         <DataGridTemplateColumn Width="200" Header="KeyVault Name">
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                                 </DataTemplate>
                                                             </DataGridTemplateColumn.CellTemplate>
                                                         </DataGridTemplateColumn>
@@ -681,25 +704,35 @@
                                                             <DataGridTemplateColumn.CellTemplate>
                                                                 <DataTemplate>
                                                                     <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
                                                                         <DataGrid.Columns>
                                                                             <DataGridTemplateColumn Width="150" Header="Type">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Type}"/>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
                                                                             <DataGridTemplateColumn Width="225" Header="Name">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Name}"/>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
                                                                             <DataGridTemplateColumn Width="225" Header="Alias">
                                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                                     <DataTemplate>
-                                                                                        <TextBlock Text="{Binding Alias}"/>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
                                                                                     </DataTemplate>
                                                                                 </DataGridTemplateColumn.CellTemplate>
                                                                             </DataGridTemplateColumn>
