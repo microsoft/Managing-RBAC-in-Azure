@@ -359,7 +359,7 @@
             * The 'Permissions' option sums up each security principal's access to  keys, secrets, and certificates
             </TextBlock>
 
-            <Label Name="MostAccessedTypeLabel" Content="List by security principal or permissions:"
+            <Label Name="MostAccessedTypeLabel" Content="List by security principals or permissions:"
                Grid.Column="0" Grid.Row="20"
                Style="{StaticResource LabelStyleVisible}"/>
 
@@ -816,10 +816,10 @@
                                 <Style TargetType="{x:Type DataGridCell}">
                                     <Setter Property="FontSize" Value="13.5"/>
                                     <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
                                 </Style>
                             </DataGrid.Resources>
                         </DataGrid>
-
                     </StackPanel>
                 </Border>
             </Popup>

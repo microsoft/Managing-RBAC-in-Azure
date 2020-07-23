@@ -1419,7 +1419,7 @@ namespace RBAC
                     col2.Binding = new System.Windows.Data.Binding("name");
                     col2.Width = 187.5;
                     TopSPGrid.Columns.Add(col2);
-
+                    
                     var col3 = new DataGridTextColumn();
                     col3.Header = "Alias";
                     col3.Binding = new System.Windows.Data.Binding("alias");
