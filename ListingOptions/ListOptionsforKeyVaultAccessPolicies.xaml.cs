@@ -1427,11 +1427,7 @@ namespace Managing_RBAC_in_AzureListOptions
             TopSPResults.IsOpen = false;
         }
 
-        /// <summary>
-        /// This method shows how many items were selected on the dropdown.
-        /// </summary>
-        /// <param name="sender">The ComboBox for which you want to display the number of selected items</param>
-        /// <param name="e">The event that occurs when the dropdown closes</param>
+        //REMOVE THIS IN PR, already in other code
         private void dropDownClosedTemplate(object sender, EventArgs e)
         {
             ComboBox dropdown = sender as ComboBox;
@@ -1452,11 +1448,7 @@ namespace Managing_RBAC_in_AzureListOptions
             }
         }
 
-        /// <summary>
-        /// This method gets the list of selected items from the specified dropdown.
-        /// </summary>
-        /// <param name="comboBox">The ComboBox item from which you want to get the selected items</param>
-        /// <returns>A list of the selected items</returns>
+        //REMOVE THIS IN PR, already in other code
         private List<string> getSelectedItemsTemplate(ComboBox comboBox)
         {
             ItemCollection items = comboBox.Items;
@@ -1626,15 +1618,17 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
-            //PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
             ComboBox dropdown = sender as ComboBox;
             if (dropdown.SelectedIndex != -1)
             {
+                PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex = -1;
                 PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
                 PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+
+                PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
+                PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+                PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
             }
-            
         }
 
         /// <summary>
@@ -1644,66 +1638,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            /* ComboBox scopeDropdown = sender as ComboBox;
-             ItemCollection items = scopeDropdown.Items;
-
-             List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyScope(items);
-             int numChecked = selected.Count();
-
-             // Make the ComboBox show how many are selected
-             items.Add(new ComboBoxItem()
-             {
-                 Content = $"{numChecked} selected",
-                 Visibility = Visibility.Collapsed
-             });
-             scopeDropdown.Text = $"{numChecked} selected";
-
-             PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
             dropDownClosedTemplate(sender, e);
-        }
-
-        /// <summary>
-        /// This method gets a list of selected specify scopes
-        /// </summary>
-        /// <param name="items">A collection of items in a combobox</param>
-        private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyScope(ItemCollection items)
-        {
-            List<string> selected = new List<string>();
-            try
-            {
-                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
-                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
-                {
-                    items.RemoveAt(items.Count - 1);
-                }
-            }
-            catch
-            {
-                try
-                {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
-                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
-
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
-                    {
-                        items.RemoveAt(items.Count - 1);
-                    }
-                }
-                catch
-                {
-                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
-                }
-            }
-            foreach (var item in items)
-            {
-                CheckBox checkBox = item as CheckBox;
-                if ((bool)(checkBox.IsChecked))
-                {
-                    selected.Add((string)(checkBox.Content));
-                }
-            }
-            return selected;
         }
 
         /// <summary>
@@ -1727,9 +1662,6 @@ namespace Managing_RBAC_in_AzureListOptions
                 ComboBox potentialSpecifyTypeScope = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
 
                 var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
-
-                //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
-                // List<string> selectedSpecifyTypeScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyTypeScope.Items);
 
                 UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
                 List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
@@ -1923,66 +1855,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            /*ComboBox scopeDropdown = sender as ComboBox;
-            ItemCollection items = scopeDropdown.Items;
-
-            List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyType(items);
-            int numChecked = selected.Count();
-
-            // Make the ComboBox show how many are selected
-            items.Add(new ComboBoxItem()
-            {
-                Content = $"{numChecked} selected",
-                Visibility = Visibility.Collapsed
-            });
-            scopeDropdown.Text = $"{numChecked} selected";
-
-            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
             dropDownClosedTemplate(sender, e);
-        }
-
-        /// <summary>
-        /// This method gets a list of selected security principals
-        /// </summary>
-        /// <param name="items">A list of security principals </param>
-        public List<string> getSelectedPermissionsBySecurityPrincipalSpecifyType(ItemCollection items)
-        {
-            List<string> selected = new List<string>();
-            try
-            {
-                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedItem as ComboBoxItem;
-                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
-                {
-                    items.RemoveAt(items.Count - 1);
-                }
-            }
-            catch
-            {
-                try
-                {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
-                    PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
-
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
-                    {
-                        items.RemoveAt(items.Count - 1);
-                    }
-                }
-                catch
-                {
-                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
-                }
-            }
-            foreach (var item in items)
-            {
-                CheckBox checkBox = item as CheckBox;
-                if ((bool)(checkBox.IsChecked))
-                {
-                    selected.Add((string)(checkBox.Content));
-                }
-            }
-            return selected;
         }
 
         /// <summary>
@@ -2021,6 +1894,9 @@ namespace Managing_RBAC_in_AzureListOptions
         /// </summary>
         public void permissionsBySecurityPrincipalRunMethod()
         {
+            ComboBox specifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+            List<string> selectedSpecifyTypeItems = getSelectedItemsTemplate(specifyType);
+
             if (PermissionsBySecurityPrincipalPopUp.IsOpen)
             {
                 PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
@@ -2031,17 +1907,20 @@ namespace Managing_RBAC_in_AzureListOptions
                 MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-          
+
             if (PermissionsBySecurityPrincipalTypeDropdown.Visibility == Visibility.Hidden
                 || PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            else if (getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
+            else
             {
-                MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                if (selectedSpecifyTypeItems.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
@@ -2052,52 +1931,20 @@ namespace Managing_RBAC_in_AzureListOptions
 
             ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedtype.Content as string;
-            ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
-            List<string> selectedSpecifyTypeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyType.Items);
 
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
             if (scope == "YAML")
-            {                         
+            {
                 if (type == "All")
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
                     var kvs = new List<SecurityPrincipalData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                        {
-                            if ( (sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias) )
-                            {
-                                newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                            }
-                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName) )
-                            {
-                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                            }
-                        }
-                        if(newkv.SecurityPrincipals.Count != 0)
-                        {
-                            kvs.Add(newkv);
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                }
-                else
-                {
-                    var kvs = new List<SecurityPrincipalData>();
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
@@ -2110,8 +1957,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                             else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                             {
-                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                             }
                         }
@@ -2122,17 +1968,46 @@ namespace Managing_RBAC_in_AzureListOptions
                     }
                     getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
-                
+                else
+                {
+                    var kvs = new List<NoTypeData>();
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+                    foreach (KeyVaultProperties kv in yaml)
+                    {
+                        NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                        }
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                    }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
+                }
+
                 return;
             }
 
-
             ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
-            //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
             var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
-      
+
             if (scope == "Subscription")
-            {              
+            {
                 List<string> subscriptions = new List<string>();
 
                 if (type == "All")
@@ -2147,7 +2022,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 subscriptions.Add(kv.SubscriptionId);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false)) ;
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
@@ -2177,7 +2052,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 else
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
-                    var kvs = new List<SecurityPrincipalData>();
+                    var kvs = new List<NoTypeData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2186,21 +2061,21 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 subscriptions.Add(kv.SubscriptionId);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
@@ -2229,7 +2104,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName}: "));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
@@ -2258,7 +2133,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 else
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
-                    var kvs = new List<SecurityPrincipalData>();
+                    var kvs = new List<NoTypeData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2267,21 +2142,21 @@ namespace Managing_RBAC_in_AzureListOptions
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName} "));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
@@ -2295,12 +2170,12 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }
             else if (scope == "KeyVault")
-            {                           
+            {
                 if (type == "All")
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2330,7 +2205,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                             else
                             {
-                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
+                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }, "N/A"));
                                 kvs.Add(newkv);
                             }
                         }
@@ -2341,30 +2216,28 @@ namespace Managing_RBAC_in_AzureListOptions
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
-                    var kvs = new List<SecurityPrincipalData>();
+                    var kvs = new List<NoTypeData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
                         {
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, sp.Alias,
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition); ;
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
                             if (newkv.SecurityPrincipals.Count != 0)
@@ -2373,14 +2246,14 @@ namespace Managing_RBAC_in_AzureListOptions
                             }
                             else
                             {
-                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
                                 kvs.Add(newkv);
                             }
                         }
                     }
                     getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
-            }          
+            }
         }
 
         /// <summary>
@@ -2420,19 +2293,17 @@ namespace Managing_RBAC_in_AzureListOptions
         public TextBlock createDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
-            textBlock.Text = text;      
+            textBlock.Text = text;
             textBlock.Style = (Style)Resources["ChartHeaderStyle"];
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-
-            //  textBlock.Margin = Margins = "0,0,0,10"
-            //  textBlock.FontSize = 22;
             return textBlock;
         }
+
         /// <summary>
         /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns
         /// </summary>
         /// <returns>Data Grid </returns>
-        public DataGrid createDataGrid() {
+        public DataGrid createDataGrid(bool type) {
 
             DataGrid dataGrid = new DataGrid();
             dataGrid.ColumnHeaderStyle = (Style)Resources["DataGridHeaderStyle"];
@@ -2453,15 +2324,23 @@ namespace Managing_RBAC_in_AzureListOptions
             nested.SetBinding(DataGrid.ItemsSourceProperty, new Binding("SecurityPrincipals"));
             nested.SetValue(DataGrid.AutoGenerateColumnsProperty, true);
             nested.SetValue(DataGrid.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
-            nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(175));
+            if (type)
+            {
+                nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(210));
+            }
+            else
+            {
+                nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(175));
+            }
+            
             SPColumn.CellTemplate = new DataTemplate() { VisualTree = nested };
             dataGrid.Columns.Add(SPColumn);
             return dataGrid;
         }
         internal class CustomDG : DataGrid
         {
-            public static readonly DependencyProperty ColumnsProperty = DependencyProperty.Register("Columns", typeof(ObservableCollection<DataGridColumn>), typeof(CustomDG), new FrameworkPropertyMetadata(new ObservableCollection<DataGridColumn>()) );
-            public new ObservableCollection<DataGridColumn> Columns { get { return (ObservableCollection<DataGridColumn>)GetValue(ColumnsProperty); } set {SetValue(ColumnsProperty, value); } }
+            public static readonly DependencyProperty ColumnsProperty = DependencyProperty.Register("Columns", typeof(ObservableCollection<DataGridColumn>), typeof(CustomDG), new FrameworkPropertyMetadata(new ObservableCollection<DataGridColumn>()));
+            public new ObservableCollection<DataGridColumn> Columns { get { return (ObservableCollection<DataGridColumn>)GetValue(ColumnsProperty); } set { SetValue(ColumnsProperty, value); } }
         }
         /// <summary>
         /// This method creates a seperator thats used to seperate grids
@@ -2477,23 +2356,35 @@ namespace Managing_RBAC_in_AzureListOptions
         internal class SecurityPrincipalData
         {
             public string VaultName { get; set; }
-            public List<SPPermissions> SecurityPrincipals {get; set;}
-            
-        }
+            public List<SPPermissions> SecurityPrincipals { get; set; }
 
-        internal class SPPermissions
+        }
+        internal class NoTypeData
+        {
+            public string VaultName { get; set; }
+            public List<NoTypePermissions> SecurityPrincipals { get; set; }
+        }
+        internal class SPPermissions : NoTypePermissions
         {
             public string Type { get; set; }
+
+            public SPPermissions(string displayName, string alias,
+                string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions, string type) : base(displayName, alias, keyPermissions, secretPermissions, certificatePermissions)
+            {
+                this.Type = type;
+            }
+        }
+        internal class NoTypePermissions
+        {
             public string DisplayName { get; set; }
             public string Alias { get; set; }
             public string KeyPermissions { get; set; }
             public string SecretPermissions { get; set; }
             public string CertificatePermissions { get; set; }
-            
-            public SPPermissions(string displayName, string alias,
-                string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions, string type = null)
+
+            public NoTypePermissions(string displayName, string alias,
+                string[] keyPermissions, string[] secretPermissions, string[] certificatePermissions)
             {
-                this.Type = type;
                 this.DisplayName = displayName;
                 this.Alias = alias;
 
@@ -2521,5 +2412,5 @@ namespace Managing_RBAC_in_AzureListOptions
                 this.CertificatePermissions = certificateString;
             }
         }
-}
+    }
 }
