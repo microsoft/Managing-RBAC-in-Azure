@@ -1914,7 +1914,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
         {
-            PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+            PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             PermissionsBySecurityPrincipalPopUp.IsOpen = false;
         }
 
@@ -1925,7 +1925,7 @@ namespace Managing_RBAC_in_AzureListOptions
         {
             if (PermissionsBySecurityPrincipalPopUp.IsOpen)
             {
-                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             }
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
@@ -1960,15 +1960,14 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
             if (scope == "YAML")
-            {             
-                TextBlock yamlTextBlock = createDataGridHeader($"Listing by YAML: ");
-                DataGrid yamlDataGrid = createDataGrid();
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlTextBlock);
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlDataGrid);
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-                
+            {                         
                 if (type == "All")
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Visible);
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -1991,6 +1990,11 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         foreach (PrincipalPermissions sp in kv.AccessPolicies)
@@ -2021,12 +2025,13 @@ namespace Managing_RBAC_in_AzureListOptions
             
       
             if (scope == "Subscription")
-            {
+            {              
                 List<string> subscriptions = new List<string>();
 
                 if (type == "All")
                 {
-                    
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2034,7 +2039,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by Subscription: { kv.SubscriptionId}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2060,6 +2065,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2067,7 +2074,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by Subscription: { kv.SubscriptionId}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
@@ -2097,7 +2104,9 @@ namespace Managing_RBAC_in_AzureListOptions
                 List<string> resourceGroups = new List<string>();
 
                 if (type == "All")
-                {                 
+                {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2105,7 +2114,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by ResourceGroup: {kv.ResourceGroupName}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2131,6 +2140,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2138,7 +2149,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by ResourceGroup: {kv.ResourceGroupName}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName} "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
@@ -2164,13 +2175,14 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }
             else if (scope == "KeyVault")
-            {           
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader("Listing by KeyVaults:"));
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-
+            {                           
                 if (type == "All")
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Visible);
 
                     foreach (KeyVaultProperties kv in yaml)
@@ -2198,6 +2210,11 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
 
                     foreach (KeyVaultProperties kv in yaml)
@@ -2245,6 +2262,15 @@ namespace Managing_RBAC_in_AzureListOptions
             // Will never happen
             return null;
         }
+        public TextBlock createDataGridTitle(string text)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = text;
+            textBlock.Style = (Style)Resources["ChartTitleStyle"];
+            textBlock.HorizontalAlignment = HorizontalAlignment.Center;
+            textBlock.FontSize = 24;
+            return textBlock;
+        }
 
         /// <summary>
         /// This method creates and returns a data grid header with a specified text
@@ -2254,11 +2280,12 @@ namespace Managing_RBAC_in_AzureListOptions
         public TextBlock createDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
-        //  textBlock.Margin = Margins = "0,0,0,10"
-         // textBlock.Style = Style.StaticResource ChartTitleStyle
-            textBlock.Text = text;
+            textBlock.Text = text;      
+            textBlock.Style = (Style)Resources["ChartHeaderStyle"];
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            textBlock.FontSize = 22;
+
+            //  textBlock.Margin = Margins = "0,0,0,10"
+            //  textBlock.FontSize = 22;
             return textBlock;
         }
         /// <summary>
