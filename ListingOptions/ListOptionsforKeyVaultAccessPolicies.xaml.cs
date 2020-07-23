@@ -1427,6 +1427,83 @@ namespace Managing_RBAC_in_AzureListOptions
             TopSPResults.IsOpen = false;
         }
 
+        /// <summary>
+        /// This method shows how many items were selected on the dropdown.
+        /// </summary>
+        /// <param name="sender">The ComboBox for which you want to display the number of selected items</param>
+        /// <param name="e">The event that occurs when the dropdown closes</param>
+        private void dropDownClosedTemplate(object sender, EventArgs e)
+        {
+            ComboBox dropdown = sender as ComboBox;
+            ItemCollection items = dropdown.Items;
+
+            List<string> selected = getSelectedItemsTemplate(dropdown);
+            if (selected != null)
+            {
+                int numChecked = selected.Count();
+
+                // Make the ComboBox show how many are selected
+                items.Add(new ComboBoxItem()
+                {
+                    Content = $"{numChecked} selected",
+                    Visibility = Visibility.Collapsed
+                });
+                dropdown.Text = $"{numChecked} selected";
+            }
+        }
+
+        /// <summary>
+        /// This method gets the list of selected items from the specified dropdown.
+        /// </summary>
+        /// <param name="comboBox">The ComboBox item from which you want to get the selected items</param>
+        /// <returns>A list of the selected items</returns>
+        private List<string> getSelectedItemsTemplate(ComboBox comboBox)
+        {
+            ItemCollection items = comboBox.Items;
+            List<string> selected = new List<string>();
+            try
+            {
+                ComboBoxItem selectedItem = (ComboBoxItem)comboBox.SelectedItem;
+                if (selectedItem != null && selectedItem.Content.ToString() == "YAML")
+                {
+                    return null;
+                }
+                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    ComboBoxItem lastItem = (ComboBoxItem)items.GetItemAt(items.Count - 1);
+                    comboBox.SelectedIndex = -1;
+
+                    if (lastItem.Content.ToString().EndsWith("selected"))
+                    {
+                        items.RemoveAt(items.Count - 1);
+                    }
+                }
+                catch
+                {
+                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
+                }
+            }
+            foreach (var item in items)
+            {
+                CheckBox checkBox = item as CheckBox;
+                if ((bool)(checkBox.IsChecked))
+                {
+                    selected.Add((string)(checkBox.Content));
+                }
+            }
+            return selected;
+        }
+
+
+
+
         // 2. Permissions By Security Principal  ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -1440,9 +1517,11 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Hidden;
 
             PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex = -1;
             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Hidden;
 
             PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+            PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == 0)
@@ -1466,16 +1545,21 @@ namespace Managing_RBAC_in_AzureListOptions
                         throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
                     }
 
+                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
                     if (scope != "YAML")
                     {
                         populatePermissionsBySecurityPrincipalSpecifyScope(yaml);
-                        PermissionsBySecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
-                        PermissionsBySecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
                     }
                     else
                     {
-                        PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
+                        PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Add(new ComboBoxItem()
+                        {
+                            Content = "YAML",
+                            IsSelected = true
+                        });
                     }
+                    PermissionsBySecurityPrincipalSpecifyScopeLabel.Visibility = Visibility.Visible;
+                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex)
                 {
@@ -1495,8 +1579,6 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void populatePermissionsBySecurityPrincipalSpecifyScope(List<KeyVaultProperties> yaml)
         {
-            PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
-
             ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
 
@@ -1544,8 +1626,15 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
-            PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
+            //PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+            //PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
+            ComboBox dropdown = sender as ComboBox;
+            if (dropdown.SelectedIndex != -1)
+            {
+                PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
+                PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+            }
+            
         }
 
         /// <summary>
@@ -1555,22 +1644,23 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            ComboBox scopeDropdown = sender as ComboBox;
-            ItemCollection items = scopeDropdown.Items;
+            /* ComboBox scopeDropdown = sender as ComboBox;
+             ItemCollection items = scopeDropdown.Items;
 
-            List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyScope(items);
-            int numChecked = selected.Count();
+             List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyScope(items);
+             int numChecked = selected.Count();
 
-            // Make the ComboBox show how many are selected
-            items.Add(new ComboBoxItem()
-            {
-                Content = $"{numChecked} selected",
-                Visibility = Visibility.Collapsed
-            });
-            scopeDropdown.Text = $"{numChecked} selected";
+             // Make the ComboBox show how many are selected
+             items.Add(new ComboBoxItem()
+             {
+                 Content = $"{numChecked} selected",
+                 Visibility = Visibility.Collapsed
+             });
+             scopeDropdown.Text = $"{numChecked} selected";
 
-            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+             PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
+             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
+            dropDownClosedTemplate(sender, e);
         }
 
         /// <summary>
@@ -1632,12 +1722,13 @@ namespace Managing_RBAC_in_AzureListOptions
 
                 ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
                 string scope = selectedScope.Content as string;
-                // workin here
 
                 ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
                 ComboBox potentialSpecifyTypeScope = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
 
-                List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
+                var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
+
+                //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
                 // List<string> selectedSpecifyTypeScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyTypeScope.Items);
 
                 UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
@@ -1806,7 +1897,6 @@ namespace Managing_RBAC_in_AzureListOptions
                                     {
                                         items.Add(sp.DisplayName);
                                     }
-
                                 }
                             }
                         }
@@ -1833,7 +1923,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            ComboBox scopeDropdown = sender as ComboBox;
+            /*ComboBox scopeDropdown = sender as ComboBox;
             ItemCollection items = scopeDropdown.Items;
 
             List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyType(items);
@@ -1848,7 +1938,8 @@ namespace Managing_RBAC_in_AzureListOptions
             scopeDropdown.Text = $"{numChecked} selected";
 
             PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
+            dropDownClosedTemplate(sender, e);
         }
 
         /// <summary>
@@ -1918,8 +2009,11 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
         {
-            PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+            PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             PermissionsBySecurityPrincipalPopUp.IsOpen = false;
+
+            // Reset dropdowns
+            PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex = -1;
         }
 
         /// <summary>
@@ -1929,7 +2023,7 @@ namespace Managing_RBAC_in_AzureListOptions
         {
             if (PermissionsBySecurityPrincipalPopUp.IsOpen)
             {
-                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             }
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
@@ -1964,15 +2058,14 @@ namespace Managing_RBAC_in_AzureListOptions
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
             if (scope == "YAML")
-            {             
-                TextBlock yamlTextBlock = createDataGridHeader($"Listing by YAML: ");
-                DataGrid yamlDataGrid = createDataGrid();
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlTextBlock);
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(yamlDataGrid);
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-                
+            {                         
                 if (type == "All")
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Visible);
                     var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
@@ -2001,6 +2094,10 @@ namespace Managing_RBAC_in_AzureListOptions
                 else
                 {
                     var kvs = new List<SecurityPrincipalData>();
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
@@ -2030,16 +2127,17 @@ namespace Managing_RBAC_in_AzureListOptions
 
 
             ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
-            List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
-            
+            //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
+            var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
       
             if (scope == "Subscription")
-            {
+            {              
                 List<string> subscriptions = new List<string>();
 
                 if (type == "All")
                 {
-                    
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2047,7 +2145,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by Subscription: { kv.SubscriptionId}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2073,6 +2171,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2080,7 +2180,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by Subscription: { kv.SubscriptionId}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
@@ -2110,7 +2210,9 @@ namespace Managing_RBAC_in_AzureListOptions
                 List<string> resourceGroups = new List<string>();
 
                 if (type == "All")
-                {                 
+                {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2118,7 +2220,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by ResourceGroup: {kv.ResourceGroupName}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName}: "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2144,6 +2246,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
+
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2151,7 +2255,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($"Listing by ResourceGroup: {kv.ResourceGroupName}"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName} "));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
@@ -2177,13 +2281,14 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
             }
             else if (scope == "KeyVault")
-            {           
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader("Listing by KeyVaults:"));
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-
+            {                           
                 if (type == "All")
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Visible);
 
                     foreach (KeyVaultProperties kv in yaml)
@@ -2211,6 +2316,11 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
 
                     foreach (KeyVaultProperties kv in yaml)
@@ -2258,6 +2368,15 @@ namespace Managing_RBAC_in_AzureListOptions
             // Will never happen
             return null;
         }
+        public TextBlock createDataGridTitle(string text)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = text;
+            textBlock.Style = (Style)Resources["ChartTitleStyle"];
+            textBlock.HorizontalAlignment = HorizontalAlignment.Center;
+            textBlock.FontSize = 24;
+            return textBlock;
+        }
 
         /// <summary>
         /// This method creates and returns a data grid header with a specified text
@@ -2267,11 +2386,12 @@ namespace Managing_RBAC_in_AzureListOptions
         public TextBlock createDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
-        //  textBlock.Margin = Margins = "0,0,0,10"
-         // textBlock.Style = Style.StaticResource ChartTitleStyle
-            textBlock.Text = text;
+            textBlock.Text = text;      
+            textBlock.Style = (Style)Resources["ChartHeaderStyle"];
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            textBlock.FontSize = 22;
+
+            //  textBlock.Margin = Margins = "0,0,0,10"
+            //  textBlock.FontSize = 22;
             return textBlock;
         }
         /// <summary>

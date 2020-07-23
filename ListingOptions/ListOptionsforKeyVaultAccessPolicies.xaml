@@ -125,7 +125,19 @@
             <Setter Property="Margin" Value="0,20,0,0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
+
+        <Style x:Key="ChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
         <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="16"/>
@@ -286,13 +298,9 @@
             <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="1000">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
+                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="750" Width="Auto" Background="White" CanVerticallyScroll="True"
                                     VerticalAlignment="Top">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
-                            <TextBlock Text="Listing Permissions by Security Principal " Style="{StaticResource ChartTitleStyle}"
-                                       Margin="0,20,0,40"
-                                   HorizontalAlignment="Center" FontSize="26" TextDecorations="Underline" VerticalAlignment="Top" />
-                            <Separator x:Name= "PermissionsBySecurityPrincipalTitleSeperator" VerticalAlignment="Top"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
