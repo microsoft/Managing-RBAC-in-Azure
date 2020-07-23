@@ -559,7 +559,7 @@ namespace RBAC
                             {
                                 Type = sp.Type,
                                 Name = sp.DisplayName,
-                                Alias = sp.Alias
+                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
                             });
                         }
                         a.KeyVaults.Add(toAdd);
@@ -594,7 +594,7 @@ namespace RBAC
                             {
                                 Type = sp.Type,
                                 Name = sp.DisplayName,
-                                Alias = sp.Alias
+                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
                             });
                         }
                         a.KeyVaults.Add(toAdd);
@@ -629,7 +629,7 @@ namespace RBAC
                             {
                                 Type = sp.Type,
                                 Name = sp.DisplayName,
-                                Alias = sp.Alias
+                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
                             });
                         }
                         a.KeyVaults.Add(toAdd);
