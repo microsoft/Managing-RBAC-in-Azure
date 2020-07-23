@@ -2120,6 +2120,7 @@ namespace Managing_RBAC_in_AzureListOptions
                             kvs.Add(newkv);
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
                 
                 return;
@@ -2137,7 +2138,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 if (type == "All")
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2150,29 +2151,33 @@ namespace Managing_RBAC_in_AzureListOptions
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
-
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                                 else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                             }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
+                            }
                         }
+                        
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
                 else
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2184,25 +2189,28 @@ namespace Managing_RBAC_in_AzureListOptions
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
-
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
+                            }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
                             }
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
             }
             else if (scope == "ResourceGroup")
@@ -2212,7 +2220,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 if (type == "All")
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2225,29 +2233,32 @@ namespace Managing_RBAC_in_AzureListOptions
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
-
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                                 else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
+                            }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
                             }
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
                 else
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2259,25 +2270,28 @@ namespace Managing_RBAC_in_AzureListOptions
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
-
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
+                            }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
                             }
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
             }
             else if (scope == "KeyVault")
@@ -2290,29 +2304,38 @@ namespace Managing_RBAC_in_AzureListOptions
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
                         {
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, sp.Alias,
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
 
                                 }
                                 else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
-                                    SPPermissions newAddition = new SPPermissions( sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type);
-                                    getLastStackPanelDataGrid().Items.Add(newAddition);
+                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
+                            }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
+                            }
+                            else
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
+                                kvs.Add(newkv);
                             }
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
                 else
                 {
@@ -2322,11 +2345,12 @@ namespace Managing_RBAC_in_AzureListOptions
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
-
+                    var kvs = new List<SecurityPrincipalData>();
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.VaultName))
                         {
+                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
@@ -2343,8 +2367,18 @@ namespace Managing_RBAC_in_AzureListOptions
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
                                 }
                             }
+                            if (newkv.SecurityPrincipals.Count != 0)
+                            {
+                                kvs.Add(newkv);
+                            }
+                            else
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
+                                kvs.Add(newkv);
+                            }
                         }
                     }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
             }          
         }
@@ -2419,46 +2453,6 @@ namespace Managing_RBAC_in_AzureListOptions
             nested.SetBinding(DataGrid.ItemsSourceProperty, new Binding("SecurityPrincipals"));
             nested.SetValue(DataGrid.AutoGenerateColumnsProperty, true);
             nested.SetValue(DataGrid.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
-
-            var columns = new ObservableCollection<DataGridColumn>();
-
-            DataGridTextColumn columnType = new DataGridTextColumn();
-            columnType.Visibility = Visibility.Hidden;
-            columnType.Header = "Type";
-            columnType.Binding = new System.Windows.Data.Binding("type");
-            columnType.Width = 150;
-            columns.Add(columnType);
-
-            DataGridTextColumn columnDisplayName = new DataGridTextColumn();
-            columnDisplayName.Header = "Display Name";
-            columnDisplayName.Binding = new System.Windows.Data.Binding("displayName");
-            columnDisplayName.Width = 150;
-            columns.Add(columnDisplayName);
-
-            DataGridTextColumn columnAlias = new DataGridTextColumn();
-            columnAlias.Header = "Alias";
-            columnAlias.Binding = new System.Windows.Data.Binding("alias");
-            columnAlias.Width = 150;
-            columns.Add(columnAlias);
-          
-            DataGridTextColumn columnKeyPermissions = new DataGridTextColumn();
-            columnKeyPermissions.Header = "Key Permissions";
-            columnKeyPermissions.Binding = new System.Windows.Data.Binding("keyPermissions");
-            columnKeyPermissions.Width = 200;
-            columns.Add(columnKeyPermissions);
-        
-            DataGridTextColumn columnSecretPermissions = new DataGridTextColumn();
-            columnSecretPermissions.Header = "Secret Permissions";
-            columnSecretPermissions.Binding = new System.Windows.Data.Binding("secretPermissions");
-            columnSecretPermissions.Width = 200;
-            columns.Add(columnSecretPermissions);
-
-            DataGridTextColumn columnCertificatePermissions = new DataGridTextColumn();
-            columnCertificatePermissions.Header = "CertificatePermissions";
-            columnCertificatePermissions.Binding = new System.Windows.Data.Binding("certificatePermissions");
-            columnCertificatePermissions.Width = 200;
-            columns.Add(columnCertificatePermissions);
-            nested.SetValue(CustomDG.ColumnsProperty, columns);
             nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(175));
             SPColumn.CellTemplate = new DataTemplate() { VisualTree = nested };
             dataGrid.Columns.Add(SPColumn);
