@@ -13,12 +13,9 @@ using Microsoft.Graph;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Reflection;
-using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Serilog;
+using System.IO;
 
 namespace RBAC
 {
@@ -77,10 +74,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method reads in and deserializes the Json input file.
+        /// This method reads in and deserializes the json input file.
         /// </summary>
-        /// <param name="jsonDirectory">The Json file path</param>
-        /// <returns>A JsonInput object that stores the Json input data</returns>
+        /// <param name="jsonDirectory">The json file path</param>
+        /// <returns>A JsonInput object that stores the json input data</returns>
         public JsonInput readJsonFile(string jsonDirectory)
         {
             log.Info("Reading in Json file....");
@@ -522,7 +519,7 @@ namespace RBAC
             }
             log.Info("Access verified!");
         }
-        
+
         /// <summary>
         /// This method retrieves each of the KeyVaults specified in the vaultList.
         /// </summary>

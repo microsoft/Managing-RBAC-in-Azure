@@ -1,33 +1,26 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Extensions.Azure;
-using Newtonsoft.Json;
-using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using YamlDotNet.Serialization;
 
 namespace RBAC
 {
-    public class UpdatePoliciesFromYamlProgram
+    public class UpdatePoliciesProgram
     {
         /// <summary>
         /// This method reads in the Yaml file with access policy changes and updates these policies in Azure.
         /// </summary>
-        /// <param name="args">Contains the Json directory and Yaml directory</param>
         static void Main(string[] args)
         {
-            run(args, false);
+            runProgram(args, false);
         }
-        public static List<KeyVaultProperties> run(string[] args, bool testing)
+        public static List<KeyVaultProperties> runProgram(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("Refer to 'LogFile.log' for more details should an error be thrown.\n");
+            Console.WriteLine("Refer to 'Config/Log.log' for more details should an error be thrown.\n");
             Console.ResetColor();
 
-            Console.WriteLine("Reading input file...");
+            Console.WriteLine("Reading input files...");
             ap.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Finished!");
