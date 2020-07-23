@@ -125,7 +125,19 @@
             <Setter Property="Margin" Value="0,20,0,0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
+
+        <Style x:Key="ChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
         <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="16"/>
@@ -139,6 +151,15 @@
         <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
             <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
+        </Style>
+        <Style x:Key="DataGridSmallHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
     </Window.Resources>
 
@@ -280,9 +301,6 @@
                         <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
                                     VerticalAlignment="Top">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
-                            <TextBlock Text="Listing Permissions by Security Principal " Style="{StaticResource ChartTitleStyle}" Height="Auto" Margin="0,20,0,40"
-                                   HorizontalAlignment="Center" FontSize="26" TextDecorations="Underline" VerticalAlignment="Top" />
-                            <Separator x:Name= "PermissionsBySecurityPrincipalTitleSeperator" VerticalAlignment="Top"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
