@@ -2308,11 +2308,15 @@ namespace Managing_RBAC_in_AzureListOptions
             DataGrid dataGrid = new DataGrid();
             dataGrid.ColumnHeaderStyle = (Style)Resources["DataGridHeaderStyle"];
             dataGrid.AutoGenerateColumns = false;
+            dataGrid.IsReadOnly = true;
 
             DataGridTextColumn columnKeyVault = new DataGridTextColumn();
             columnKeyVault.Header = "KeyVault";
             columnKeyVault.Binding = new System.Windows.Data.Binding("VaultName");
-            columnKeyVault.Width = 150;
+            columnKeyVault.Width = 250;
+            columnKeyVault.FontSize = 18;
+            columnKeyVault.FontFamily = new FontFamily("Sitka Text");
+            columnKeyVault.FontWeight = FontWeights.Bold;
             dataGrid.Columns.Add(columnKeyVault);
 
             DataGridTemplateColumn SPColumn = new DataGridTemplateColumn();
@@ -2324,6 +2328,8 @@ namespace Managing_RBAC_in_AzureListOptions
             nested.SetBinding(DataGrid.ItemsSourceProperty, new Binding("SecurityPrincipals"));
             nested.SetValue(DataGrid.AutoGenerateColumnsProperty, true);
             nested.SetValue(DataGrid.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
+            nested.SetValue(DataGrid.CellStyleProperty, (Style)Resources["DataGridCellStyle"]);
+            nested.SetValue(DataGrid.IsReadOnlyProperty, true);
             if (type)
             {
                 nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(210));
