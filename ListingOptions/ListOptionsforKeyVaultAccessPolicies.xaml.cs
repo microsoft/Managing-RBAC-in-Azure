@@ -2053,14 +2053,15 @@ namespace Managing_RBAC_in_AzureListOptions
 
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
+
+            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing Assigned Permissions by Security Principal"));
+
             if (scope == "YAML")
             {                         
                 if (type == "All")
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Yaml; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
                     foreach (KeyVaultProperties kv in yaml)
@@ -2084,10 +2085,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by YAML of Type: {type}"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Yaml; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -2123,9 +2122,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 List<string> subscriptions = new List<string>();
 
                 if (type == "All")
-                {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
-
+                {   
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
@@ -2133,9 +2130,8 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Subscription: {kv.SubscriptionId}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
 
@@ -2154,12 +2150,17 @@ namespace Managing_RBAC_in_AzureListOptions
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
                                 }
                             }
+
+                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            {                           
+                              //  PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
+                              //  PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                            }
                         }
                     }
                 }
                 else
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Subscription of Type: {type}"));
 
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -2168,9 +2169,8 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.SubscriptionId}: "));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Subscription: {kv.SubscriptionId}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
                             }
 
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
@@ -2189,8 +2189,13 @@ namespace Managing_RBAC_in_AzureListOptions
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
                                 }
                             }
-                        }
-                    }
+                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            {
+                             //  PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
+                             //  PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                            }
+                        }                     
+                    }                 
                 }
             }
             else if (scope == "ResourceGroup")
@@ -2199,7 +2204,6 @@ namespace Managing_RBAC_in_AzureListOptions
 
                 if (type == "All")
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
 
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -2208,10 +2212,9 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName}: "));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Resource Group: {kv.ResourceGroupName}; Type: {type}:"));            
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
-                                gridColumnToggleVisibility("Type", Visibility.Visible);
+                                gridColumnToggleVisibility("Type", Visibility.Visible);                            
                             }
 
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
@@ -2229,12 +2232,17 @@ namespace Managing_RBAC_in_AzureListOptions
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
                                 }
                             }
+
+                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            {                            
+                                PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid()); 
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                            }
                         }
                     }
                 }
                 else
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by Resource Group of Type: {type}"));
 
                     foreach (KeyVaultProperties kv in yaml)
                     {
@@ -2243,9 +2251,9 @@ namespace Managing_RBAC_in_AzureListOptions
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" {kv.ResourceGroupName} "));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
+                                gridColumnToggleVisibility("Type", Visibility.Visible);                             
                             }
 
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
@@ -2263,6 +2271,11 @@ namespace Managing_RBAC_in_AzureListOptions
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates);
                                     getLastStackPanelDataGrid().Items.Add(newAddition);
                                 }
+                            }
+                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            {
+                                PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
                             }
                         }
                     }
@@ -2272,10 +2285,8 @@ namespace Managing_RBAC_in_AzureListOptions
             {                           
                 if (type == "All")
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" KeyVaults; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
 
@@ -2304,10 +2315,8 @@ namespace Managing_RBAC_in_AzureListOptions
                 }
                 else
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing by KeyVaults of Type: {type} "));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader(""));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" KeyVaults; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid());
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(seperateDataGrids());
 
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
 
@@ -2343,18 +2352,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <returns>Last added datagrid.</returns>
         public DataGrid getLastStackPanelDataGrid()
         {
-            int start = 0;
-            int lastIndex = PermissionsBySecurityPrincipalStackPanel.Children.Count - 2; // cuz last index is seperator
-            foreach (UIElement elem in PermissionsBySecurityPrincipalStackPanel.Children)
-            {
-                if (start == lastIndex)
-                {
-                    return (DataGrid)elem;
-                }
-                start += 1;
-            }
-            // Will never happen
-            return null;
+            return (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[PermissionsBySecurityPrincipalStackPanel.Children.Count - 1];        
         }
         public TextBlock createDataGridTitle(string text)
         {
@@ -2377,11 +2375,18 @@ namespace Managing_RBAC_in_AzureListOptions
             textBlock.Text = text;      
             textBlock.Style = (Style)Resources["ChartHeaderStyle"];
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-
-            //  textBlock.Margin = Margins = "0,0,0,10"
-            //  textBlock.FontSize = 22;
             return textBlock;
         }
+
+        public TextBlock createEmptyDataGridHeader(string text)
+        {
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = text;
+            textBlock.Style = (Style)Resources["EmptyChartHeaderStyle"];
+            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
+            return textBlock;
+        }
+
         /// <summary>
         /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns
         /// </summary>
@@ -2437,17 +2442,7 @@ namespace Managing_RBAC_in_AzureListOptions
             return dataGrid;
         }
 
-        /// <summary>
-        /// This method creates a seperator thats used to seperate grids
-        /// </summary>
-        /// <returns>A Seperator</returns>
-        public LiveCharts.Wpf.Separator seperateDataGrids()
-        {
-            LiveCharts.Wpf.Separator sep = new LiveCharts.Wpf.Separator();
-            sep.VerticalAlignment = VerticalAlignment.Top;
-            return sep;
-        }
-
+        
         public class SecurityPrincipalData
         {
             public string vaultName { get; set; }
