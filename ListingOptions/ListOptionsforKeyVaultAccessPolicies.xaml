@@ -140,6 +140,15 @@
             <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
         </Style>
+        <Style x:Key="DataGridSmallHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
     </Window.Resources>
 
     <Viewbox Stretch="Fill" Height="Auto" Width="Auto">
@@ -274,7 +283,7 @@
                 Grid.Column="0" Grid.Row="9" 
                 Style="{StaticResource RunButton}"/>
 
-            <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="Auto">
+            <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="1000">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                         <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
