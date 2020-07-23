@@ -11,4 +11,8 @@
     <ProjectReference Include="..\AccessPoliciesToYaml\AccessPoliciesToYaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>
