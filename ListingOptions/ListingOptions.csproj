@@ -17,4 +17,8 @@
     <ProjectReference Include="..\UpdatePoliciesFromYaml\UpdatePoliciesFromYaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>
