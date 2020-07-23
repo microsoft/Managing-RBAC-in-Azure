@@ -1423,11 +1423,7 @@ namespace Managing_RBAC_in_AzureListOptions
             TopSPResults.IsOpen = false;
         }
 
-        /// <summary>
-        /// This method shows how many items were selected on the dropdown.
-        /// </summary>
-        /// <param name="sender">The ComboBox for which you want to display the number of selected items</param>
-        /// <param name="e">The event that occurs when the dropdown closes</param>
+        //REMOVE THIS IN PR, already in other code
         private void dropDownClosedTemplate(object sender, EventArgs e)
         {
             ComboBox dropdown = sender as ComboBox;
@@ -1448,11 +1444,7 @@ namespace Managing_RBAC_in_AzureListOptions
             }
         }
 
-        /// <summary>
-        /// This method gets the list of selected items from the specified dropdown.
-        /// </summary>
-        /// <param name="comboBox">The ComboBox item from which you want to get the selected items</param>
-        /// <returns>A list of the selected items</returns>
+        //REMOVE THIS IN PR, already in other code
         private List<string> getSelectedItemsTemplate(ComboBox comboBox)
         {
             ItemCollection items = comboBox.Items;
@@ -1622,15 +1614,17 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
-            //PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
             ComboBox dropdown = sender as ComboBox;
             if (dropdown.SelectedIndex != -1)
             {
+                PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex = -1;
                 PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
                 PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
+
+                PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
+                PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
+                PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
             }
-            
         }
 
         /// <summary>
@@ -1640,66 +1634,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            /* ComboBox scopeDropdown = sender as ComboBox;
-             ItemCollection items = scopeDropdown.Items;
-
-             List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyScope(items);
-             int numChecked = selected.Count();
-
-             // Make the ComboBox show how many are selected
-             items.Add(new ComboBoxItem()
-             {
-                 Content = $"{numChecked} selected",
-                 Visibility = Visibility.Collapsed
-             });
-             scopeDropdown.Text = $"{numChecked} selected";
-
-             PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-             PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
             dropDownClosedTemplate(sender, e);
-        }
-
-        /// <summary>
-        /// This method gets a list of selected specify scopes
-        /// </summary>
-        /// <param name="items">A collection of items in a combobox</param>
-        private List<string> getSelectedPermissionsBySecurityPrincipalSpecifyScope(ItemCollection items)
-        {
-            List<string> selected = new List<string>();
-            try
-            {
-                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedItem as ComboBoxItem;
-                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
-                {
-                    items.RemoveAt(items.Count - 1);
-                }
-            }
-            catch
-            {
-                try
-                {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
-                    PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
-
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
-                    {
-                        items.RemoveAt(items.Count - 1);
-                    }
-                }
-                catch
-                {
-                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
-                }
-            }
-            foreach (var item in items)
-            {
-                CheckBox checkBox = item as CheckBox;
-                if ((bool)(checkBox.IsChecked))
-                {
-                    selected.Add((string)(checkBox.Content));
-                }
-            }
-            return selected;
         }
 
         /// <summary>
@@ -1723,9 +1658,6 @@ namespace Managing_RBAC_in_AzureListOptions
                 ComboBox potentialSpecifyTypeScope = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
 
                 var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
-
-                //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
-                // List<string> selectedSpecifyTypeScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyTypeScope.Items);
 
                 UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
                 List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
@@ -1919,66 +1851,7 @@ namespace Managing_RBAC_in_AzureListOptions
         /// <param name="e">Mouse event</param>
         private void PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed(object sender, EventArgs e)
         {
-            /*ComboBox scopeDropdown = sender as ComboBox;
-            ItemCollection items = scopeDropdown.Items;
-
-            List<string> selected = getSelectedPermissionsBySecurityPrincipalSpecifyType(items);
-            int numChecked = selected.Count();
-
-            // Make the ComboBox show how many are selected
-            items.Add(new ComboBoxItem()
-            {
-                Content = $"{numChecked} selected",
-                Visibility = Visibility.Collapsed
-            });
-            scopeDropdown.Text = $"{numChecked} selected";
-
-            PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-            PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;*/
             dropDownClosedTemplate(sender, e);
-        }
-
-        /// <summary>
-        /// This method gets a list of selected security principals
-        /// </summary>
-        /// <param name="items">A list of security principals </param>
-        public List<string> getSelectedPermissionsBySecurityPrincipalSpecifyType(ItemCollection items)
-        {
-            List<string> selected = new List<string>();
-            try
-            {
-                ComboBoxItem selectedItem = PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedItem as ComboBoxItem;
-                if (selectedItem != null && selectedItem.Content.ToString().EndsWith("selected"))
-                {
-                    items.RemoveAt(items.Count - 1);
-                }
-            }
-            catch
-            {
-                try
-                {
-                    ComboBoxItem lastItem = items.GetItemAt(items.Count - 1) as ComboBoxItem;
-                    PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
-
-                    if (lastItem != null && lastItem.Content.ToString().EndsWith("selected"))
-                    {
-                        items.RemoveAt(items.Count - 1);
-                    }
-                }
-                catch
-                {
-                    // Do nothing, means the last item is a CheckBox and thus no removal is necessary
-                }
-            }
-            foreach (var item in items)
-            {
-                CheckBox checkBox = item as CheckBox;
-                if ((bool)(checkBox.IsChecked))
-                {
-                    selected.Add((string)(checkBox.Content));
-                }
-            }
-            return selected;
         }
 
         /// <summary>
@@ -2017,6 +1890,9 @@ namespace Managing_RBAC_in_AzureListOptions
         /// </summary>
         public void permissionsBySecurityPrincipalRunMethod()
         {
+            ComboBox specifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+            List<string> selectedSpecifyTypeItems = getSelectedItemsTemplate(specifyType);
+
             if (PermissionsBySecurityPrincipalPopUp.IsOpen)
             {
                 PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(3, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
@@ -2027,17 +1903,20 @@ namespace Managing_RBAC_in_AzureListOptions
                 MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-          
+
             if (PermissionsBySecurityPrincipalTypeDropdown.Visibility == Visibility.Hidden
                 || PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            else if (getSelectedPermissionsBySecurityPrincipalSpecifyType(PermissionsBySecurityPrincipalSpecifyTypeDropdown.Items).Count == 0)
+            else
             {
-                MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                if (selectedSpecifyTypeItems.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
@@ -2048,8 +1927,6 @@ namespace Managing_RBAC_in_AzureListOptions
 
             ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedtype.Content as string;
-            ComboBox potentialSpecifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
-            List<string> selectedSpecifyTypeItems = getSelectedPermissionsBySecurityPrincipalSpecifyType(potentialSpecifyType.Items);
 
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
 
@@ -2109,9 +1986,7 @@ namespace Managing_RBAC_in_AzureListOptions
                 return;
             }
 
-
             ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
-            //List<string> selectedSpecifyScopeItems = getSelectedPermissionsBySecurityPrincipalSpecifyScope(potentialSpecifyScope.Items);
             var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
       
             if (scope == "Subscription")
@@ -2348,13 +2223,12 @@ namespace Managing_RBAC_in_AzureListOptions
         public TextBlock createDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
-        //  textBlock.Margin = Margins = "0,0,0,10"
-         // textBlock.Style = Style.StaticResource ChartTitleStyle
             textBlock.Text = text;
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
             textBlock.FontSize = 22;
             return textBlock;
         }
+
         /// <summary>
         /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns
         /// </summary>
