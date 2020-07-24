@@ -175,16 +175,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-
-                <Popup Name="InputDirectories" Style="{StaticResource PopupStyle}" IsOpen="True" Height="625" Width="1000">
-                    <Border BorderThickness="0.3" BorderBrush="#FFE0E0E0">
-                        <StackPanel Background="White">
-                            <Label Content="Please paste the YamlOutput.yml file path:" Style="{StaticResource LabelStyleDirectory}"/>
-                            <TextBox Name="YamlDir" Margin="25,5,0,0" Width="500" Height="40" Text="../../../../Config/YamlOutput.yml" HorizontalAlignment="Left"/>
-                            <Button Name="InputDirectoryRun" Content="Go" Margin="25,10,0,0" Style="{StaticResource RunButton}"/>
-                        </StackPanel>
-                    </Border>
-                </Popup>
           
 
 
