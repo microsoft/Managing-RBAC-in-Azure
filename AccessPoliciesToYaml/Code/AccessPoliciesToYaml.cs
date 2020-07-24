@@ -44,15 +44,19 @@ namespace RBAC
             {
                 if (args.Length == 0 || args == null)
                 {
-                    throw new Exception("Missing 2 input files.");
+                    throw new Exception("Missing 3 input files.");
                 }
                 if (args.Length == 1)
                 {
+                    throw new Exception("Missing 2 input files.");
+                }
+                if (args.Length == 2)
+                {
                     throw new Exception("Missing 1 input file.");
                 }
-                if (args.Length > 2)
+                if (args.Length > 3)
                 {
-                    throw new Exception("Too many input files. Maximum needed is 2.");
+                    throw new Exception("Too many input files. Maximum needed is 3.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
@@ -62,13 +66,23 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
+                if (!System.IO.Directory.Exists(args[3]))
+                {
+                    throw new Exception("The 3rd argument is not a valid path.");
+                } 
+                else
+                {
+                    //set the log file here
+                    
+                }
+
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
                 log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
-                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
+                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and add your file path to the yaml file.");
                 Exit(e.Message);
             }
         }
