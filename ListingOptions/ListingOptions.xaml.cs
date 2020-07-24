@@ -1897,8 +1897,8 @@ namespace RBAC
                 {
                     MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex = -1;
-                    PermissionsBySecurityPrincipalScopeLabel.Visibility = Visibility.Hidden;
-                    PermissionsBySecurityPrincipalScopeDropdown.Visibility = Visibility.Hidden;
+                    //  PermissionsBySecurityPrincipalScopeLabel.Visibility = Visibility.Hidden;
+                    //  PermissionsBySecurityPrincipalScopeDropdown.Visibility = Visibility.Hidden;
                     PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
                 }
             }
@@ -2281,9 +2281,8 @@ namespace RBAC
             {
                 if (type == "All")
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Yaml; Type: {type}:"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
                     var kvs = new List<SecurityPrincipalData>();
@@ -2313,7 +2312,7 @@ namespace RBAC
                 else
                 {
 
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Yaml; Type: {type}:"));                   
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));                   
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                     var kvs = new List<NoTypeData>();
 
@@ -2363,7 +2362,7 @@ namespace RBAC
                             if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Subscription: {kv.SubscriptionId}; Type: {type}:"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false)) ;
 
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2410,7 +2409,7 @@ namespace RBAC
                             {
                                 subscriptions.Add(kv.SubscriptionId);
 
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Subscription: {kv.SubscriptionId}; Type: {type}:"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                             }
                             NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
@@ -2458,7 +2457,7 @@ namespace RBAC
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Resource Group: {kv.ResourceGroupName}; Type: {type}:"));            
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));            
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
                                 gridColumnToggleVisibility("Type", Visibility.Visible);                            
                             }
@@ -2501,7 +2500,7 @@ namespace RBAC
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
                                 gridColumnToggleVisibility("Type", Visibility.Visible);                             
                             }
@@ -2542,7 +2541,7 @@ namespace RBAC
                 if (type == "All")
                 {
 
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" KeyVaults; Type: {type}:"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
 
                     gridColumnToggleVisibility("Type", Visibility.Visible);
@@ -2581,7 +2580,7 @@ namespace RBAC
                 }
                 else
                 {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" KeyVaults; Type: {type}:"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
                     PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
 
                     gridColumnToggleVisibility("Type", Visibility.Hidden);
