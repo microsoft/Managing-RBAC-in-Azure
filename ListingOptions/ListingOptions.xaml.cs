@@ -2449,7 +2449,6 @@ namespace RBAC
                 if (type == "All")
                 {
                     var kvs = new List<SecurityPrincipalData>();
-
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2457,9 +2456,9 @@ namespace RBAC
                             if (resourceGroups.Contains(kv.ResourceGroupName) == false)
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));            
+                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-                                gridColumnToggleVisibility("Type", Visibility.Visible);                            
+                                gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
 
                             SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
@@ -2467,25 +2466,26 @@ namespace RBAC
                             {
                                 if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
+                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                                 else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                             }
+
                             if (newkv.SecurityPrincipals.Count == 0)
                             {
                                 try
                                 {
                                     PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));                                
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
                                 }
-                                catch 
-                                {                                                                   
-                                }                              
+                                catch
+                                {
+                                }
                             }
                             else if (newkv.SecurityPrincipals.Count != 0)
                             {
@@ -2500,7 +2500,7 @@ namespace RBAC
                             {
 
                             }
-                        }                     
+                        }
                     }
                 }
                 else
@@ -2515,7 +2515,7 @@ namespace RBAC
                                 resourceGroups.Add(kv.ResourceGroupName);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-                                gridColumnToggleVisibility("Type", Visibility.Visible);                             
+                                gridColumnToggleVisibility("Type", Visibility.Visible);
                             }
 
                             NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
@@ -2523,13 +2523,13 @@ namespace RBAC
                             {
                                 if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, sp.Alias,
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                                 else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions( sp.DisplayName, "N/A",
+                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
@@ -2555,7 +2555,6 @@ namespace RBAC
                             }
                             catch
                             {
-
                             }
                         }
                     }
