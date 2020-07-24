@@ -2449,7 +2449,7 @@ namespace RBAC
                 if (type == "All")
                 {
                     var kvs = new List<SecurityPrincipalData>();
-
+                    SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = "dummy", SecurityPrincipals = new List<SPPermissions>() }; //dummy
                     foreach (KeyVaultProperties kv in yaml)
                     {
                         if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
@@ -2458,34 +2458,33 @@ namespace RBAC
                             {
                                 resourceGroups.Add(kv.ResourceGroupName);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));            
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-                                gridColumnToggleVisibility("Type", Visibility.Visible);                            
-                            }
 
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                                newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                                foreach (PrincipalPermissions sp in kv.AccessPolicies)
                                 {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                                else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions( sp.DisplayName, "N/A",
+                                    if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                                    {
+                                        newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                                    }
+                                    else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                    {
+                                        newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
+                                            sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                                    }
+                                }                            
+                                if (newkv.SecurityPrincipals.Count != 0)
+                                {
+                                    kvs.Add(newkv);
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
+                                    gridColumnToggleVisibility("Type", Visibility.Visible);
                                 }
-                            }
-                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
-                            {
-                                //PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid()); 
-                              //PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
-                            }
 
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
+                                if (newkv.SecurityPrincipals.Count == 0)
+                                {
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                                }
+                            }                       
                         }
                     }
                     getLastStackPanelDataGrid().ItemsSource = kvs;
