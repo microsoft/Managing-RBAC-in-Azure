@@ -51,10 +51,9 @@ namespace RBAC
                 {
                     ap.verifyFileExtensions(testCase.testObject);
                 }
-                catch (Exception e)
+                catch
                 {
-                    //Assert.Fail();
-                    Assert.AreEqual(testCase.error, e.Message);
+                    Assert.Fail();
                 }
             }
         }

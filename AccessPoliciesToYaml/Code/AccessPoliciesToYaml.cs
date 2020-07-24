@@ -41,7 +41,6 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
-            log.Info("Checking file extensions...");
             try
             {
                 if (args.Length == 0 || args == null)
@@ -68,17 +67,15 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
+
                 if (!System.IO.Directory.Exists(args[2]))
                 {
                     throw new Exception("The 3rd argument is not a valid path.");
-                } 
+                }
                 else
                 {
-                    //set the log file here
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
-                    
                 }
-
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
