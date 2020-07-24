@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>RBAC</RootNamespace>
+    <StartupObject>RBAC.App</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiveCharts" Version="0.9.7" />
+    <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UpdatePoliciesFromYaml\UpdatePoliciesFromYaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>

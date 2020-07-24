@@ -1,0 +1,891 @@
+﻿<Window x:Class="RBAC.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RBAC"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        WindowStartupLocation="CenterScreen"
+        Title="ListingOptions" Height="625" Width="1000" Background="#FFE3EBEB">
+
+    <Window.Resources>
+        <Style x:Key="RunButton" TargetType="{x:Type Button}">
+            <Setter Property="Content" Value="Run"/>
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="23"/>
+            <Setter Property="Width" Value="50" />
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="32,10,195,0"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <EventSetter Event="MouseEnter" Handler="Run_MouseEnter"/>
+            <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
+            <EventSetter Event="Click" Handler="Run_Click"/>
+        </Style>
+        
+        <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontStyle" Value="Normal"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Margin" Value="33,0,10,0"/>
+            <Setter Property="Width" Value="250"/>
+        </Style>
+
+        <Style x:Key="ComboBoxStyleHidden" TargetType="{x:Type ComboBox}">
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontStyle" Value="Normal"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Margin" Value="5,0,10,0"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="Visibility" Value="Hidden"/>
+        </Style>
+
+        <Style x:Key="FiltersStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="20,20,0,0"/>
+        </Style>
+
+        <Style x:Key="LabelStyleVisible" TargetType="{x:Type Label}">
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Margin" Value="28,0,0,0"/>
+        </Style>
+
+        <Style x:Key="LabelStyleHidden" TargetType="{x:Type Label}">
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Visibility" Value="Hidden"/>
+        </Style>
+
+        <Style x:Key="PopupStyle" TargetType="{x:Type Popup}">
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Placement" Value="Center"/>
+        </Style>
+        <Style x:Key="ClosePopupButton" TargetType="{x:Type Button}">
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="FontFamily" Value="Century Gothic"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Content" Value="x"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Padding" Value="10, 0, 10, 0"/>
+            <Setter Property="Foreground" Value="DimGray"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+        </Style>
+
+        <Style x:Key="TitleStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
+            <Setter Property="Margin" Value="0,15,0,0"/>
+        </Style>
+
+        <Style x:Key="BreakdownChartStyle" TargetType="lvc:PieChart">
+            <Setter Property="Hoverable" Value="True"/>
+            <Setter Property="LegendLocation" Value="Right"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Height" Value="375"/>
+            <Setter Property="Width" Value="575"/>
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,90,0,40"/>
+        </Style>
+
+        <Style x:Key="ChartTitleStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
+        </Style>
+        <Style x:Key="ChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <Style x:Key="EmptyChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+
+        <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+        </Style>
+        <Style x:Key="DataGridSmallHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+    </Window.Resources>
+
+    <Viewbox Stretch="Fill" Height="Auto" Width="Auto">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Name="Header" Text="Listing Options for KeyVault Access Policies" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="6" Style="{StaticResource TitleStyle}"/>
+
+            <!-- #1 Shorthand List Option-->
+            <TextBlock Name ="ShorthandList" Text="1. List Permissions by Shorthand." 
+                   Grid.Column="0" Grid.Row="2"
+                   Style="{StaticResource FiltersStyle}"/>
+
+            <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
+                Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
+                Style="{StaticResource LabelStyleVisible}"/>
+
+
+            <ComboBox Name ="ShorthandPermissionTypesDropdown" 
+                  Grid.Column="0" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
+                  SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
+                <ComboBoxItem Content="Key Permissions"/>
+                <ComboBoxItem Content="Secret Permissions"/>
+                <ComboBoxItem Content="Certificate Permissions"/>
+            </ComboBox>
+
+            <Button Name ="ShorthandPermissionsRun" 
+                Grid.Column="0" Grid.Row="5"
+                Style="{StaticResource RunButton}"/>
+
+            <Label Name="ShorthandPermissionsLabel" Content="Choose your shorthand:" 
+               Grid.Column="1" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
+               Visibility="Hidden"/>
+
+
+            <ComboBox Name="ShorthandPermissionsDropdown"
+                  Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
+                  SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
+
+            <Popup Name="ShorthandPermissionsTranslation" Style="{StaticResource PopupStyle}">
+                <Border BorderThickness="0.3" Height="Auto" Width="320" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="ShorthandTranslationStackPanel" Height="Auto" Width="320" Background="White">
+                        <Button Name="ClosePopUp" Style="{StaticResource ClosePopupButton}" Click="CloseShorthandPermissionsTranslation_Click"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <!-- #2 Security Principal List Option-->
+            <TextBlock Name="PermissionsBySecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal."
+                   Grid.Column ="0" Grid.Row="6"
+                   Style="{StaticResource FiltersStyle}"/>
+
+            <Label Name="PermissionsBySecurityPrincipalScopeLabel" Content="Choose your scope:"
+               Grid.Column="0" Grid.Row="7" Style="{StaticResource LabelStyleVisible}"/>
+            <ComboBox Name="PermissionsBySecurityPrincipalScopeDropdown" 
+                  Grid.Column ="0" Grid.Row="8"
+                  Style="{StaticResource ComboBoxStyleVisible}"   
+                  SelectionChanged="PermissionsBySecurityPrincipalScopeDropdown_SelectionChanged">
+                <ComboBoxItem Content="YAML"/>
+                <ComboBoxItem Content="Subscription"/>
+                <ComboBoxItem Content="ResourceGroup"/>
+                <ComboBoxItem Content="KeyVault"/>
+            </ComboBox>
+
+
+            <Label Name="PermissionsBySecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
+               Grid.Column="1" Grid.Row="7" 
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyScopeDropdown"
+                  Grid.Column="1" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed"
+                      SelectionChanged="PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
+
+
+            <Label Name="PermissionsBySecurityPrincipalTypeLabel" Content="Choose the type:"
+               Grid.Column="2" Grid.Row="7"
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PermissionsBySecurityPrincipalTypeDropdown" 
+                  Grid.Column="2" Grid.Row="8"
+                  Style="{StaticResource ComboBoxStyleHidden}"  SelectionChanged="PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged"> 
+                <ComboBoxItem Content="All"/>
+                <ComboBoxItem Content="User"/>
+                <ComboBoxItem Content="Group"/>
+                <ComboBoxItem Content="Service Principal" />
+            </ComboBox>
+            <Label Name="PermissionsBySecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
+               Grid.Column="3" Grid.Row="7" 
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyTypeDropdown"
+                  Grid.Column="3" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed" />
+
+            <Button Name ="PermissionsBySecurityPrincipalRun"
+                Grid.Column="0" Grid.Row="9" 
+                Style="{StaticResource RunButton}"/>
+
+            <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="750">
+                <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
+                                    VerticalAlignment="Top">
+                            <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Popup>
+            <!-- #3 Permissions List Option-->
+
+            <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions."
+                   Grid.Column="0" Grid.Row="10"
+                   Style="{StaticResource FiltersStyle}"/>
+
+            <Label Name="PBPScopeLabel" Content="Choose your scope:" Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelStyleVisible}"/>
+            <ComboBox Name="PBPScopeDropdown" Grid.Column="0" Grid.Row="12" Style="{StaticResource ComboBoxStyleVisible}" SelectionChanged="PBPScopeDropdown_SelectionChanged">
+                <ComboBoxItem Content="YAML"/>
+                <ComboBoxItem Content="Subscription"/>
+                <ComboBoxItem Content="ResourceGroup"/>
+                <ComboBoxItem Content="KeyVault"/>
+            </ComboBox>
+
+            <Label Name="PBPSpecifyScopeLabel" Content="Specify the scope:" Grid.Column="1" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PBPSpecifyScopeDropdown" Grid.Column="1" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSpecifyScopeDropdown_DropDownClosed" SelectionChanged="PBPSpecifyScopeDropdown_SelectionChanged"/>
+
+            <Label Name="PBPKeysLabel" Content="Select key permissions:" Grid.Column="2" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name="PBPKeysDropdown" Grid.Column="2" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPKeysDropdown_DropDownClosed"/>
+
+            <Label Name="PBPSecretsLabel" Content="Select secret permissions:" Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+                <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
+
+
+                <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PBPCertificatesDropdown" Grid.Column="4" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPCertificatesDropdown_DropDownClosed"/>
+
+            
+            
+            
+
+            <Button Name ="PermissionsRun" Grid.Column="0" Grid.Row="13" Style="{StaticResource RunButton}"/>
+
+            <!-- #4 Permission Usage Breakdown Option-->
+            <TextBlock Name="PermissionBreakdown" Text="4. Breakdown of Assigned Permissions by Percentage." Style="{StaticResource FiltersStyle}" Grid.Column="0" Grid.Row="14"/>
+
+            <Label Name="BreakdownTypeDropLabel" Content="By permissions or by shorthands?" Style="{StaticResource LabelStyleVisible}" Grid.Column="0" Grid.Row="15"/>
+            <ComboBox Name="BreakdownTypeDropdown" Style="{StaticResource ComboBoxStyleVisible}" Grid.Column="0" Grid.Row="16" SelectionChanged="BreakdownTypeDropdown_SelectionChanged">
+                <ComboBoxItem Content="Permissions"/>
+                <ComboBoxItem Content="Shorthands"/>
+            </ComboBox>
+
+            <Label Name="BreakdownScopeLabel" Content="Choose your scope:" Style="{StaticResource LabelStyleHidden}" Grid.Column="1" Grid.Row="15"/>
+            <ComboBox Name="BreakdownScopeDropdown" Style="{StaticResource ComboBoxStyleHidden}" SelectionChanged="BreakdownScopeDropdown_SelectionChanged" Grid.Column="1" Grid.Row="16">
+                <ComboBoxItem Content="YAML"/>
+                <ComboBoxItem Content="Subscription"/>
+                <ComboBoxItem Content="ResourceGroup"/>
+                <ComboBoxItem Content="KeyVault"/>
+            </ComboBox>
+
+            <Label Name="SelectedScopeBreakdownLabel" Content="Specify the scope:" Style="{StaticResource LabelStyleHidden}" Grid.Column="2" Grid.Row="15"/>
+            <ComboBox Name="SelectedScopeBreakdownDropdown" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SelectedScopeBreakdownDropdown_DropDownClosed" Grid.Column="2" Grid.Row="16"/>
+
+            <Button Name="BreakdownRun" Style="{StaticResource RunButton}" Grid.Column="0" Grid.Row="17"/>
+
+            <!-- Permission Breakdown Results Popup -->
+            <Popup Name="PermissionBreakdownResults" Style="{StaticResource PopupStyle}" Width="Auto" Height="550">
+                <Border BorderThickness="0.5" Width="700" BorderBrush="LightSlateGray">
+                    <Grid Background="White">
+                        <Button Name="CloseBreakdownResults" Style="{StaticResource ClosePopupButton}" Click="CloseBreakdownResults_Click"/>
+
+                        <Grid Width="Auto" Height="525" VerticalAlignment="Bottom">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <StackPanel Name="BreakdownResultsStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True" CanHorizontallyScroll="True">
+                                    <TextBlock Name="ResultsTitle" Text="Breakdown of Assigned Permissions by Percentage" Style="{StaticResource FiltersStyle}" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="22" TextDecorations="Underline"/>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Separator Grid.Row="0" VerticalAlignment="Top"/>
+                                        <TextBlock Grid.Row="0" Text="Key Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="0" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
+                                        <lvc:PieChart Grid.Row="0" Name="PermissionsToKeysChart" Style="{StaticResource BreakdownChartStyle}"/>
+
+                                        <Separator Grid.Row="1" VerticalAlignment="Top"/>
+                                        <TextBlock Grid.Row="1" Text="Secret Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="1" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
+                                        <lvc:PieChart Grid.Row="1" Name="PermissionsToSecretsChart" Style="{StaticResource BreakdownChartStyle}"/>
+
+                                        <Separator Grid.Row="2" VerticalAlignment="Top"/>
+                                        <TextBlock Grid.Row="2" Text="Certificate Permissions" Style="{StaticResource ChartTitleStyle}"/>
+                                        <TextBlock Grid.Row="2" Text="[legend in decreasing order of percentage]" Style="{StaticResource ChartTitleStyle}" Margin="0,43,0,0" FontSize="13"/>
+                                        <lvc:PieChart Grid.Row="2" Name="PermissionsToCertificatesChart" Style="{StaticResource BreakdownChartStyle}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Popup>
+
+            <!-- #5 Most Accessed KeyVaults List Option-->
+            <TextBlock Name="MostAccessed" Text="5. List Top 10 KeyVaults by Permission Access."
+                   Grid.Column="0" Grid.Row="18" 
+                   Style="{StaticResource FiltersStyle}"/>
+
+            <TextBlock Name="MostAccessedExplain"
+               Grid.Column="0" Grid.Row="19"
+               Grid.ColumnSpan="2" FontSize="11" Padding="30,0,0,0" FontFamily="Sitka Subheading">
+            * Security Principals are Users, Groups, Applications, or Service Principals <LineBreak/>
+            * The 'Permissions' option sums up each security principal's access to  keys, secrets, and certificates
+            </TextBlock>
+
+            <Label Name="MostAccessedTypeLabel" Content="List by security principals or permissions:"
+               Grid.Column="0" Grid.Row="20"
+               Style="{StaticResource LabelStyleVisible}"/>
+
+            <ComboBox Name="MostAccessedTypeDropdown"
+                  Grid.Column="0" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleVisible}"
+                  SelectionChanged="MostAccessedTypeDropdown_SelectionChanged">
+                <ComboBoxItem Content="Security Principals"/>
+                <ComboBoxItem Content="Permissions"/>
+            </ComboBox>
+
+            <Label Name="MostAccessedScopeLabel" Content="Choose your scope:"
+               Grid.Column="1" Grid.Row="20"
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name="MostAccessedScopeDropdown"
+                  Grid.Column="1" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
+                  SelectionChanged="MostAccessedScopeDropdown_SelectionChanged">
+                <ComboBoxItem Content="YAML"/>
+                <ComboBoxItem Content="Subscription"/>
+                <ComboBoxItem Content="ResourceGroup"/>
+                <ComboBoxItem Content="KeyVault"/>
+            </ComboBox>
+
+            <Button Name ="MostAccessedRun" 
+                Grid.Column="0" Grid.Row="22"
+                Style="{StaticResource RunButton}"/>
+
+            <Label Name="MostAccessedSpecifyScopeLabel" Content="Specify the Scope:"
+               Grid.Column="2" Grid.Row="20" 
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="MostAccessedSpecifyScopeDropdown"
+                  Grid.Column="2" Grid.Row="21"
+                  Style="{StaticResource ComboBoxStyleHidden}"
+                  DropDownClosed="MostAccessedSpecifyScopeDropdown_DropDownClosed"/>
+
+            <!-- #6 Ranked Security Principal List Option-->
+            <TextBlock Name="SecurityPrincipalAccess"
+
+                   Text="6. List Top 10 Security Principals by Permission Access."
+                   Grid.Column="0" Grid.Row="23"
+                   Style="{StaticResource FiltersStyle}"/>
+            <Label Name="SecurityPrincipalAccessTypeLabel"
+               Content="List by KeyVaults or Permissions:"
+               Grid.Column="0" Grid.Row="25"
+               Style="{StaticResource LabelStyleVisible}"/>
+            <TextBlock Name="SecurityPrincipalAccessExplain"
+               Grid.Column="0" Grid.Row="24"
+               Grid.ColumnSpan="2" FontSize="11" Padding="30,0,0,0" FontFamily="Sitka Subheading">
+            * The 'KeyVault' options sorts by number of KeyVaults accessed <LineBreak/>
+            * The 'Permissions' option sums up individual permissions to  keys, secrets, and certificates
+            </TextBlock>
+            <ComboBox Name="SecurityPrincipalAccessTypeDropdown"
+                  Grid.Column="0" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleVisible}" 
+                  SelectionChanged="SecurityPrincipalAccessTypeDropdown_SelectionChanged">
+                <ComboBoxItem Content="KeyVaults"/>
+                <ComboBoxItem Content="Permissions"/>
+            </ComboBox>
+            
+            <Label Name="SecurityPrincipalAccessScopeLabel"
+               Content="Choose your scope:"
+               Grid.Column="1" Grid.Row="25"
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name="SecurityPrincipalAccessScopeDropdown"
+                  Grid.Column="1" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleHidden}" 
+                  SelectionChanged="SecurityPrincipalAccessScopeDropdown_SelectionChanged">
+                <ComboBoxItem Content="YAML"/>
+                <ComboBoxItem Content="Subscription"/>
+                <ComboBoxItem Content="ResourceGroup"/>
+                <ComboBoxItem Content="KeyVault"/>
+            </ComboBox>
+
+            <Button Name ="SecurityPrincipalAccessRun" 
+                Grid.Column="0" Grid.Row="27"
+                Style="{StaticResource RunButton}" Margin="32,10,195,25"/>
+
+            <Label Name="SecurityPrincipalAccessSpecifyScopeLabel"
+               Content="Specify the scope:"
+
+               Grid.Column="2" Grid.Row="25" 
+               Style="{StaticResource LabelStyleHidden}"/>
+
+            <ComboBox Name ="SecurityPrincipalAccessSpecifyScopeDropdown"
+                  Grid.Column="2" Grid.Row="26"
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed"/>
+            <Popup x:Name="ListSPPopup" Style="{StaticResource PopupStyle}" Height="750">
+                <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="ListSPStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True">
+                            <Button x:Name="CloseListSPPopup" Style="{StaticResource ClosePopupButton}" Click="CloseListSPPopup_Click"/>
+                            <TextBlock Text="Security Principals with Assigned Permissions" Width="Auto" Padding="10,10,10,10"
+                                Background="White"
+                                Foreground="Black"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                TextAlignment="Center" 
+                                FontFamily="Sitka Subheading"
+                                TextDecorations="Underline"/>
+
+                            <TextBlock x:Name="KeyTitle" Text="Key Permissions:" Padding="20,20,20,20"
+                                Background="White"
+                                Foreground="Black"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                TextAlignment="Center" 
+                                FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPKey" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock x:Name="SecTitle" Text="Secret Permissions:" Padding="20,20,20,20"
+                                    Background="White"
+                                    Foreground="Black"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center" 
+                                    FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPSecret" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias" >
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock x:Name="CertTitle" Text="Certificate Permissions:" Padding="20,20,20,20"
+                                    Background="White"
+                                    Foreground="Black"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center" 
+                                    FontFamily="Sitka Subheading"/>
+
+                            <DataGrid x:Name="ListSPCertificate" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="16"/>
+                                        <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                        <Setter Property="Background" Value="#FF197597"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Permission" Width="200">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Permission}" FontWeight="Bold" FontSize="20" FontFamily="Sitka Text"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn  Width="800" Header="Assigned Permission Details" >
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <DataGrid ItemsSource="{Binding KeyVaults}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTemplateColumn Width="200" Header="KeyVault Name">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding VaultName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                        <DataGridTemplateColumn Width="600" Header="Security Principals">
+                                                            <DataGridTemplateColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <DataGrid ItemsSource="{Binding SecurityPrincipals}" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                                                                        <DataGrid.Resources>
+                                                                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                                                                <Setter Property="FontSize" Value="13.5"/>
+                                                                                <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                                                                <Setter Property="BorderBrush" Value="Black"/>
+                                                                                <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                                                                <Setter Property="Background" Value="#FF197597"/>
+                                                                                <Setter Property="Foreground" Value="White"/>
+                                                                            </Style>
+                                                                        </DataGrid.Resources>
+                                                                        <DataGrid.Columns>
+                                                                            <DataGridTemplateColumn Width="150" Header="Type">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Type}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Name">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                            <DataGridTemplateColumn Width="225" Header="Alias">
+                                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <TextBlock Text="{Binding Alias}" TextWrapping="Wrap" Margin="0,0,20,0"/>
+                                                                                    </DataTemplate>
+                                                                                </DataGridTemplateColumn.CellTemplate>
+                                                                            </DataGridTemplateColumn>
+                                                                        </DataGrid.Columns>
+                                                                    </DataGrid>
+                                                                </DataTemplate>
+                                                            </DataGridTemplateColumn.CellTemplate>
+                                                        </DataGridTemplateColumn>
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Popup>
+
+
+
+            <Popup x:Name="TopKVResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
+
+                <Border BorderThickness="0.3" Height="Auto" Width="600" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="TopKVStackPanel" Height="Auto" Width="600" Background="White">
+                        <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
+                        <TextBlock Text="Top 10 KeyVaults by Permission Access" Width="600" Padding="10,10,10,10"
+                            Background="White"
+                            Foreground="Black"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            TextAlignment="Center" 
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
+                        <DataGrid x:Name="TopKVGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.Resources>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                    <Setter Property="BorderBrush" Value="Black"/>
+                                    <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                    <Setter Property="Background" Value="#FF197597"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                                <Style TargetType="{x:Type DataGridCell}">
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontFamily" Value="Sitka Text"/>
+                                </Style>
+                            </DataGrid.Resources>
+                        </DataGrid>
+
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <Popup x:Name="TopSPResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
+
+                <Border BorderThickness="0.3" Height="Auto" Width="750" BorderBrush="#FFE0E0E0">
+                    <StackPanel Name="TopSPStackPanel" Height="Auto" Width="750" Background="White">
+                        <Button Name="CloseTopSPResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopSPResults_Click" />
+                        <TextBlock Text="Top 10 Security Principals by Permission Access" Width="750" Padding="10,10,10,10"
+                            Background="White"
+                            Foreground="Black"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            TextAlignment="Center" 
+                            FontFamily="Sitka Subheading"
+                            TextDecorations="Underline"/>
+                        <DataGrid x:Name="TopSPGrid" IsReadOnly="True" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.Resources>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                                    <Setter Property="BorderBrush" Value="Black"/>
+                                    <Setter Property="FontFamily" Value="Sitka Subheading"/>
+                                    <Setter Property="Background" Value="#FF197597"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Style>
+                                <Style TargetType="{x:Type DataGridCell}">
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontFamily" Value="Sitka Text"/>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+                                </Style>
+                            </DataGrid.Resources>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+
+    </Viewbox>
+
+</Window>

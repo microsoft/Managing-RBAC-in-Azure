@@ -1,17 +1,28 @@
+# Introduction
+Managing-RBAC-in-Azure automates the process of adding, removing, or updating access policies in Azure KeyVault.
+
 # Prerequisites 
-This project uses the following NuGet packages: 
+This project uses the following NuGet packages:
+
+ **AccessPoliciesToYaml:**
 - Newtonsoft.Json
 - YamlDotNet
 - Microsoft.Graph*
-- Microsoft.Azure.Management
-- Azure.Security.KeyVault
+- Microsoft.Azure.Management.Fluent
+- Microsoft.Azure.Management.KeyVault
+- Azure.Security.KeyVault.Secrets
 - Azure.Identity 
 - System.Collections 
+- log4net
+
+**Managing-RBAC-in-Azure.ListingOptions:**
+- LiveCharts
+- LiveCharts.wpf
 
 # Getting Started 
 
-## The AAD Application 
-This project uses an Azure Active Directory Application to retrieve the KeyVaults. 
+## Creating an AAD Application
+This project uses an Azure Active Directory Application (AAD) to retrieve the KeyVaults. 
 1. Create your AAD Application by navigating to the **App registrations** tab within your Azure Active Directory and clicking **New registration**. Fill in 
 the necessary information, and click **Register**. 
 2. Click on the newly-created application. Take note of the Application (client) Id. 
@@ -37,33 +48,42 @@ Follow [these steps](https://docs.microsoft.com/en-us/azure/key-vault/secrets/qu
 for the AAD Application ClientId, ClientKey, and your AAD tenantId. The tenantId can be found in the **Overview** tab within Azure Active Directory. 
 
 ## Creating the MasterConfig.json File 
-This project requires a custom MasterConfig.json file upload. 
+This project requires a custom **MasterConfig.json** file upload. 
 Refer to the [MasterConfigExample.json file](Config/MasterConfigExample.json) for formatting and inputs.
 
 Note that **all** of the fields within **AadAppKeyDetails** are required, but not all fields are required within **Resources** for each Resource object.
 
 There are 3 ways to obtain a list of KeyVaults: 
-- **EXAMPLE 1** - Provide only the SubscriptionId, which gets all of the KeyVaults in the subscription.
-- **EXAMPLE 2** - Provide a SubscriptionId and a ResourceGroupName, which gets all of the KeyVaults within the specified ResourceGroup. 
+1. Provide only the SubscriptionId, which gets all of the KeyVaults in the subscription.
+2. Provide a SubscriptionId and a ResourceGroupName, which gets all of the KeyVaults within the specified ResourceGroup. 
 Note that you can add multiple ResourceGroup names per SubscriptionId and can specify specific KeyVaults if you wish. 
-- **EXAMPLE 3** - Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names, which gets all of the KeyVaults specified in the list.
+3. Provide a SubscriptionId, ResourceGroupName, and a list of KeyVault names, which gets all of the KeyVaults specified in the list.
 
-## Defining your File Paths
-To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the **Project Properties**. 
-Click on the **Debug** tab and within **Application arguments**, add your file path to the json file, enter a space, and add your file path to the yaml file.
+# Phase 1: AccessPoliciesToYaml
+This phase reads in a **MasterConfig.json** file, retrieves the specified KeyVaults and their access policies, and writes the results to **YamlOutput.yml**.
+
+## Running AccessPoliciesToYaml
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. 
+2. Define your file paths by modifying **JSON_FILE_PATH** and **YAML_FILE_PATH** in **AccessPoliciesToYaml/Constants.cs**.
+3. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+
+## Debugging
+We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
+
+# Phase 2: UpdatePolicesFromYaml
+This phase utilizes the generated **YamlOutput.yml** file to propagate any changes to the KeyVault access policies and see those changes reflected in the Azure portal.
 
 ## Security Principals in AAD
 A security principal is an object that is requesting access to Azure resources. It can be represented as a...
-- **User** - an individual 
-- **Group** - a set of users for which all users within that group share a role
-- **Application** - an identity that is automatically managed by Azure
-- **Service Principal** - a security identity that is used by applications or services to access specific Azure resources
+- **User**: an individual 
+- **Group**: a set of users for which all users within that group share a role
+- **Application**: an identity that is automatically managed by Azure
+- **Service Principal**: a security identity that is used by applications or services to access specific Azure resources
 
 In order to add, update, or remove access policies for a Security Principal, the Security Principal must first exist in the associated Azure Active Directory.
 
-# Editing the Access Policies
-The generated YamlOutput.yml file will be used to propagate any changes to the KeyVault access policies. 
-You can do so by editing the YamlOutput.yml directly to...
+## Editing the Access Policies
+You can edit the **YamlOutput.yml** directly to...
 - Add or remove specific permissions for a Security Principal with an existing Access Policy
 - Remove an existing Access Policy for a Security Principal
 - Add a new Access Policy for a Security Principal
@@ -71,33 +91,37 @@ You can do so by editing the YamlOutput.yml directly to...
   
 Refer to the [YamlSample.yml file](Config/YamlSample.yml) for formatting.
   
-## Use of Shorthands
-- We have also made shorthands available for each type of Permission:
-#### Keys:
+### Use of Shorthands
+
+To ease the usability aspect of the automation, we have made shorthands, or common permission groupings, available for each type of permission:
+- ***Keys:***
   - **All**: all Key permissions
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
   - **Storage**: Import, Recover, Backup, and Restore Access
-  - **Crypto**: All cryptographic operations i.e. Decrypt, Encrypt, UnwrapKey, WrapKey, Veryfy, and Sign
-  #### Secrets
+  - **Crypto**: All cryptographic operations i.e. Decrypt, Encrypt, UnwrapKey, WrapKey, Verify, and Sign
+- ***Secrets:***
   - **All**: all Secret permissions
   - **Read**: Get and List Access
   - **Write**: Set and Delete Access
   - **Storage**: Recover, Backup, and Restore Access
-  #### Certificates
+- ***Certificates:***
   - **All**: all Certificate permissions
   - **Read**: Get and List Access
   - **Write**: Update, Create, and Delete Access
   - **Storage**: Import, Recover, Backup, and Restore Access
   - **Management**: ManageContact and all Certificate Authorities Accesses
 
+#### Additional Features
 - **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
-   - Ensure you add a space after the shorthand!
+   - Note that a space must be added after the shorthand keyword.
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-- All of the shorthands are defined in the **Constants.cs** file and can be modified
+- All of the shorthands are defined in **AccessPoliciesToYaml/Constants.cs** and can be modified
 
-## Global Constants and Design Considerations
-In the **Constants.cs** file, we have defined:
+## Design Considerations
+
+### Global Constants
+In **AccessPoliciesToYaml/Constants.cs**, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
   - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users 
@@ -107,6 +131,37 @@ In the **Constants.cs** file, we have defined:
 - all of the shorthand keywords as well as all valid permissions for each permission block
 
 All of these constants can be modified should they need to change.
+
+### DeletePolicies.yml
+A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml** and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
+
+## Running UpdatePoliciesFromYaml
+1. Open the generated **YamlOutput.yml** file from Phase 1 and make any desired changes to the access policies. Once your changes are made, save the file.
+2. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. If your file paths have changed, make sure to modify **JSON_FILE_PATH** and **YAML_FILE_PATH** in  **AccessPoliciesToYaml/Constants.cs**.
+3. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+
+## Debugging
+We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
+
+# Phase 3: Managing-RBAC-in-Azure.ListingOptions
+We have defined 6 listing options for your benefit:
+1. **List Permissions by Shorthand**: translates a shorthand keyword into its respective permissions
+2. **List Assigned Permissions by Security Principal**: lists all of the access policies in regards to a specified security principal
+3. **List Security Principal by Assigned Permissions**: lists all of the security principals with a specified permission
+4. **Breakdown of Assigned Permissions by Percentage**: displays the percentage breakdown of the permissions or shorthands used within a specified scope
+5. **List Top 10 KeyVaults by Permission Access**: lists the 10 vaults with the highest number of granted permissions or the highest number of access policies in a specified scope
+6. **List Top 10 Security Principals by Permission Access**: lists the 10 security principals with the highest number of granted permissions or the highest number of access policies in a specified scope
+
+## Running Managing-RBAC-in-Azure.ListingOptions
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. If your file paths have changed, make sure to modify **JSON_FILE_PATH** and **YAML_FILE_PATH** in **AccessPoliciesToYaml/Constants.cs**.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **Managing-RBAC-in-Azure.ListingOptions** from the dropdown. Click **OK**. Your project is now ready to run.
+
+# Managing-RBAC-in-Azure.Test
+We have provided a series of automated test cases to verify your inputs.
+
+## Running Managing-RBAC-in-Azure.Test
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.Test** project and select **Run Tests**.
 
 # Contributing 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a 

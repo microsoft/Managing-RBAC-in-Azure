@@ -1,10 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Managing_RBAC_in_AzureTest</RootNamespace>
+    <RootNamespace>RBAC</RootNamespace>
 
     <IsPackable>false</IsPackable>
+
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,11 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Code\Managing-RBAC-in-Azure.csproj" />
+    <Folder Include="Output\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="output\" />
+    <ProjectReference Include="..\AccessPoliciesToYaml\AccessPoliciesToYaml.csproj" />
+    <ProjectReference Include="..\UpdatePoliciesFromYaml\UpdatePoliciesFromYaml.csproj" />
   </ItemGroup>
 
 </Project>

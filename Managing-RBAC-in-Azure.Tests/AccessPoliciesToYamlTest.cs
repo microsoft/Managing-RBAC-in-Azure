@@ -1,11 +1,6 @@
-using Microsoft.Azure.Management.BatchAI.Fluent.Models;
-using Microsoft.Azure.Management.Storage.Fluent.Models;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using NSubstitute.Routing.AutoValues;
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,12 +8,12 @@ namespace RBAC
 {
     [TestClass]
     /// <summary>
-    /// This class is the Phase 1 testing class
+    /// This class is the testing class for AccessPoliciesToYaml.
     /// </summary>
     public class AccessPoliciesToYamlTest
     {
         /// <summary>
-        /// This is a wrapper class that is used for testing purposes
+        /// This is a wrapper class that is used for testing purposes.
         /// </summary>
         public class Testing <T>
         {
@@ -37,9 +32,10 @@ namespace RBAC
             }
         }
 
+
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Main args work
+        /// This method verifies that valid file extensions work.
         /// </summary>
         public void TestVerifyFileExtensionsValid()
         {
@@ -64,7 +60,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in invalid Main args are handled
+        /// This method verifies that invalid file extensions are handled.
         /// </summary>
         public void TestVerifyFileExtensionsInvalid()
         {
@@ -93,7 +89,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that a valid Json file is consistent with an expected json file
+        /// This method verifies that a valid Json file is consistent with an expected json file.
         /// </summary>
         public void TestReadJsonFileValid()
         {
@@ -105,7 +101,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Json fields work
+        /// This method verifies that reading in valid Json fields work.
         /// </summary>
         public void TestCheckJsonFieldsValid()
         {
@@ -131,7 +127,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null)
+        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null).
         /// </summary>
         public void TestCheckJsonFieldsInvalid()
         {
@@ -188,7 +184,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in valid Resource fields work
+        /// This method verifies that reading in valid Resource fields work.
         /// </summary>
         public void TestCheckMissingResourceFieldsValid()
         {
@@ -215,7 +211,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading invalid Resource Fields are handled
+        /// This method verifies that reading invalid Resource Fields are handled.
         /// </summary>
         public void TestCheckMissingResourceFieldsInvalid()
         {
@@ -245,10 +241,11 @@ namespace RBAC
                 }
             }
         }
-        /// <summary>
-        /// Tests getVaults() method.
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests the getVaults() method.
+        /// </summary>
         public void TestGetVaults()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
@@ -268,10 +265,11 @@ namespace RBAC
             ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
             Assert.AreEqual(3, ret.Count);
         }
-        /// <summary>
-        /// Tests convertToYaml method
-        /// </summary>
+
         [TestMethod]
+        /// <summary>
+        /// This method tests the convertToYaml() method.
+        /// </summary>
         public void TestConvertToYaml()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
