@@ -28,6 +28,9 @@ namespace RBAC
             InitializeComponent();
             InitializeFile();
         }
+        /// <summary>
+        /// This method opens a file dialog and uses the file specified to initialize the yaml and upInstance.
+        /// </summary>
         public void InitializeFile()
         {
             upInstance = new UpdatePoliciesFromYaml(true);
