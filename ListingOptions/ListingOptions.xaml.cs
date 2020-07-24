@@ -36,9 +36,9 @@ namespace RBAC
             upInstance = new UpdatePoliciesFromYaml(true);
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.Multiselect = false;
-            fileDialog.Filter = "Yaml Files|*.yml";
+            fileDialog.Filter = "YAML Files|*.yml";
             fileDialog.DefaultExt = ".yml";
-            fileDialog.Title = "Select Yaml File";
+            fileDialog.Title = "Select YAML File";
             var dialogOK = fileDialog.ShowDialog();
 
             if (dialogOK == true)
@@ -246,7 +246,7 @@ namespace RBAC
 
                     if (yaml.Count() == 0)
                     {
-                        throw new Exception("Please Select a valid Yaml file.");
+                        throw new Exception("Please Select a valid YAML file.");
                     }
 
                     ComboBox specifyDropdown = PBPSpecifyScopeDropdown as ComboBox;
@@ -1376,7 +1376,7 @@ namespace RBAC
             }
             else if (Yaml == null || Yaml.Count == 0)
             {
-                MessageBox.Show($"Please specify a valid Yaml: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MessageBox.Show($"Please specify a valid YAML: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 InitializeFile();
             }
             else if (btn.Name == "SecurityPrincipalRun")
