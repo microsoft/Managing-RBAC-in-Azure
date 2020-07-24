@@ -45,6 +45,7 @@ namespace RBAC
                 log.Error($"DeserializationFail", e);
                 log.Debug("Refer to the YamlSample.yml (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on " +
                     "formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+                Exit(e.Message);
             }
             try
             {

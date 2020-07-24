@@ -13,6 +13,8 @@ using System.Text;
 using System.ComponentModel;
 using System.Windows.Input;
 using YamlDotNet.Serialization;
+using Microsoft.Win32;
+using Microsoft.Azure.Management.BatchAI.Fluent.Models;
 
 namespace RBAC
 {
@@ -24,8 +26,34 @@ namespace RBAC
         public MainWindow()
         {
             InitializeComponent();
+            InitializeFile();
         }
+        /// <summary>
+        /// This method opens a file dialog and uses the file specified to initialize the yaml and upInstance.
+        /// </summary>
+        public void InitializeFile()
+        {
+            upInstance = new UpdatePoliciesFromYaml(true);
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Multiselect = false;
+            fileDialog.Filter = "YAML Files|*.yml";
+            fileDialog.DefaultExt = ".yml";
+            fileDialog.Title = "Select YAML File";
+            var dialogOK = fileDialog.ShowDialog();
 
+            if (dialogOK == true)
+            {
+                try
+                {
+                    Yaml = upInstance.deserializeYaml(fileDialog.FileName);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show($"{e.Message}", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    InitializeFile();
+                }
+            }
+        }
         // 1. List the Permissions by Shorthand ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -114,7 +142,7 @@ namespace RBAC
                     permissionType = "certificate";
                 }
 
-                string[] shorthandPermissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand.ToLower(), permissionType);
+                string[] shorthandPermissions = upInstance.getShorthandPermissions(shorthand.ToLower(), permissionType);
                 shorthandPermissions = shorthandPermissions.Select(val => (val.Substring(0, 1).ToUpper() + val.Substring(1))).ToArray();
 
                 ShorthandTranslationStackPanel.Children.Add(new TextBlock()
@@ -214,11 +242,11 @@ namespace RBAC
 
                 try
                 {
-                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+                    List<KeyVaultProperties> yaml = Yaml;
 
                     if (yaml.Count() == 0)
                     {
-                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                        throw new Exception("Please Select a valid YAML file.");
                     }
 
                     ComboBox specifyDropdown = PBPSpecifyScopeDropdown as ComboBox;
@@ -228,7 +256,8 @@ namespace RBAC
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show($"{ex.Message}: : No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    InitializeFile();
                     dropdown.SelectedIndex = -1;
                 }
             }
@@ -460,7 +489,7 @@ namespace RBAC
         /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPrincipalByPermissions_Click(object sender, RoutedEventArgs e)
         {
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
 
             ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
             if (scope == null)
@@ -695,7 +724,7 @@ namespace RBAC
             {
                 foreach (PrincipalPermissions principal in kv.AccessPolicies)
                 {
-                    DeserializedYaml.upInstance.translateShorthands(principal);
+                    upInstance.translateShorthands(principal);
                     if (keysSelected.Count != 0)
                     {
 
@@ -837,11 +866,11 @@ namespace RBAC
 
                 try
                 {
-                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+                    List<KeyVaultProperties> yaml = Yaml;
 
                     if (yaml.Count() == 0)
                     {
-                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                        throw new Exception("Please select a valid YAML file");
                     }
 
                     ComboBox specifyDropdown = SelectedScopeBreakdownDropdown as ComboBox;
@@ -858,7 +887,8 @@ namespace RBAC
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show($"{ex.Message}: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    InitializeFile();
                     BreakdownTypeDropdown.SelectedIndex = -1;
                     BreakdownScopeDropdown.SelectedIndex = -1;
                     BreakdownScopeLabel.Visibility = Visibility.Hidden;
@@ -909,7 +939,7 @@ namespace RBAC
         /// <param name="selected">The list of selected items from the permissions breakdown selected scope dropdown, if applicable</param>
         private void calculatePermissionBreakdown(string scope, List<string> selected)
         {
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
 
             if (yaml.Count() == 0)
             {
@@ -1022,7 +1052,7 @@ namespace RBAC
         /// <param name="principal">The current PrincipalPermissions object</param>
         private void checkForPermissions(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
-            DeserializedYaml.upInstance.translateShorthands(principal);
+            upInstance.translateShorthands(principal);
             foreach (string key in principal.PermissionsToKeys)
             {
                 ++usages["keyBreakdown"][key];
@@ -1044,10 +1074,10 @@ namespace RBAC
         /// <param name="principal">The current PrincipalPermissions object</param>
         private void checkForShorthands(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
-            DeserializedYaml.upInstance.translateShorthands(principal);
+            upInstance.translateShorthands(principal);
             foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
-                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "key");
+                var permissions = upInstance.getShorthandPermissions(shorthand, "key");
                 if (principal.PermissionsToKeys.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["keyBreakdown"][shorthand];
@@ -1056,7 +1086,7 @@ namespace RBAC
 
             foreach (string shorthand in Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray())
             {
-                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "secret");
+                var permissions = upInstance.getShorthandPermissions(shorthand, "secret");
                 if (principal.PermissionsToSecrets.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["secretBreakdown"][shorthand];
@@ -1065,7 +1095,7 @@ namespace RBAC
 
             foreach (string shorthand in Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray())
             {
-                var permissions = DeserializedYaml.upInstance.getShorthandPermissions(shorthand, "certificate");
+                var permissions = upInstance.getShorthandPermissions(shorthand, "certificate");
                 if (principal.PermissionsToCertificates.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["certificateBreakdown"][shorthand];
@@ -1188,7 +1218,7 @@ namespace RBAC
                     MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
             }
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
             if (choice == "KeyVault")
             {
                 foreach (KeyVaultProperties kv in yaml)
@@ -1269,7 +1299,7 @@ namespace RBAC
                 }
 
             }
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
             if (choice == "KeyVault")
             {
                 foreach (KeyVaultProperties kv in yaml)
@@ -1343,6 +1373,11 @@ namespace RBAC
                 {
                     ShorthandPermissionsTranslation.IsOpen = true;
                 }
+            }
+            else if (Yaml == null || Yaml.Count == 0)
+            {
+                MessageBox.Show($"Please specify a valid YAML: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                InitializeFile();
             }
             else if (btn.Name == "SecurityPrincipalRun")
             {
@@ -1727,7 +1762,7 @@ namespace RBAC
         /// <returns></returns>
         private List<KeyVaultProperties> getScopeKVs(string scope, List<string> selected)
         {
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
             var ret = new List<KeyVaultProperties>();
             if (scope == "YAML")
             {
@@ -1855,7 +1890,7 @@ namespace RBAC
         private void SecurityPrincipalAccessSpecifyScopeDropdown_DropDownClosed(object sender, EventArgs e)
         {
             dropDownClosedTemplate(sender, e);
-                }
+        }
 
         /// <summary>
         /// This method closes the popup for listing the top Security Principals and closes all dropdowns
@@ -1874,15 +1909,8 @@ namespace RBAC
             SecurityPrincipalAccessSpecifyScopeLabel.Visibility = Visibility.Hidden;
             SecurityPrincipalAccessSpecifyScopeDropdown.SelectedItem = null;
         }
-    }
-
-    /// <summary>
-    /// This class creates static instances of UpdatePoliciesFromYaml and the deserialized yaml.
-    /// </summary>
-    public static class DeserializedYaml
-    {
-        public static UpdatePoliciesFromYaml upInstance = new UpdatePoliciesFromYaml(false);
-        public static List<KeyVaultProperties> Yaml = upInstance.deserializeYaml(Constants.YAML_FILE_PATH);
+        private List<KeyVaultProperties> Yaml { get;  set; }
+        private UpdatePoliciesFromYaml upInstance { get; set; }
     }
 }
 
