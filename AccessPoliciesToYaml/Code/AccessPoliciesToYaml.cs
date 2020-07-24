@@ -16,6 +16,8 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.IO;
+using log4net;
+using log4net.Config;
 
 namespace RBAC
 {
@@ -66,13 +68,14 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
-                if (!System.IO.Directory.Exists(args[3]))
+                if (!System.IO.Directory.Exists(args[2]))
                 {
                     throw new Exception("The 3rd argument is not a valid path.");
                 } 
                 else
                 {
                     //set the log file here
+                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                     
                 }
 

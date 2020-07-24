@@ -43,7 +43,7 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesValid = new List<Testing<string[]>>()
             {
-                new Testing<string[]> (new string[] { "file.json", "file.yml" })
+                new Testing<string[]> (new string[] { "file.json", "file.yml", "../../../output" })
             };
             foreach (Testing<string[]> testCase in testCasesValid)
             {
@@ -51,9 +51,10 @@ namespace RBAC
                 {
                     ap.verifyFileExtensions(testCase.testObject);
                 }
-                catch
+                catch (Exception e)
                 {
-                    Assert.Fail();
+                    //Assert.Fail();
+                    Assert.AreEqual(testCase.error, e.Message);
                 }
             }
         }
@@ -68,11 +69,12 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] {}, "Missing 2 input files."),
-                new Testing <string[]> (new string[] { "file.json" }, "Missing 1 input file."),
-                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json" }, "Too many input files. Maximum needed is 2."),
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml" }, "The 1st argument is not a .json file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml" }, "The 2nd argument is not a .yml file.")
+                new Testing <string[]> (new string[] {}, "Missing 3 input files."),
+                new Testing <string[]> (new string[] { "file.json" }, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file.json", "file2.yml" }, "Missing 1 input file."),
+                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json", "yaml2.json" }, "Too many input files. Maximum needed is 3."),
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml",  "yaml.json" }, "The 1st argument is not a .json file."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml", "yaml.json" }, "The 2nd argument is not a .yml file.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
@@ -94,7 +96,7 @@ namespace RBAC
         public void TestReadJsonFileValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var json = ap.readJsonFile("../../../input/MasterConfig.json");
+            var json = ap.readJsonFile("../../../Input/MasterConfig.json");
             var exp = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
             Assert.IsTrue(exp.Equals(json));
         }
@@ -106,7 +108,7 @@ namespace RBAC
         public void TestCheckJsonFieldsValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            string masterConfig = System.IO.File.ReadAllText("../../../Input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
             List<Testing<JsonInput>> testCasesJsonFieldsValid = new List<Testing<JsonInput>>()
             {
@@ -132,7 +134,7 @@ namespace RBAC
         public void TestCheckJsonFieldsInvalid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);;
-            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            string masterConfig = System.IO.File.ReadAllText("../../../Input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
 
             List<Testing<JsonInput>> testCasesJsonFieldsInvalid = new List<Testing<JsonInput>>()
@@ -189,7 +191,7 @@ namespace RBAC
         public void TestCheckMissingResourceFieldsValid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            string masterConfig = System.IO.File.ReadAllText("../../../Input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
 
             List<Testing<JsonInput>> testMissingResourcesFieldsValid = new List<Testing<JsonInput>>()
@@ -216,7 +218,7 @@ namespace RBAC
         public void TestCheckMissingResourceFieldsInvalid()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            string masterConfig = System.IO.File.ReadAllText("../../../input/MasterConfig.json");
+            string masterConfig = System.IO.File.ReadAllText("../../../Input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
 
             JsonInput missingResourceGroupName = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
@@ -249,7 +251,7 @@ namespace RBAC
         public void TestGetVaults()
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
-            var json = ap.readJsonFile("../../../input/TestActualVaults.json");
+            var json = ap.readJsonFile("../../../Input/TestActualVaults.json");
             var ret = ap.getVaults(json, new TestKVMClient(), new TestGraphClient(new MsalAuthenticationProvider()));
             Assert.AreEqual(4, ret.Count);
 
