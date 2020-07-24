@@ -2476,19 +2476,32 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                             }
-                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            if (newkv.SecurityPrincipals.Count == 0)
                             {
-                                //PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid()); 
-                              //PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                                try
+                                {
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));                                
+                                }
+                                catch 
+                                {                                                                   
+                                }                              
                             }
-
-                            if (newkv.SecurityPrincipals.Count != 0)
+                            else if (newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
-                        }
+
+                            try
+                            {
+                                getLastStackPanelDataGrid().ItemsSource = kvs;
+                            }
+                            catch
+                            {
+
+                            }
+                        }                     
                     }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
                 else
                 {
@@ -2520,22 +2533,34 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
-                            if (getLastStackPanelDataGrid().Items.IsEmpty == true)
+                            if (newkv.SecurityPrincipals.Count == 0)
                             {
-                                //PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                              //PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                                try
+                                {
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
+                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
+                                }
+                                catch
+                                {
+                                }
                             }
-
-                            if (newkv.SecurityPrincipals.Count != 0)
+                            else if (newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
+
+                            try
+                            {
+                                getLastStackPanelDataGrid().ItemsSource = kvs;
+                            }
+                            catch
+                            {
+
+                            }
                         }
                     }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
                 }
             }
-
             else if (scope == "KeyVault")
             {
                 if (type == "All")
@@ -2628,6 +2653,7 @@ namespace RBAC
         {
             return (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[PermissionsBySecurityPrincipalStackPanel.Children.Count - 1];        
         }
+
         public TextBlock createDataGridTitle(string text)
         {
             TextBlock textBlock = new TextBlock();

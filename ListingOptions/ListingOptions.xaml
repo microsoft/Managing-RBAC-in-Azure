@@ -138,7 +138,7 @@
 
         <Style x:Key="EmptyChartHeaderStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontFamily" Value="Sitka Display"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Height" Value="25"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
