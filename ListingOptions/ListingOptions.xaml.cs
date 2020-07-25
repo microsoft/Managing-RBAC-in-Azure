@@ -2301,7 +2301,18 @@ namespace RBAC
                     {
                         if(selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
                         {
-                            if(subscriptions.Contains(kv.SubscriptionId) == false)
+                            if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
+                            {
+                                List<SecurityPrincipalData> copyKvs = new List<SecurityPrincipalData>();
+                                foreach (SecurityPrincipalData elem in kvs)
+                                {
+                                    copyKvs.Add(elem);
+                                }
+                                getLastStackPanelDataGrid().ItemsSource = copyKvs;
+                                kvs = new List<SecurityPrincipalData>();
+                            }
+
+                            if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
@@ -2324,20 +2335,18 @@ namespace RBAC
                                 }
                             }
 
-                            if(getLastStackPanelDataGrid().Items.IsEmpty == true)
-                            {                           
-                              //  PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                              //  PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
-                            }
-
-                            if(newkv.SecurityPrincipals.Count != 0)
+                            if (newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
                         }
-                        
                     }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
+
+                    if (selectedSpecifyScopeItems.Count == 1)
+                    {
+                        getLastStackPanelDataGrid().ItemsSource = kvs;
+                    }
+                    removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
                 }
                 else
                 {
@@ -2610,7 +2619,7 @@ namespace RBAC
                 if (elemInDataGrid.Items.IsEmpty == true)
                 {
                     PermissionsBySecurityPrincipalStackPanel.Children.RemoveAt(index);
-                    PermissionsBySecurityPrincipalStackPanel.Children.Insert(index,createEmptyDataGridHeader($"  - No Permissions of Type: {type} found!"));
+                    PermissionsBySecurityPrincipalStackPanel.Children.Insert(index,createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
                 }
 
                 index += 2;
