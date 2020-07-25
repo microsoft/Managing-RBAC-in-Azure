@@ -8,6 +8,7 @@ using LiveCharts.Wpf;
 using System.Windows.Media;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace RBAC
 {
@@ -2344,9 +2345,20 @@ namespace RBAC
 
                     foreach(KeyVaultProperties kv in yaml)
                     {
-                        if(selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                        if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
                         {
-                            if(subscriptions.Contains(kv.SubscriptionId) == false)
+                            if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
+                            {
+                                List<NoTypeData> copyKvs = new List<NoTypeData>();
+                                foreach(NoTypeData elem in kvs)
+                                {
+                                    copyKvs.Add(elem);
+                                }
+                                getLastStackPanelDataGrid().ItemsSource = copyKvs;
+                                kvs = new List<NoTypeData>();
+                            }
+
+                            if (subscriptions.Contains(kv.SubscriptionId) == false)
                             {
                                 subscriptions.Add(kv.SubscriptionId);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
@@ -2367,19 +2379,19 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
-                            if(getLastStackPanelDataGrid().Items.IsEmpty == true)
-                            {
-                             //  PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                             //  PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
-                            }
-                            
+                                                      
                             if(newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
                         }
                     }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
+                    
+                    if (selectedSpecifyScopeItems.Count == 1)
+                    {
+                        getLastStackPanelDataGrid().ItemsSource = kvs;
+                    }
+                    removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
                 }
             }
             else if(scope == "ResourceGroup")
@@ -2584,7 +2596,29 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method returns the last added datagrid
+        /// This is a helper method that removes all the empty datagrids in the sub scope and replaces them with a textblock.
+        /// </summary>
+        /// <returns> Remove empty datagrid in sub scope.</returns>
+        public void removeEmptySubscriptionsFromStackPanel(int numberOfSubscriptions, String type)
+        {
+            int index = 3;
+
+            for(int i=0; i<numberOfSubscriptions; i++)
+            {
+                DataGrid elemInDataGrid = (DataGrid) PermissionsBySecurityPrincipalStackPanel.Children[index];
+
+                if (elemInDataGrid.Items.IsEmpty == true)
+                {
+                    PermissionsBySecurityPrincipalStackPanel.Children.RemoveAt(index);
+                    PermissionsBySecurityPrincipalStackPanel.Children.Insert(index,createEmptyDataGridHeader($"  - No Permissions of Type: {type} found!"));
+                }
+
+                index += 2;
+            }
+        }
+
+        /// <summary>
+        /// This method returns the last added datagrid.
         /// </summary>
         /// <returns>Last added datagrid.</returns>
         public DataGrid getLastStackPanelDataGrid()
