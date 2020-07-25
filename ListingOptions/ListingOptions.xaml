@@ -309,7 +309,7 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                         <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
                                     VerticalAlignment="Top">
-                            <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Clicked" />
+                            <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Click" />
                         </StackPanel>
                     </ScrollViewer>
                 </Border>

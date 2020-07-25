@@ -1304,7 +1304,7 @@ namespace RBAC
             else if(btn.Name == "PermissionsBySecurityPrincipalRun")
             {
                 // Execute Code            
-                permissionsBySecurityPrincipalRunMethod();
+                RunPermissionsBySecurityPrincipal();
             }
             else if(btn.Name == "PermissionsRun")
             {
@@ -1834,8 +1834,6 @@ namespace RBAC
         }
 
 
-
-
         // 2. Permissions By Security Principal  ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -1856,12 +1854,7 @@ namespace RBAC
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
 
-            if(PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == 0)
-            {
-                PermissionsBySecurityPrincipalTypeLabel.Visibility = Visibility.Visible;
-                PermissionsBySecurityPrincipalTypeDropdown.Visibility = Visibility.Visible;
-            }
-
+            
             if(PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex != -1)
             {
                 ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
@@ -1869,8 +1862,7 @@ namespace RBAC
 
                 try
                 {
-                    UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                    List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
                     if(yaml.Count() == 0)
                     {
@@ -1880,7 +1872,7 @@ namespace RBAC
                     PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
                     if(scope != "YAML")
                     {
-                        populatePermissionsBySecurityPrincipalSpecifyScope(yaml);
+                        populateSelectedScopeTemplate(PermissionsBySecurityPrincipalSpecifyScopeDropdown, scope, yaml);
                     }
                     else
                     {
@@ -1897,60 +1889,12 @@ namespace RBAC
                 {
                     MessageBox.Show($"{ex.Message}", "FileNotFound Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex = -1;
-                    //  PermissionsBySecurityPrincipalScopeLabel.Visibility = Visibility.Hidden;
-                    //  PermissionsBySecurityPrincipalScopeDropdown.Visibility = Visibility.Hidden;
                     PermissionsBySecurityPrincipalSpecifyScopeDropdown.SelectedIndex = -1;
                 }
             }
         }
 
-        /// <summary>
-        /// This method populates the specify scope dropdown
-        /// </summary>
-        /// <param name="sender">Button</param>
-        /// <param name="e">Mouse event</param>
-        private void populatePermissionsBySecurityPrincipalSpecifyScope(List<KeyVaultProperties> yaml)
-        {
-            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
-            string scope = selectedScope.Content as string;
-
-            List<string> items = new List<string>();
-            if(scope == "Subscription")
-            {
-                foreach(KeyVaultProperties kv in yaml)
-                {
-                    if(kv.SubscriptionId.Length == 36 && kv.SubscriptionId.ElementAt(8).Equals('-')
-                        && kv.SubscriptionId.ElementAt(13).Equals('-') && kv.SubscriptionId.ElementAt(18).Equals('-'))
-                    {
-                        items.Add(kv.SubscriptionId);
-                    }
-                }
-            }
-            else if(scope == "ResourceGroup")
-            {
-                foreach(KeyVaultProperties kv in yaml)
-                {
-                    items.Add(kv.ResourceGroupName);
-                }
-            }
-            else
-            {
-                foreach(KeyVaultProperties kv in yaml)
-                {
-                    items.Add(kv.VaultName);
-                }
-            }
-
-            // Only add distinct items
-            foreach(string item in items.Distinct())
-            {
-                PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Add(new CheckBox()
-                {
-                    Content = item
-                });
-            }
-        }
-
+      
         /// <summary>
         /// This method makes the type label/dropdown visible when the specify scope selection changes
         /// </summary>
@@ -1992,8 +1936,8 @@ namespace RBAC
 
             if(PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex != -1)
             {
-                ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
-                string type = selectedtype.Content as string;
+                ComboBoxItem selectedType = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedType.Content as string;
 
                 ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
                 string scope = selectedScope.Content as string;
@@ -2003,8 +1947,7 @@ namespace RBAC
 
                 var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
 
-                UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-                List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+                List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
                 List<string> items = new List<string>();
 
@@ -2220,7 +2163,7 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        private void ClosePermissionsBySecurityPrincipal_Clicked(object sender, RoutedEventArgs e)
+        private void ClosePermissionsBySecurityPrincipal_Click(object sender, RoutedEventArgs e)
         {
             PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             PermissionsBySecurityPrincipalPopUp.IsOpen = false;
@@ -2232,7 +2175,7 @@ namespace RBAC
         /// <summary>
         /// This method populates all the dataGrids and opens the pop up. It executes when the Run button is clicked
         /// </summary>
-        public void permissionsBySecurityPrincipalRunMethod()
+        public void RunPermissionsBySecurityPrincipal()
         {
             ComboBox specifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
             List<string> selectedSpecifyTypeItems = getSelectedItemsTemplate(specifyType);
@@ -2248,8 +2191,7 @@ namespace RBAC
                 return;
             }
 
-            if(PermissionsBySecurityPrincipalTypeDropdown.Visibility == Visibility.Hidden
-                || PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
+            if(PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -2263,8 +2205,7 @@ namespace RBAC
                 }
             }
 
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(false);
-            List<KeyVaultProperties> yaml = up.deserializeYaml(Constants.YAML_FILE_PATH);
+            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
 
             ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
@@ -2651,6 +2592,10 @@ namespace RBAC
             return (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[PermissionsBySecurityPrincipalStackPanel.Children.Count - 1];        
         }
 
+        // <summary>
+        /// This method returns the title of the pop up.
+        /// </summary>
+        /// <returns>Title of popup.</returns>
         public TextBlock createDataGridTitle(string text)
         {
             TextBlock textBlock = new TextBlock();
@@ -2662,7 +2607,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates and returns a data grid header with a specified text
+        /// This method creates and returns a data grid header with a specified text.
         /// </summary>
         /// <param name="text">The Display of the TextBlock </param>
         /// <returns>A TextBlock </returns>
@@ -2675,6 +2620,11 @@ namespace RBAC
             return textBlock;
         }
 
+        /// <summary>
+        /// This method creates and returns a a textbblock that tells the user no permissions were found in a scope
+        /// </summary>
+        /// <param name="text">The Display of the TextBlock </param>
+        /// <returns>A TextBlock </returns>
         public TextBlock createEmptyDataGridHeader(string text)
         {
             TextBlock textBlock = new TextBlock();
