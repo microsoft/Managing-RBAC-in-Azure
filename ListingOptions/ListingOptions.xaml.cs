@@ -148,7 +148,7 @@ namespace RBAC
         // 2. List Assigned Permissions by Security Principal -----------------------------------------------------------------------------------------
 
         /// <summary>
-        /// This method populates the specify scope dropdown and makes the dropdown/label visible when the scope dropdown is changed
+        /// This method populates the specify scope dropdown and makes the dropdown/label visible when the scope dropdown is changed.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -207,7 +207,7 @@ namespace RBAC
 
 
         /// <summary>
-        /// This method makes the type label/dropdown visible when the specify scope selection changes
+        /// This method makes the type label/dropdown visible when the specify scope selection changes.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -227,7 +227,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method makes the specify scope dropdown indicate how many items were selected when the dropdown is close
+        /// This method makes the specify scope dropdown indicate how many items were selected when the dropdown is close.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -237,7 +237,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method populates the specify type dropdown and make the specify type dropdown/label visible when a selection change occurs in the type dropdown
+        /// This method populates the specify type dropdown and make the specify type dropdown/label visible when a selection change occurs in the type dropdown.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -443,7 +443,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method makes the specify type dropdown indicate how many items were selected when the dropdown is closed
+        /// This method makes the specify type dropdown indicate how many items were selected when the dropdown is closed.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -453,7 +453,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method gets the last datagrid, cycles through the columns, and changes the visibility of column with the "header" param name
+        /// This method gets the last datagrid, cycles through the columns, and changes the visibility of column with the "header" param name.
         /// </summary>
         /// <param name="header">The header name of a column </param>
         /// <param name="vis">The visibility of an object</param>
@@ -470,7 +470,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method closes the pop up and clears all datagrid content
+        /// This method closes the pop up and clears all datagrid content.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -484,7 +484,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method populates all the dataGrids and opens the pop up. It executes when the Run button is clicked
+        /// This method populates all the dataGrids and opens the pop up. It executes when the Run button is clicked.
         /// </summary>
         public void RunPermissionsBySecurityPrincipal()
         {
@@ -966,7 +966,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates and returns a a textbblock that tells the user no permissions were found in a scope
+        /// This method creates and returns a a textbblock that tells the user no permissions were found in a scope.
         /// </summary>
         /// <param name="text">The Display of the TextBlock </param>
         /// <returns>A TextBlock </returns>
@@ -980,7 +980,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns
+        /// This method creates and returns data grid with keyvault, type (hidden), displayname, alias, key/secret/certificate permissions columns.
         /// </summary>
         /// <returns>Data Grid </returns>
         public DataGrid createDataGrid(bool type)
