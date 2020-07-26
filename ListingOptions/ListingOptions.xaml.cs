@@ -2341,11 +2341,7 @@ namespace RBAC
                             }
                         }
                     }
-
-                    if (selectedSpecifyScopeItems.Count == 1)
-                    {
-                        getLastStackPanelDataGrid().ItemsSource = kvs;
-                    }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                     removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
                 }
                 else
@@ -2395,11 +2391,7 @@ namespace RBAC
                             }
                         }
                     }
-                    
-                    if (selectedSpecifyScopeItems.Count == 1)
-                    {
-                        getLastStackPanelDataGrid().ItemsSource = kvs;
-                    }
+                    getLastStackPanelDataGrid().ItemsSource = kvs;
                     removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
                 }
             }
