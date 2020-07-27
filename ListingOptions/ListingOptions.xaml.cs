@@ -754,6 +754,7 @@ namespace RBAC
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
                                 gridColumnToggleVisibility("Type", Visibility.Visible);
+                                kvs = new List<SecurityPrincipalData>();
                             }
 
                             SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
@@ -809,7 +810,8 @@ namespace RBAC
                                 resourceGroups.Add(kv.ResourceGroupName);
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
                                 PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-                                gridColumnToggleVisibility("Type", Visibility.Visible);
+                                gridColumnToggleVisibility("Type", Visibility.Hidden);
+                                kvs = new List<NoTypeData>();
                             }
 
                             NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
@@ -1110,7 +1112,10 @@ namespace RBAC
                     keyString += "- " + keyPermissions[i] + "\n";
                 }
                 this.KeyPermissions = keyString;
-
+                if (keyString == "")
+                {
+                    this.KeyPermissions = "N/A";
+                }
 
                 string secretString = "";
                 for (int i = 0; i < secretPermissions.Length; i++)
@@ -1118,7 +1123,10 @@ namespace RBAC
                     secretString += "- " + secretPermissions[i] + "\n";
                 }
                 this.SecretPermissions = secretString;
-
+                if (secretString == "")
+                {
+                    this.SecretPermissions = "N/A";
+                }
 
                 string certificateString = "";
                 for (int i = 0; i < certificatePermissions.Length; i++)
@@ -1126,6 +1134,10 @@ namespace RBAC
                     certificateString += "- " + certificatePermissions[i] + "\n";
                 }
                 this.CertificatePermissions = certificateString;
+                if (certificateString == "")
+                {
+                    this.CertificatePermissions = "N/A";
+                }
             }
         }
 
