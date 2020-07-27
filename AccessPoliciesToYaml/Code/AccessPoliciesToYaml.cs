@@ -696,6 +696,7 @@ namespace RBAC
                 fileWriter.Write(logged);
                 fileWriter.Flush();
                 fileWriter.Close();
+                System.IO.File.Delete($"{path}.log");
             }
             catch (Exception e)
             {
@@ -723,6 +724,7 @@ namespace RBAC
                 fileWriter.Write(logged);
                 fileWriter.Flush();
                 fileWriter.Close();
+                System.IO.File.Delete($"{path}.log");
                 Environment.Exit(1);
             }
             else
