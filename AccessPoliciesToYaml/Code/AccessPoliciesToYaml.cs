@@ -89,6 +89,12 @@ namespace RBAC
                 {
                     Console.WriteLine("Log not created.\n");
                 }
+                FileStream fileStream = System.IO.File.Open($"{args[2]}/Log.log",
+                FileMode.Append, FileAccess.Write);
+                StreamWriter fileWriter = new StreamWriter(fileStream);
+                fileWriter.WriteLine("Able to write stuff to log file. log4net sucks :(");
+                fileWriter.Flush();
+                fileWriter.Close();
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
