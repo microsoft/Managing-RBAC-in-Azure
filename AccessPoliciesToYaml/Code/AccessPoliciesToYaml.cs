@@ -74,7 +74,7 @@ namespace RBAC
                 }
                 else
                 {
-                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Temp";
                 }
                 log.Info("File extensions verified!");
             }
@@ -687,6 +687,15 @@ namespace RBAC
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
                 log.Info("YAML created!");
+                log.Logger.Repository.Shutdown();
+                var path = log4net.GlobalContext.Properties["Log"] as string;
+                var logged = System.IO.File.ReadAllText($"{path}.log");
+                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
+                    FileMode.OpenOrCreate, FileAccess.Write);
+                StreamWriter fileWriter = new StreamWriter(fileStream);
+                fileWriter.Write(logged);
+                fileWriter.Flush();
+                fileWriter.Close();
             }
             catch (Exception e)
             {
@@ -705,6 +714,15 @@ namespace RBAC
             {
                 ConsoleError(message);
                 log.Info("Progam exited.");
+                var path = log4net.GlobalContext.Properties["Log"] as string;
+                var logged = System.IO.File.ReadAllText($"{path}.log");
+                log.Logger.Repository.Shutdown();
+                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
+                    FileMode.OpenOrCreate, FileAccess.Write);
+                StreamWriter fileWriter = new StreamWriter(fileStream);
+                fileWriter.Write(logged);
+                fileWriter.Flush();
+                fileWriter.Close();
                 Environment.Exit(1);
             }
             else

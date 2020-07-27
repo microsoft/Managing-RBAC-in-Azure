@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using YamlDotNet.Serialization;
 
@@ -291,6 +292,15 @@ namespace RBAC
 
                 System.IO.File.WriteAllText($@"{yamlDirectory}\DeletedPolicies.yml", yaml);
                 log.Info("DeletedPolicies.yml complete!");
+                log.Logger.Repository.Shutdown();
+                var path = log4net.GlobalContext.Properties["Log"] as string;
+                var logged = System.IO.File.ReadAllText($"{path}.log");
+                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
+                    FileMode.OpenOrCreate, FileAccess.Write);
+                StreamWriter fileWriter = new StreamWriter(fileStream);
+                fileWriter.Write(logged);
+                fileWriter.Flush();
+                fileWriter.Close();
             }
             catch (Exception e)
             {
@@ -983,6 +993,15 @@ namespace RBAC
             {
                 ConsoleError(message);
                 log.Info("Program exited.");
+                log.Logger.Repository.Shutdown();
+                var path = log4net.GlobalContext.Properties["Log"] as string;
+                var logged = System.IO.File.ReadAllText($"{path}.log");
+                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
+                    FileMode.OpenOrCreate, FileAccess.Write);
+                StreamWriter fileWriter = new StreamWriter(fileStream);
+                fileWriter.Write(logged);
+                fileWriter.Flush();
+                fileWriter.Close();
                 Environment.Exit(1);
             }
             else
