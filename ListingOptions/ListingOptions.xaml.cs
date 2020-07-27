@@ -205,7 +205,7 @@ namespace RBAC
 
                 try
                 {
-                    List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+                    List<KeyVaultProperties> yaml = Yaml;
 
                     if (yaml.Count() == 0)
                     {
@@ -290,7 +290,7 @@ namespace RBAC
 
                 var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
 
-                List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+                List<KeyVaultProperties> yaml = Yaml;
 
                 List<string> items = new List<string>();
 
@@ -548,7 +548,7 @@ namespace RBAC
                 }
             }
 
-            List<KeyVaultProperties> yaml = DeserializedYaml.Yaml;
+            List<KeyVaultProperties> yaml = Yaml;
 
             ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
@@ -969,7 +969,7 @@ namespace RBAC
             return (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[PermissionsBySecurityPrincipalStackPanel.Children.Count - 1];
         }
 
-        // <summary>
+        /// <summary>
         /// This method returns the title of the pop up.
         /// </summary>
         /// <returns>Title of popup.</returns>
@@ -1036,7 +1036,7 @@ namespace RBAC
             SPColumn.IsReadOnly = true;
             SPColumn.Width = 1050;
             SPColumn.Header = "Security Principal Permissions";
-            FrameworkElementFactory nested = new FrameworkElementFactory(typeof(CustomDG));
+            FrameworkElementFactory nested = new FrameworkElementFactory(typeof(DataGrid));
             nested.SetValue(DataGrid.ColumnHeaderStyleProperty, (Style)Resources["DataGridSmallHeaderStyle"]);
             nested.SetBinding(DataGrid.ItemsSourceProperty, new Binding("SecurityPrincipals"));
             nested.SetValue(DataGrid.AutoGenerateColumnsProperty, true);
@@ -1045,11 +1045,11 @@ namespace RBAC
             nested.SetValue(DataGrid.IsReadOnlyProperty, true);
             if (type)
             {
-                nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(210));
+                nested.SetValue(DataGrid.ColumnWidthProperty, new DataGridLength(210));
             }
             else
             {
-                nested.SetValue(CustomDG.ColumnWidthProperty, new DataGridLength(175));
+                nested.SetValue(DataGrid.ColumnWidthProperty, new DataGridLength(175));
             }
 
             SPColumn.CellTemplate = new DataTemplate() { VisualTree = nested };
@@ -1057,27 +1057,26 @@ namespace RBAC
             return dataGrid;
         }
 
-
-        internal class CustomDG : DataGrid
-        {
-            public static readonly DependencyProperty ColumnsProperty = DependencyProperty.Register("Columns", typeof(ObservableCollection<DataGridColumn>), typeof(CustomDG), new FrameworkPropertyMetadata(new ObservableCollection<DataGridColumn>()));
-            public new ObservableCollection<DataGridColumn> Columns { get { return (ObservableCollection<DataGridColumn>)GetValue(ColumnsProperty); } set { SetValue(ColumnsProperty, value); } }
-        }
-
-
+        /// <summary>
+        /// This class represents a vault and its security principals displayed in the option 2 data grid.
+        /// </summary>
         internal class SecurityPrincipalData
         {
             public string VaultName { get; set; }
             public List<SPPermissions> SecurityPrincipals { get; set; }
 
         }
-
+        /// <summary>
+        /// This class represents a vault and its security principals with no type displayed in the option 2 data grid.
+        /// </summary>
         internal class NoTypeData
         {
             public string VaultName { get; set; }
             public List<NoTypePermissions> SecurityPrincipals { get; set; }
         }
-
+        /// <summary>
+        /// This class represents security principals with their type specified.
+        /// </summary>
         internal class SPPermissions : NoTypePermissions
         {
             public string Type { get; set; }
@@ -1088,7 +1087,9 @@ namespace RBAC
                 this.Type = type;
             }
         }
-
+        /// <summary>
+        /// This class represents security principals without indicating type.
+        /// </summary>
         internal class NoTypePermissions
         {
             public string DisplayName { get; set; }
