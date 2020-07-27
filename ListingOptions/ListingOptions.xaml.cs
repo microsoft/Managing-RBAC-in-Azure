@@ -279,6 +279,7 @@ namespace RBAC
 
             if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex != -1)
             {
+
                 ComboBoxItem selectedType = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
                 string type = selectedType.Content as string;
 
@@ -288,7 +289,20 @@ namespace RBAC
                 ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
                 ComboBox potentialSpecifyTypeScope = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
 
-                var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
+                ItemCollection potentialSelectedSpecifyScopeItems = potentialSpecifyScope.Items;
+                List<string> selectedSpecifyScopeItems = new List<string>();
+
+                foreach (var item in potentialSelectedSpecifyScopeItems)
+                {
+                    CheckBox checkBox = item as CheckBox;
+                    if (checkBox != null)
+                    {
+                        if ((bool)(checkBox.IsChecked))
+                        {
+                            selectedSpecifyScopeItems.Add((string)(checkBox.Content));
+                        }
+                    }
+                }
 
                 List<KeyVaultProperties> yaml = Yaml;
 
@@ -323,7 +337,7 @@ namespace RBAC
                                 {
                                     items.Add(sp.Alias);
                                 }
-                                else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                else if (type == "Service Principal/Application" && (sp.Type == "Service Principal"))
                                 {
                                     items.Add(sp.DisplayName);
                                 }
@@ -1355,6 +1369,26 @@ namespace RBAC
                 });
                 dropdown.Text = $"{numChecked} selected";
             }
+        }
+
+        private List<string> dropDownClosedTemplate(ComboBox dropdown)
+        {
+            ItemCollection items = dropdown.Items;
+
+            List<string> selected = getSelectedItemsTemplate(dropdown);
+            if (selected != null)
+            {
+                int numChecked = selected.Count();
+
+                // Make the ComboBox show how many are selected
+                items.Add(new ComboBoxItem()
+                {
+                    Content = $"{numChecked} selected",
+                    Visibility = Visibility.Collapsed
+                });
+                dropdown.Text = $"{numChecked} selected";
+            }
+            return selected;
         }
 
         /// <summary>

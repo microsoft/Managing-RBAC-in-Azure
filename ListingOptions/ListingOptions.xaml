@@ -312,7 +312,7 @@
 
             <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="750">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height= "Auto">
                         <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
                                     VerticalAlignment="Top">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Click" />
