@@ -836,7 +836,7 @@ namespace RBAC
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
-                                else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
@@ -931,7 +931,7 @@ namespace RBAC
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
-                                else if ( type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
