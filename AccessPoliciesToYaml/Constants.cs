@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Management.KeyVault.Models;
 using System.Linq;
 using System;
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config")]
-
+//[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config")]
+[assembly: log4net.Config.XmlConfigurator]
 namespace RBAC
 {
     /// <summary>

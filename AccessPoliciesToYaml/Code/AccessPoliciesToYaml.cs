@@ -18,6 +18,7 @@ using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.IO;
 using log4net;
 using log4net.Config;
+using System.Reflection;
 
 namespace RBAC
 {
@@ -74,8 +75,11 @@ namespace RBAC
                 }
                 else
                 {
-                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Temp";
+                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                    var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                    XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
                 }
+                log.Info("Program Started!");
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
@@ -687,16 +691,6 @@ namespace RBAC
 
                 System.IO.File.WriteAllText(yamlDirectory, yaml);
                 log.Info("YAML created!");
-                log.Logger.Repository.Shutdown();
-                var path = log4net.GlobalContext.Properties["Log"] as string;
-                var logged = System.IO.File.ReadAllText($"{path}.log");
-                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
-                    FileMode.OpenOrCreate, FileAccess.Write);
-                StreamWriter fileWriter = new StreamWriter(fileStream);
-                fileWriter.Write(logged);
-                fileWriter.Flush();
-                fileWriter.Close();
-                System.IO.File.Delete($"{path}.log");
             }
             catch (Exception e)
             {
@@ -715,16 +709,6 @@ namespace RBAC
             {
                 ConsoleError(message);
                 log.Info("Progam exited.");
-                var path = log4net.GlobalContext.Properties["Log"] as string;
-                var logged = System.IO.File.ReadAllText($"{path}.log");
-                log.Logger.Repository.Shutdown();
-                FileStream fileStream = new FileStream($"{path.Substring(0, path.IndexOf("Temp"))}Log.log",
-                    FileMode.OpenOrCreate, FileAccess.Write);
-                StreamWriter fileWriter = new StreamWriter(fileStream);
-                fileWriter.Write(logged);
-                fileWriter.Flush();
-                fileWriter.Close();
-                System.IO.File.Delete($"{path}.log");
                 Environment.Exit(1);
             }
             else
