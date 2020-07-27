@@ -80,7 +80,7 @@ namespace RBAC
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                     var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
                     
-                    XmlConfigurator.Configure(logRepo, new FileInfo("AccessPoliciesToYaml/log4net.config"));
+                    XmlConfigurator.Configure(logRepo, new FileInfo(@"d:/a/1/a/drop/AccessPoliciesToYaml/log4net.config"));
                     Console.WriteLine($"{logRepo.GetAppenders().Count()} Appenders\n");
                 }
 
