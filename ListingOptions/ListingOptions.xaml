@@ -297,7 +297,7 @@
                 <ComboBoxItem Content="All"/>
                 <ComboBoxItem Content="User"/>
                 <ComboBoxItem Content="Group"/>
-                <ComboBoxItem Content="Service Principal" />
+                <ComboBoxItem Content="Service Principal/Application" />
             </ComboBox>
             <Label Name="PermissionsBySecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
                Grid.Column="3" Grid.Row="7" 

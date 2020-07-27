@@ -365,7 +365,7 @@ namespace RBAC
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    else if (type == "Service Principal/Application" && (sp.Type == "Service Principal"))
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -408,7 +408,7 @@ namespace RBAC
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    else if (type == "Service Principal/Application" && (sp.Type == "Service Principal"))
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -451,7 +451,7 @@ namespace RBAC
                                     {
                                         items.Add(sp.Alias);
                                     }
-                                    else if (sp.Type == type && (sp.Type == "Service Principal"))
+                                    else if (type == "Service Principal/Application" && (sp.Type == "Service Principal"))
                                     {
                                         items.Add(sp.DisplayName);
                                     }
@@ -719,7 +719,7 @@ namespace RBAC
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
                                     sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
-                                else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
@@ -879,7 +879,7 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
 
                                 }
-                                else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
@@ -912,12 +912,12 @@ namespace RBAC
                             NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
                             foreach (PrincipalPermissions sp in kv.AccessPolicies)
                             {
-                                if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                                if ( (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
                                 {
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
-                                else if (sp.Type == type && (type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                                else if ( type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
                                 {
                                     gridColumnToggleVisibility("Alias", Visibility.Hidden);
                                     newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
