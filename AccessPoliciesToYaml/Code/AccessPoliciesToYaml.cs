@@ -42,6 +42,7 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
+            log4net.Util.LogLog.InternalDebugging = true;
             try
             {
                 if (args.Length == 0 || args == null)
