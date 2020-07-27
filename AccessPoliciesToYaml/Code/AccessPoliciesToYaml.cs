@@ -75,10 +75,12 @@ namespace RBAC
                 }
                 else
                 {
+                    System.IO.File.Create($"{args[2]}/Log.log");
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                     var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
-                    Console.WriteLine($"{logRepo.GetAppenders().Count()} Appenders\n");
+                    
                     XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
+                    Console.WriteLine($"{logRepo.GetAppenders().Count()} Appenders\n");
                 }
 
                 log.Info("Program Started!");
