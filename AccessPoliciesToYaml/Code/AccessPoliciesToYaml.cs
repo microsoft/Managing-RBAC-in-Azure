@@ -16,6 +16,8 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.IO;
+using log4net;
+using log4net.Config;
 
 namespace RBAC
 {
@@ -39,20 +41,23 @@ namespace RBAC
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
         {
-            log.Info("Checking file extensions...");
             try
             {
                 if (args.Length == 0 || args == null)
                 {
-                    throw new Exception("Missing 2 input files.");
+                    throw new Exception("Missing 3 input files.");
                 }
                 if (args.Length == 1)
                 {
+                    throw new Exception("Missing 2 input files.");
+                }
+                if (args.Length == 2)
+                {
                     throw new Exception("Missing 1 input file.");
                 }
-                if (args.Length > 2)
+                if (args.Length > 3)
                 {
-                    throw new Exception("Too many input files. Maximum needed is 2.");
+                    throw new Exception("Too many input files. Maximum needed is 3.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
@@ -62,13 +67,22 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
+
+                if (!System.IO.Directory.Exists(args[2]))
+                {
+                    throw new Exception("The 3rd argument is not a valid path.");
+                }
+                else
+                {
+                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                }
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
                 log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
-                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and addd your file path to the yaml file.");
+                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and add your file path to the yaml file.");
                 Exit(e.Message);
             }
         }

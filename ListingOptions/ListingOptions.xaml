@@ -34,7 +34,7 @@
             <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
             <EventSetter Event="Click" Handler="Run_Click"/>
         </Style>
-        
+
         <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="12"/>
@@ -170,6 +170,12 @@
             <Setter Property="Foreground" Value="White"/>
         </Style>
 
+
+        <Style x:Key="LabelStyleDirectory" TargetType="{x:Type Label}">
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="20,20,0,0"/>
+        </Style>
     </Window.Resources>
 
     <Viewbox Stretch="Fill" Height="Auto" Width="Auto">
@@ -335,15 +341,11 @@
             <ComboBox Name="PBPKeysDropdown" Grid.Column="2" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPKeysDropdown_DropDownClosed"/>
 
             <Label Name="PBPSecretsLabel" Content="Select secret permissions:" Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
-                <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
+            <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
 
 
-                <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
+            <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name ="PBPCertificatesDropdown" Grid.Column="4" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPCertificatesDropdown_DropDownClosed"/>
-
-            
-            
-            
 
             <Button Name ="PermissionsRun" Grid.Column="0" Grid.Row="13" Style="{StaticResource RunButton}"/>
 
@@ -480,7 +482,7 @@
                 <ComboBoxItem Content="KeyVaults"/>
                 <ComboBoxItem Content="Permissions"/>
             </ComboBox>
-            
+
             <Label Name="SecurityPrincipalAccessScopeLabel"
                Content="Choose your scope:"
                Grid.Column="1" Grid.Row="25"
@@ -885,7 +887,5 @@
                 </Border>
             </Popup>
         </Grid>
-
     </Viewbox>
-
 </Window>

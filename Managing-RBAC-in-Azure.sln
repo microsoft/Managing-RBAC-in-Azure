@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UpdatePoliciesFromYaml", "U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managing-RBAC-in-Azure.Tests", "Managing-RBAC-in-Azure.Tests\Managing-RBAC-in-Azure.Tests.csproj", "{A55BBA5D-3A0E-40B4-9472-C6099627A967}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ListingOptions", "ListingOptions\ListingOptions.csproj", "{A4D59B77-373B-412E-A564-5BF999842A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ListingOptions", "ListingOptions\Managing-RBAC-in-Azure.ListingOptions.csproj", "{A4D59B77-373B-412E-A564-5BF999842A3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

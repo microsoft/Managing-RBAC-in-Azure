@@ -45,6 +45,7 @@ namespace RBAC
                 log.Error($"DeserializationFail", e);
                 log.Debug("Refer to the YamlSample.yml (https://github.com/microsoft/Managing-RBAC-in-Azure/blob/Katie/Config/YamlSample.yml) for questions on " +
                     "formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+                Exit(e.Message);
             }
             try
             {
@@ -279,8 +280,8 @@ namespace RBAC
         /// This method serializes the list of Vault objects and outputs the DeletedPolicies yaml.
         /// </summary>
         /// <param name="vaultsRetrieved">The list of KeyVaultProperties to serialize</param>
-        /// <param name="yamlDirectory"> The directory of the outputted yaml file</param>
-        public void convertToYaml(List<KeyVaultProperties> deleted)
+        /// <param name="yamlDirectory">The directory of the outputted yaml file</param>
+        public void convertToYaml(List<KeyVaultProperties> deleted, string yamlDirectory)
         {
             log.Info("Generating DeletedPolicies.yml...");
             try
@@ -288,7 +289,7 @@ namespace RBAC
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(deleted);
 
-                System.IO.File.WriteAllText(@"..\..\..\..\Config\DeletedPolicies.yml", yaml);
+                System.IO.File.WriteAllText($@"{yamlDirectory}\DeletedPolicies.yml", yaml);
                 log.Info("DeletedPolicies.yml complete!");
             }
             catch (Exception e)

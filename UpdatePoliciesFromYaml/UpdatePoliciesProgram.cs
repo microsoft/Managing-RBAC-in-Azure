@@ -17,7 +17,7 @@ namespace RBAC
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("Refer to 'Config/Log.log' for more details should an error be thrown.\n");
+            Console.WriteLine("Refer to 'Log.log' for more details should an error be thrown.\n");
             Console.ResetColor();
 
             Console.WriteLine("Reading input files...");
@@ -51,7 +51,7 @@ namespace RBAC
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Generating DeletedPolicies yaml...");
-            up.convertToYaml(deletedPolicies);
+            up.convertToYaml(deletedPolicies, args[2]);
             Console.WriteLine("Finished!");
 
             if (testing)
