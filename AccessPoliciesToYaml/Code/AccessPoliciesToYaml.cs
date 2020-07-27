@@ -76,11 +76,11 @@ namespace RBAC
                 }
                 else
                 {
-                    System.IO.File.Create($"{args[2]}/Log.log");
+                    //System.IO.File.Create($"{args[2]}/Log.log");
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                     var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
                     
-                    XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
+                    XmlConfigurator.Configure(logRepo, new FileInfo("AccessPoliciesToYaml/log4net.config"));
                     Console.WriteLine($"{logRepo.GetAppenders().Count()} Appenders\n");
                 }
 
@@ -89,12 +89,14 @@ namespace RBAC
                 {
                     Console.WriteLine("Log not created.\n");
                 }
+                /*
                 FileStream fileStream = System.IO.File.Open($"{args[2]}/Log.log",
                 FileMode.Append, FileAccess.Write);
                 StreamWriter fileWriter = new StreamWriter(fileStream);
                 fileWriter.WriteLine("Able to write stuff to log file. log4net sucks :(");
                 fileWriter.Flush();
                 fileWriter.Close();
+                */
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
