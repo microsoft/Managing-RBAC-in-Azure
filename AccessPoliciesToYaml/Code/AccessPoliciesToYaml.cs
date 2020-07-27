@@ -77,9 +77,15 @@ namespace RBAC
                 {
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                     var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                    Console.WriteLine($"{logRepo.GetAppenders().Count()} Appenders\n");
                     XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
                 }
+
                 log.Info("Program Started!");
+                if (!System.IO.File.Exists($"{args[2]}/Log.log"))
+                {
+                    Console.WriteLine("Log not created.\n");
+                }
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
@@ -109,6 +115,7 @@ namespace RBAC
                 checkMissingAadFields(vaultList, configVaults);
                 checkMissingResourceFields(vaultList, configVaults);
                 log.Info("Json file read!");
+                Console.WriteLine("Supposed to log.\n");
                 return vaultList;
             }
             catch (Exception e)
