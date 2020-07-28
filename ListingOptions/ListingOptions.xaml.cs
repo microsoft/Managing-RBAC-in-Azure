@@ -15,6 +15,7 @@ using System.Windows.Input;
 using YamlDotNet.Serialization;
 using Microsoft.Win32;
 using Microsoft.Azure.Management.BatchAI.Fluent.Models;
+using System.Threading.Tasks;
 
 namespace RBAC
 {
@@ -367,6 +368,7 @@ namespace RBAC
         private void populatePermissionsTemplate(ItemCollection items, string[] permissions)
         {
             items.Clear();
+            items.Add(new CheckBox { Content = "All"});
             foreach (string keyword in permissions)
             {
                 CheckBox item = new CheckBox();
@@ -383,6 +385,16 @@ namespace RBAC
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPKeysDropdown_DropDownClosed(object sender, EventArgs e)
         {
+            var dropdown = sender as ComboBox;
+            List<string> selected = getSelectedItemsTemplate(dropdown);
+            if (selected.Contains("All"))
+            {
+                foreach (var item in dropdown.Items)
+                {
+                    var cb = item as CheckBox;
+                    cb.IsChecked = true;
+                }
+            }
             dropDownClosedTemplate(sender, e);
         }
 
@@ -394,6 +406,16 @@ namespace RBAC
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPSecretsDropdown_DropDownClosed(object sender, EventArgs e)
         {
+            var dropdown = sender as ComboBox;
+            List<string> selected = getSelectedItemsTemplate(dropdown);
+            if (selected.Contains("All"))
+            {
+                foreach (var item in dropdown.Items)
+                {
+                    var cb = item as CheckBox;
+                    cb.IsChecked = true;
+                }
+            }
             dropDownClosedTemplate(sender, e);
         }
 
@@ -405,6 +427,16 @@ namespace RBAC
         /// <param name="e">The event that occurs when the dropdown closes</param>
         private void PBPCertificatesDropdown_DropDownClosed(object sender, EventArgs e)
         {
+            var dropdown = sender as ComboBox;
+            List<string> selected = getSelectedItemsTemplate(dropdown);
+            if (selected.Contains("All"))
+            {
+                foreach (var item in dropdown.Items)
+                {
+                    var cb = item as CheckBox;
+                    cb.IsChecked = true;
+                }
+            }
             dropDownClosedTemplate(sender, e);
         }
 
@@ -489,192 +521,196 @@ namespace RBAC
         /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPrincipalByPermissions_Click(object sender, RoutedEventArgs e)
         {
-            List<KeyVaultProperties> yaml = Yaml;
-
-            ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
-            if (scope == null)
+            this.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                List<KeyVaultProperties> yaml = Yaml;
 
-            List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
-            if (scope.Content.ToString() == "YAML")
-            {
-                vaultsInScope = yaml;
-            }
-            else
-            {
-                ComboBox specifyScopeDropdown = PBPSpecifyScopeDropdown as ComboBox;
-                List<string> selected = getSelectedItemsTemplate(specifyScopeDropdown);
-
-                if (selected.Count() == 0)
+                ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
+                if (scope == null)
                 {
-                    MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                ILookup<string, KeyVaultProperties> lookup;
-                if (scope.Content.ToString() == "Subscription")
+
+                List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
+                if (scope.Content.ToString() == "YAML")
                 {
-                    lookup = yaml.ToLookup(kv => kv.SubscriptionId);
-                }
-                else if (scope.Content.ToString() == "ResourceGroup")
-                {
-                    lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
+                    vaultsInScope = yaml;
                 }
                 else
                 {
-                    lookup = yaml.ToLookup(kv => kv.VaultName);
-                }
+                    ComboBox specifyScopeDropdown = PBPSpecifyScopeDropdown as ComboBox;
+                    List<string> selected = getSelectedItemsTemplate(specifyScopeDropdown);
 
-                foreach (var specifiedScope in selected)
-                {
-                    vaultsInScope.AddRange(lookup[specifiedScope].ToList());
-                }
-            }
-
-            ComboBox keysDropdown = PBPKeysDropdown as ComboBox;
-            List<string> keysSelected = getSelectedItemsTemplate(keysDropdown);
-            ComboBox secretsDropdown = PBPSecretsDropdown as ComboBox;
-            List<string> secretsSelected = getSelectedItemsTemplate(secretsDropdown);
-            ComboBox certifsDropdown = PBPCertificatesDropdown as ComboBox;
-            List<string> certifsSelected = getSelectedItemsTemplate(certifsDropdown);
-
-            if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
-            {
-                MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var data = getPrincipalsByPermission(vaultsInScope, keysSelected, secretsSelected, certifsSelected);
-            var keys = new List<ListSpResults>();
-            var secrets = new List<ListSpResults>();
-            var certificates = new List<ListSpResults>();
-
-            KeyTitle.Visibility = Visibility.Visible;
-            ListSPKey.Visibility = Visibility.Visible;
-            SecTitle.Visibility = Visibility.Visible;
-            ListSPSecret.Visibility = Visibility.Visible;
-            CertTitle.Visibility = Visibility.Visible;
-            ListSPCertificate.Visibility = Visibility.Visible;
-
-            var k = data["Keys"];
-            var s = data["Secrets"];
-            var c = data["Certificates"];
-            if(k.Count == 0)
-            {
-                KeyTitle.Visibility = Visibility.Collapsed;
-                ListSPKey.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                foreach (var key in k.Keys)
-                {
-                    var a = new ListSpResults
+                    if (selected.Count() == 0)
                     {
-                        Permission = key,
-                        KeyVaults = new List<KVsWithPermission>()
-                    };
-                    foreach (var p in k[key])
-                    {
-                        var toAdd = new KVsWithPermission
-                        {
-                            VaultName = p.Item1,
-                            SecurityPrincipals = new List<SecPrincipals>()
-                        };
-                        foreach (var sp in p.Item2)
-                        {
-                            toAdd.SecurityPrincipals.Add(new SecPrincipals
-                            {
-                                Type = sp.Type,
-                                Name = sp.DisplayName,
-                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                            });
-                        }
-                        a.KeyVaults.Add(toAdd);
+                        MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
-                    keys.Add(a);
-                }
-            }
-            if (s.Count == 0)
-            {
-                SecTitle.Visibility = Visibility.Collapsed;
-                ListSPSecret.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                foreach (var key in s.Keys)
-                {
-                    var a = new ListSpResults
+                    ILookup<string, KeyVaultProperties> lookup;
+                    if (scope.Content.ToString() == "Subscription")
                     {
-                        Permission = key,
-                        KeyVaults = new List<KVsWithPermission>()
-                    };
-                    foreach (var p in s[key])
-                    {
-                        var toAdd = new KVsWithPermission
-                        {
-                            VaultName = p.Item1,
-                            SecurityPrincipals = new List<SecPrincipals>()
-                        };
-                        foreach (var sp in p.Item2)
-                        {
-                            toAdd.SecurityPrincipals.Add(new SecPrincipals
-                            {
-                                Type = sp.Type,
-                                Name = sp.DisplayName,
-                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                            });
-                        }
-                        a.KeyVaults.Add(toAdd);
+                        lookup = yaml.ToLookup(kv => kv.SubscriptionId);
                     }
-                    secrets.Add(a);
-                }
-            }
-            if (c.Count == 0)
-            {
-                CertTitle.Visibility = Visibility.Collapsed;
-                ListSPCertificate.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                foreach (var key in c.Keys)
-                {
-                    var a = new ListSpResults
+                    else if (scope.Content.ToString() == "ResourceGroup")
                     {
-                        Permission = key,
-                        KeyVaults = new List<KVsWithPermission>()
-                    };
-                    foreach (var p in c[key])
-                    {
-                        var toAdd = new KVsWithPermission
-                        {
-                            VaultName = p.Item1,
-                            SecurityPrincipals = new List<SecPrincipals>()
-                        };
-                        foreach (var sp in p.Item2)
-                        {
-                            toAdd.SecurityPrincipals.Add(new SecPrincipals
-                            {
-                                Type = sp.Type,
-                                Name = sp.DisplayName,
-                                Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                            });
-                        }
-                        a.KeyVaults.Add(toAdd);
+                        lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
                     }
-                    certificates.Add(a);
+                    else
+                    {
+                        lookup = yaml.ToLookup(kv => kv.VaultName);
+                    }
+
+                    foreach (var specifiedScope in selected)
+                    {
+                        vaultsInScope.AddRange(lookup[specifiedScope].ToList());
+                    }
                 }
-            }
-            
 
-            
+                ComboBox keysDropdown = PBPKeysDropdown as ComboBox;
+                List<string> keysSelected = getSelectedItemsTemplate(keysDropdown);
+                ComboBox secretsDropdown = PBPSecretsDropdown as ComboBox;
+                List<string> secretsSelected = getSelectedItemsTemplate(secretsDropdown);
+                ComboBox certifsDropdown = PBPCertificatesDropdown as ComboBox;
+                List<string> certifsSelected = getSelectedItemsTemplate(certifsDropdown);
 
+                if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
+                {
+                    MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var data = getPrincipalsByPermission(vaultsInScope, keysSelected, secretsSelected, certifsSelected);
+                var keys = new List<ListSpResults>();
+                var secrets = new List<ListSpResults>();
+                var certificates = new List<ListSpResults>();
+
+                KeyTitle.Visibility = Visibility.Visible;
+                ListSPKey.Visibility = Visibility.Visible;
+                SecTitle.Visibility = Visibility.Visible;
+                ListSPSecret.Visibility = Visibility.Visible;
+                CertTitle.Visibility = Visibility.Visible;
+                ListSPCertificate.Visibility = Visibility.Visible;
+
+                var k = data["Keys"];
+                var s = data["Secrets"];
+                var c = data["Certificates"];
+                if (k.Count == 0)
+                {
+                    KeyTitle.Visibility = Visibility.Collapsed;
+                    ListSPKey.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    foreach (var key in k.Keys)
+                    {
+                        var a = new ListSpResults
+                        {
+                            Permission = key,
+                            KeyVaults = new List<KVsWithPermission>()
+                        };
+                        foreach (var p in k[key])
+                        {
+                            var toAdd = new KVsWithPermission
+                            {
+                                VaultName = p.Item1,
+                                SecurityPrincipals = new List<SecPrincipals>()
+                            };
+                            foreach (var sp in p.Item2)
+                            {
+                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                {
+                                    Type = sp.Type,
+                                    Name = sp.DisplayName,
+                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                });
+                            }
+                            a.KeyVaults.Add(toAdd);
+                        }
+                        keys.Add(a);
+                    }
+                }
+                if (s.Count == 0)
+                {
+                    SecTitle.Visibility = Visibility.Collapsed;
+                    ListSPSecret.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    foreach (var key in s.Keys)
+                    {
+                        var a = new ListSpResults
+                        {
+                            Permission = key,
+                            KeyVaults = new List<KVsWithPermission>()
+                        };
+                        foreach (var p in s[key])
+                        {
+                            var toAdd = new KVsWithPermission
+                            {
+                                VaultName = p.Item1,
+                                SecurityPrincipals = new List<SecPrincipals>()
+                            };
+                            foreach (var sp in p.Item2)
+                            {
+                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                {
+                                    Type = sp.Type,
+                                    Name = sp.DisplayName,
+                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                });
+                            }
+                            a.KeyVaults.Add(toAdd);
+                        }
+                        secrets.Add(a);
+                    }
+                }
+                if (c.Count == 0)
+                {
+                    CertTitle.Visibility = Visibility.Collapsed;
+                    ListSPCertificate.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    foreach (var key in c.Keys)
+                    {
+                        var a = new ListSpResults
+                        {
+                            Permission = key,
+                            KeyVaults = new List<KVsWithPermission>()
+                        };
+                        foreach (var p in c[key])
+                        {
+                            var toAdd = new KVsWithPermission
+                            {
+                                VaultName = p.Item1,
+                                SecurityPrincipals = new List<SecPrincipals>()
+                            };
+                            foreach (var sp in p.Item2)
+                            {
+                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                {
+                                    Type = sp.Type,
+                                    Name = sp.DisplayName,
+                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                });
+                            }
+                            a.KeyVaults.Add(toAdd);
+                        }
+                        certificates.Add(a);
+                    }
+                }
+
+
+
+
+
+                ListSPKey.ItemsSource = keys;
+                ListSPCertificate.ItemsSource = certificates;
+                ListSPSecret.ItemsSource = secrets;
+                ListSPPopup.IsOpen = true;
+            }, System.Windows.Threading.DispatcherPriority.Background);
             
-            ListSPKey.ItemsSource = keys;
-            ListSPCertificate.ItemsSource = certificates;
-            ListSPSecret.ItemsSource = secrets;
-            ListSPPopup.IsOpen = true;
         }
         /// <summary>
         /// This Class is Used to populate the datagrid for listing Security Principals by permission.
@@ -1385,7 +1421,15 @@ namespace RBAC
             }
             else if (btn.Name == "PermissionsRun")
             {
-                RunPrincipalByPermissions_Click(sender, e);
+                PbPopup.IsOpen = true;
+                Task.Factory.StartNew(() =>
+                {
+                    RunPrincipalByPermissions_Click(sender, e);
+                }).ContinueWith(task =>
+                {
+                    PbPopup.IsOpen = false;
+                }, System.Threading.CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+                
             }
             else if (btn.Name == "BreakdownRun")
             {
@@ -1911,6 +1955,23 @@ namespace RBAC
         }
         private List<KeyVaultProperties> Yaml { get;  set; }
         private UpdatePoliciesFromYaml upInstance { get; set; }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as Button;
+            if(btn.Name == "AllKeyBtn")
+            {
+
+            }
+            else if(btn.Name == "AllSecBtn")
+            {
+
+            }
+            else
+            {
+
+            }
+        }
     }
 }
 

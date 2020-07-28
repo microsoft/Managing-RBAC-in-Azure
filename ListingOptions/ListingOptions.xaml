@@ -34,7 +34,7 @@
             <EventSetter Event="MouseLeave" Handler="Run_MouseLeave"/>
             <EventSetter Event="Click" Handler="Run_Click"/>
         </Style>
-
+        
         <Style x:Key="ComboBoxStyleVisible" TargetType="{x:Type ComboBox}">
             <Setter Property="FontFamily" Value="Sitka Text"/>
             <Setter Property="FontSize" Value="12"/>
@@ -281,7 +281,6 @@
 
             <Label Name="PBPSecretsLabel" Content="Select secret permissions:" Grid.Column="3" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name ="PBPSecretsDropdown" Grid.Column="3" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPSecretsDropdown_DropDownClosed"/>
-
 
             <Label Name="PBPCertificatesLabel" Content="Select certificate permissions:" Grid.Column="4" Grid.Row="11" Style="{StaticResource LabelStyleHidden}"/>
             <ComboBox Name ="PBPCertificatesDropdown" Grid.Column="4" Grid.Row="12" Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PBPCertificatesDropdown_DropDownClosed"/>
@@ -822,6 +821,13 @@
                                 </Style>
                             </DataGrid.Resources>
                         </DataGrid>
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <Popup x:Name="PbPopup" IsOpen="False" Style="{StaticResource PopupStyle}">
+                <Border BorderThickness="0.3" Height="Auto" Width="300" BorderBrush="#FFE0E0E0" >
+                    <StackPanel Name="PbPanel" Height="Auto" Width="300" Background="White">
+                        <TextBlock Text="Loading..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="DemiBold" FontFamily="Sitka Header"/>
                     </StackPanel>
                 </Border>
             </Popup>
