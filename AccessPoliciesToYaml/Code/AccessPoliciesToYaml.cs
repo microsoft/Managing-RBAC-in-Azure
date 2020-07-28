@@ -18,6 +18,7 @@ using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.IO;
 using log4net;
 using log4net.Config;
+using System.Reflection;
 
 namespace RBAC
 {
@@ -75,7 +76,11 @@ namespace RBAC
                 else
                 {
                     log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                    var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
+
+                    XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
                 }
+                log.Info("Program started!");
                 log.Info("File extensions verified!");
             }
             catch (Exception e)
