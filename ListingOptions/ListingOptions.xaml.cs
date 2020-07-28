@@ -785,32 +785,15 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
                                 }
                             }
-
-                            if (newkv.SecurityPrincipals.Count == 0)
-                            {
-                                try
-                                {
-                                    PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
-                                }
-                                catch
-                                {
-                                }
-                            }
-                            else if (newkv.SecurityPrincipals.Count != 0)
+                         
+                            if (newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
-
-                            try
-                            {
-                                getLastStackPanelDataGrid().ItemsSource = kvs;
-                            }
-                            catch
-                            {
-                            }
+                            getLastStackPanelDataGrid().ItemsSource = kvs;
                         }
                     }
+                    removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
                 }
                 else
                 {
@@ -843,31 +826,15 @@ namespace RBAC
                                         sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
                                 }
                             }
-                            if (newkv.SecurityPrincipals.Count == 0)
-                            {
-                                try
-                                {
-                                    PermissionsBySecurityPrincipalStackPanel.Children.Remove(getLastStackPanelDataGrid());
-                                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createEmptyDataGridHeader($"  - No Permissions of Type: '{type}' found!"));
-                                }
-                                catch
-                                {
-                                }
-                            }
-                            else if (newkv.SecurityPrincipals.Count != 0)
+
+                            if (newkv.SecurityPrincipals.Count != 0)
                             {
                                 kvs.Add(newkv);
                             }
-
-                            try
-                            {
-                                getLastStackPanelDataGrid().ItemsSource = kvs;
-                            }
-                            catch
-                            {
-                            }
+                            getLastStackPanelDataGrid().ItemsSource = kvs;
                         }
                     }
+                    removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
                 }
             }
             else if (scope == "KeyVault")
@@ -958,11 +925,11 @@ namespace RBAC
         /// This is a helper method that removes all the empty datagrids in the sub scope and replaces them with a textblock.
         /// </summary>
         /// <returns> Remove empty datagrid in sub scope.</returns>
-        public void removeEmptySubscriptionsFromStackPanel(int numberOfSubscriptions, String type)
+        public void removeEmptySubscriptionsFromStackPanel(int numberOfGroup, String type)
         {
             int index = 3;
 
-            for (int i = 0; i < numberOfSubscriptions; i++)
+            for (int i = 0; i < numberOfGroup; i++)
             {
                 DataGrid elemInDataGrid = (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[index];
 
