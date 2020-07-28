@@ -15,6 +15,7 @@ using System.Windows.Input;
 using YamlDotNet.Serialization;
 using Microsoft.Win32;
 using Microsoft.Azure.Management.BatchAI.Fluent.Models;
+using Microsoft.Azure.Management.Storage.Fluent.Models;
 
 namespace RBAC
 {
@@ -541,13 +542,11 @@ namespace RBAC
             {
                 PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
             }
-
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
             {
                 MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -563,82 +562,17 @@ namespace RBAC
             }
 
             List<KeyVaultProperties> yaml = Yaml;
-
             ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = selectedScope.Content as string;
-
             ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
             string type = selectedtype.Content as string;
 
             PermissionsBySecurityPrincipalPopUp.IsOpen = true;
-
-
             PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing Assigned Permissions by Security Principal"));
 
             if (scope == "YAML")
             {
-                if (type == "All")
-                {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-
-                    gridColumnToggleVisibility("Type", Visibility.Visible);
-                    var kvs = new List<SecurityPrincipalData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                        {
-                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                            {
-                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                            }
-                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                            {
-                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                            }
-                        }
-                        if (newkv.SecurityPrincipals.Count != 0)
-                        {
-                            kvs.Add(newkv);
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                }
-                else
-                {
-
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-                    var kvs = new List<NoTypeData>();
-
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
-                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                        {
-                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                            {
-                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                            }
-                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                            {
-                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                            }
-                        }
-                        if (newkv.SecurityPrincipals.Count != 0)
-                        {
-                            kvs.Add(newkv);
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                }
-
+                permissionsBySecurityPrincipalGenerateYamlScope(yaml, type, selectedSpecifyTypeItems);
                 return;
             }
 
@@ -647,279 +581,390 @@ namespace RBAC
 
             if (scope == "Subscription")
             {
-                List<string> subscriptions = new List<string>();
-
-                if (type == "All")
-                {
-                    var kvs = new List<SecurityPrincipalData>();
-
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
-                        {
-                            if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
-                            {
-                                List<SecurityPrincipalData> copyKvs = new List<SecurityPrincipalData>();
-                                foreach (SecurityPrincipalData elem in kvs)
-                                {
-                                    copyKvs.Add(elem);
-                                }
-                                getLastStackPanelDataGrid().ItemsSource = copyKvs;
-                                kvs = new List<SecurityPrincipalData>();
-                            }
-
-                            if (subscriptions.Contains(kv.SubscriptionId) == false)
-                            {
-                                subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-
-                                gridColumnToggleVisibility("Type", Visibility.Visible);
-                            }
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                                else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                            }
-
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                    removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
-                }
-                else
-                {
-                    var kvs = new List<NoTypeData>();
-
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
-                        {
-                            if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
-                            {
-                                List<NoTypeData> copyKvs = new List<NoTypeData>();
-                                foreach (NoTypeData elem in kvs)
-                                {
-                                    copyKvs.Add(elem);
-                                }
-                                getLastStackPanelDataGrid().ItemsSource = copyKvs;
-                                kvs = new List<NoTypeData>();
-                            }
-
-                            if (subscriptions.Contains(kv.SubscriptionId) == false)
-                            {
-                                subscriptions.Add(kv.SubscriptionId);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-                            }
-                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                            }
-
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                    removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
-                }
+                permissionsBySecurityPrincipalGenerateSubscriptionScope(yaml,type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
             }
             else if (scope == "ResourceGroup")
             {
-                List<string> resourceGroups = new List<string>();
-
-                if (type == "All")
-                {
-                    var kvs = new List<SecurityPrincipalData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
-                        {
-                            if (resourceGroups.Contains(kv.ResourceGroupName) == false)
-                            {
-                                resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-                                gridColumnToggleVisibility("Type", Visibility.Visible);
-                                kvs = new List<SecurityPrincipalData>();
-                            }
-
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                                else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                            }
-                         
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                            getLastStackPanelDataGrid().ItemsSource = kvs;
-                        }
-                    }
-                    removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
-                }
-                else
-                {
-                    var kvs = new List<NoTypeData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
-                        {
-                            if (resourceGroups.Contains(kv.ResourceGroupName) == false)
-                            {
-                                resourceGroups.Add(kv.ResourceGroupName);
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
-                                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-                                gridColumnToggleVisibility("Type", Visibility.Hidden);
-                                kvs = new List<NoTypeData>();
-                            }
-
-                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
-                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                            }
-
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                            getLastStackPanelDataGrid().ItemsSource = kvs;
-                        }
-                    }
-                    removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
-                }
+                permissionsBySecurityPrincipalGenerateResourceGroupScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
             }
             else if (scope == "KeyVault")
             {
-                if (type == "All")
-                {
-
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
-
-                    gridColumnToggleVisibility("Type", Visibility.Visible);
-                    var kvs = new List<SecurityPrincipalData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.VaultName))
-                        {
-                            SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-
-                                }
-                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
-                                }
-                            }
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                            else
-                            {
-                                newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }, "N/A"));
-                                kvs.Add(newkv);
-                            }
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                }
-                else
-                {
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
-                    PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
-
-                    gridColumnToggleVisibility("Type", Visibility.Hidden);
-                    var kvs = new List<NoTypeData>();
-                    foreach (KeyVaultProperties kv in yaml)
-                    {
-                        if (selectedSpecifyScopeItems.Contains(kv.VaultName))
-                        {
-                            NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
-                            foreach (PrincipalPermissions sp in kv.AccessPolicies)
-                            {
-                                if ( (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
-                                {
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                                else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
-                                {
-                                    gridColumnToggleVisibility("Alias", Visibility.Hidden);
-                                    newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
-                                        sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
-                                }
-                            }
-                            if (newkv.SecurityPrincipals.Count != 0)
-                            {
-                                kvs.Add(newkv);
-                            }
-                            else
-                            {
-                                newkv.SecurityPrincipals.Add(new NoTypePermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
-                                kvs.Add(newkv);
-                            }
-                        }
-                    }
-                    getLastStackPanelDataGrid().ItemsSource = kvs;
-                }
+                permissionsBySecurityPrincipalGenerateKeyVaultScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
             }
         }
+
+
+        /// <summary>
+        /// This method generates the 'Assigned Permissions by Security data grid' if the 'yaml' scope is selected
+        /// </summary>
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        /// <param name="type">The security principal type</param>
+        /// <param name="selectedSpecifyTypeItems">A list of selected security principals</param>
+        public void permissionsBySecurityPrincipalGenerateYamlScope(List<KeyVaultProperties> yaml, string type, List<string> selectedSpecifyTypeItems)
+        {
+            if (type == "All")
+            {
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
+
+                gridColumnToggleVisibility("Type", Visibility.Visible);
+                var kvs = new List<SecurityPrincipalData>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                        {
+                            newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                        }
+                        else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                        {
+                            newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                        }
+                    }
+                    if (newkv.SecurityPrincipals.Count != 0)
+                    {
+                        kvs.Add(newkv);
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+            }
+            else
+            {
+
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Yaml; Type: {type}:"));
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
+                var kvs = new List<NoTypeData>();
+
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
+                    foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                    {
+                        if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                        {
+                            newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                        }
+                        else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                        {
+                            gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                            newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                        }
+                    }
+                    if (newkv.SecurityPrincipals.Count != 0)
+                    {
+                        kvs.Add(newkv);
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+            }   
+        }
+
+        /// <summary>
+        /// This method generates the 'Assigned Permissions by Security data grid' if the 'Subscription' scope is selected
+        /// </summary>
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        /// <param name="type">The security principal type</param>
+        /// <param name="selectedSpecifyTypeItems">A list of selected security principals</param>
+        /// <param name="selectedSpecifyScopeItems">A list of selected subscriptions</param>
+        public void permissionsBySecurityPrincipalGenerateSubscriptionScope(List<KeyVaultProperties> yaml, string type, List<string> selectedSpecifyTypeItems, 
+            List<string> selectedSpecifyScopeItems)
+        {
+            List<string> subscriptions = new List<string>();
+
+            if (type == "All")
+            {
+                var kvs = new List<SecurityPrincipalData>();
+
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                    {
+                        if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
+                        {
+                            List<SecurityPrincipalData> copyKvs = new List<SecurityPrincipalData>();
+                            foreach (SecurityPrincipalData elem in kvs)
+                            {
+                                copyKvs.Add(elem);
+                            }
+                            getLastStackPanelDataGrid().ItemsSource = copyKvs;
+                            kvs = new List<SecurityPrincipalData>();
+                        }
+
+                        if (subscriptions.Contains(kv.SubscriptionId) == false)
+                        {
+                            subscriptions.Add(kv.SubscriptionId);
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
+
+                            gridColumnToggleVisibility("Type", Visibility.Visible);
+                        }
+                        SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                            }
+                            else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                            }
+                        }
+
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+                removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
+            }
+            else
+            {
+                var kvs = new List<NoTypeData>();
+
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.SubscriptionId))
+                    {
+                        if (subscriptions.Contains(kv.SubscriptionId) == false && subscriptions.Count > 0)
+                        {
+                            List<NoTypeData> copyKvs = new List<NoTypeData>();
+                            foreach (NoTypeData elem in kvs)
+                            {
+                                copyKvs.Add(elem);
+                            }
+                            getLastStackPanelDataGrid().ItemsSource = copyKvs;
+                            kvs = new List<NoTypeData>();
+                        }
+
+                        if (subscriptions.Contains(kv.SubscriptionId) == false)
+                        {
+                            subscriptions.Add(kv.SubscriptionId);
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Subscription: {kv.SubscriptionId}; Type: {type}:"));
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
+                        }
+                        NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                        }
+
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+                removeEmptySubscriptionsFromStackPanel(subscriptions.Count, type);
+            }
+        }
+
+        /// <summary>
+        /// This method generates the 'Assigned Permissions by Security data grid' if the 'ResourceGroup' scope is selected
+        /// </summary>
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        /// <param name="type">The security principal type</param>
+        /// <param name="selectedSpecifyTypeItems">A list of selected security principals</param>
+        /// <param name="selectedSpecifyScopeItems">A list of selected resource groups</param>
+        public void permissionsBySecurityPrincipalGenerateResourceGroupScope(List<KeyVaultProperties> yaml, string type, List<string> selectedSpecifyTypeItems,
+            List<string> selectedSpecifyScopeItems)
+        {
+            List<string> resourceGroups = new List<string>();
+
+            if (type == "All")
+            {
+                var kvs = new List<SecurityPrincipalData>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                    {
+                        if (resourceGroups.Contains(kv.ResourceGroupName) == false)
+                        {
+                            resourceGroups.Add(kv.ResourceGroupName);
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
+                            gridColumnToggleVisibility("Type", Visibility.Visible);
+                            kvs = new List<SecurityPrincipalData>();
+                        }
+
+                        SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                            }
+                            else if ((sp.Type == "Service Principal") && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                            }
+                        }
+
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                        getLastStackPanelDataGrid().ItemsSource = kvs;
+                    }
+                }
+                removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
+            }
+            else
+            {
+                var kvs = new List<NoTypeData>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.ResourceGroupName))
+                    {
+                        if (resourceGroups.Contains(kv.ResourceGroupName) == false)
+                        {
+                            resourceGroups.Add(kv.ResourceGroupName);
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: Resource Group: {kv.ResourceGroupName}; Type: {type}:"));
+                            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
+                            gridColumnToggleVisibility("Type", Visibility.Hidden);
+                            kvs = new List<NoTypeData>();
+                        }
+
+                        NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if (sp.Type == type && (type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                        }
+
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                        getLastStackPanelDataGrid().ItemsSource = kvs;
+                    }
+                }
+                removeEmptySubscriptionsFromStackPanel(resourceGroups.Count, type);
+            }
+        }
+
+        /// <summary>
+        /// This method generates the 'Assigned Permissions by Security data grid' if the 'KeyVault' scope is selected
+        /// </summary>
+        /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
+        /// <param name="type">The security principal type</param>
+        /// <param name="selectedSpecifyTypeItems">A list of selected security principals</param>
+        /// <param name="selectedSpecifyScopeItems">A list of selected KeyVaults</param>
+        public void permissionsBySecurityPrincipalGenerateKeyVaultScope(List<KeyVaultProperties> yaml, string type, List<string> selectedSpecifyTypeItems,
+            List<string> selectedSpecifyScopeItems)
+        {
+            if (type == "All")
+            {
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(false));
+
+                gridColumnToggleVisibility("Type", Visibility.Visible);
+                var kvs = new List<SecurityPrincipalData>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                    {
+                        SecurityPrincipalData newkv = new SecurityPrincipalData { VaultName = kv.VaultName, SecurityPrincipals = new List<SPPermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((sp.Type == "User" || sp.Type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                newkv.SecurityPrincipals.Add(new SPPermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates, sp.Type));
+                            }
+                        }
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                        else
+                        {
+                            newkv.SecurityPrincipals.Add(new SPPermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }, "N/A"));
+                            kvs.Add(newkv);
+                        }
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+            }
+            else
+            {
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridHeader($" Scope: KeyVaults; Type: {type}:"));
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGrid(true));
+
+                gridColumnToggleVisibility("Type", Visibility.Hidden);
+                var kvs = new List<NoTypeData>();
+                foreach (KeyVaultProperties kv in yaml)
+                {
+                    if (selectedSpecifyScopeItems.Contains(kv.VaultName))
+                    {
+                        NoTypeData newkv = new NoTypeData { VaultName = kv.VaultName, SecurityPrincipals = new List<NoTypePermissions>() };
+                        foreach (PrincipalPermissions sp in kv.AccessPolicies)
+                        {
+                            if ((type == "User" || type == "Group") && selectedSpecifyTypeItems.Contains(sp.Alias))
+                            {
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, sp.Alias,
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                            else if (sp.Type == "Service Principal" && selectedSpecifyTypeItems.Contains(sp.DisplayName))
+                            {
+                                gridColumnToggleVisibility("Alias", Visibility.Hidden);
+                                newkv.SecurityPrincipals.Add(new NoTypePermissions(sp.DisplayName, "N/A",
+                                    sp.PermissionsToKeys, sp.PermissionsToSecrets, sp.PermissionsToCertificates));
+                            }
+                        }
+                        if (newkv.SecurityPrincipals.Count != 0)
+                        {
+                            kvs.Add(newkv);
+                        }
+                        else
+                        {
+                            newkv.SecurityPrincipals.Add(new NoTypePermissions("None", "N/A", new string[] { "N/A" }, new string[] { "N/A" }, new string[] { "N/A" }));
+                            kvs.Add(newkv);
+                        }
+                    }
+                }
+                getLastStackPanelDataGrid().ItemsSource = kvs;
+            }
+        }
+
 
         /// <summary>
         /// This is a helper method that removes all the empty datagrids in the sub scope and replaces them with a textblock.
