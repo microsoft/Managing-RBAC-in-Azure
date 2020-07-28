@@ -595,7 +595,7 @@ namespace RBAC
 
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security data grid' if the 'yaml' scope is selected
+        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'YAML' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -666,7 +666,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security data grid' if the 'Subscription' scope is selected
+        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'Subscription' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -781,7 +781,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security data grid' if the 'ResourceGroup' scope is selected
+        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'ResourceGroup' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -876,7 +876,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security data grid' if the 'KeyVault' scope is selected
+        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'KeyVault' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
