@@ -46,19 +46,23 @@ namespace RBAC
             {
                 if (args.Length == 0 || args == null)
                 {
-                    throw new Exception("Missing 3 input files.");
+                    throw new Exception("Missing 4 input files.");
                 }
                 if (args.Length == 1)
                 {
-                    throw new Exception("Missing 2 input files.");
+                    throw new Exception("Missing 3 input files.");
                 }
                 if (args.Length == 2)
                 {
+                    throw new Exception("Missing 2 input files.");
+                }
+                if (args.Length == 3)
+                {
                     throw new Exception("Missing 1 input file.");
                 }
-                if (args.Length > 3)
+                if (args.Length > 4)
                 {
-                    throw new Exception("Too many input files. Maximum needed is 3.");
+                    throw new Exception("Too many input files. Maximum needed is 4.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
@@ -68,18 +72,19 @@ namespace RBAC
                 {
                     throw new Exception("The 2nd argument is not a .yml file.");
                 }
-
                 if (!System.IO.Directory.Exists(args[2]))
                 {
                     throw new Exception("The 3rd argument is not a valid path.");
                 }
-                else
+                if (System.IO.Path.GetExtension(args[3]) != ".config")
                 {
-                    log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
-                    var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
-
-                    XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
+                    throw new Exception("The 4th argument is not a .config file.");
                 }
+
+                log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
+
                 log.Info("Program started!");
                 log.Info("File extensions verified!");
             }

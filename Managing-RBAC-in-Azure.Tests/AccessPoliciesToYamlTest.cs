@@ -43,7 +43,7 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesValid = new List<Testing<string[]>>()
             {
-                new Testing<string[]> (new string[] { "file.json", "file.yml", "../../../output" })
+                new Testing<string[]> (new string[] { "file.json", "file.yml", "../../../output", "file.config" })
             };
             foreach (Testing<string[]> testCase in testCasesValid)
             {
@@ -68,12 +68,12 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] {}, "Missing 3 input files."),
-                new Testing <string[]> (new string[] { "file.json" }, "Missing 2 input files."),
-                new Testing <string[]> (new string[] { "file.json", "file2.yml" }, "Missing 1 input file."),
-                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json", "yaml2.json" }, "Too many input files. Maximum needed is 3."),
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml",  "yaml.json" }, "The 1st argument is not a .json file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml", "yaml.json" }, "The 2nd argument is not a .yml file.")
+                new Testing <string[]> (new string[] {}, "Missing 4 input files."),
+                new Testing <string[]> (new string[] { "file.json" }, "Missing 3 input files."),
+                new Testing <string[]> (new string[] { "file.json", "file2.yml" }, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json", "yaml2.json", "yaml3.yml" }, "Too many input files. Maximum needed is 4."),
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml",  "yaml.json", "yaml2.json" }, "The 1st argument is not a .json file."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml", "yaml.json", "yaml2.json" }, "The 2nd argument is not a .yml file.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
