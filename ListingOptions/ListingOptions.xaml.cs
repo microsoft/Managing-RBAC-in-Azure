@@ -27,34 +27,21 @@ namespace RBAC
         public MainWindow()
         {
             InitializeComponent();
-            InitializeFile();
-        }
-        /// <summary>
-        /// This method opens a file dialog and uses the file specified to initialize the yaml and upInstance.
-        /// </summary>
-        public void InitializeFile()
-        {
-            upInstance = new UpdatePoliciesFromYaml(true);
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            fileDialog.Multiselect = false;
-            fileDialog.Filter = "YAML Files|*.yml";
-            fileDialog.DefaultExt = ".yml";
-            fileDialog.Title = "Select YAML File";
-            var dialogOK = fileDialog.ShowDialog();
+            this.Hide();
 
-            if (dialogOK == true)
-            {
-                try
-                {
-                    Yaml = upInstance.deserializeYaml(fileDialog.FileName);
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show($"{e.Message}", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    InitializeFile();
-                }
-            }
+            FileDialogWindow fileDialog = new FileDialogWindow();
+            fileDialog.ShowDialog();
+            this.Close();
         }
+
+        public MainWindow(List<KeyVaultProperties> yaml)
+        {
+            InitializeComponent();
+
+            upInstance = new UpdatePoliciesFromYaml(true);
+            Yaml = yaml;
+        }
+
         // 1. List the Permissions by Shorthand ----------------------------------------------------------------------------------------------------
 
         /// <summary>
@@ -1206,9 +1193,9 @@ namespace RBAC
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"{ex.Message}: : No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    InitializeFile();
-                    dropdown.SelectedIndex = -1;
+                    MessageBox.Show($"{ex.Message}: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    this.Close();
+                    MainWindow newWindow = new MainWindow();
                 }
             }
         }
@@ -1858,12 +1845,8 @@ namespace RBAC
                 catch (Exception ex)
                 {
                     MessageBox.Show($"{ex.Message}: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    InitializeFile();
-                    BreakdownTypeDropdown.SelectedIndex = -1;
-                    BreakdownScopeDropdown.SelectedIndex = -1;
-                    BreakdownScopeLabel.Visibility = Visibility.Hidden;
-                    BreakdownScopeDropdown.Visibility = Visibility.Hidden;
-                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
+                    this.Close();
+                    MainWindow newWindow = new MainWindow();
                 }
             }
         }
@@ -1885,19 +1868,26 @@ namespace RBAC
         /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPermissionsBreakdown_Click(object sender, RoutedEventArgs e)
         {
-            ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
-            List<string> selected = getSelectedItemsTemplate(scopeDropdown);
-
             ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
             string scope = breakdownScope.Content as string;
 
-            if(scope != "YAML" && selected.Count() == 0)
+            if(scope != "YAML")
             {
-                MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
+                List<string> selected = getSelectedItemsTemplate(scopeDropdown);
+
+                if (selected.Count() == 0)
+                {
+                    MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    calculatePermissionBreakdown(scope, selected);
+                }
             }
             else
             {
-                calculatePermissionBreakdown(scope, selected);
+                calculatePermissionBreakdown(scope, null);
             }
         }
 
@@ -2347,7 +2337,8 @@ namespace RBAC
             else if (Yaml == null || Yaml.Count == 0)
             {
                 MessageBox.Show($"Please specify a valid YAML: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                InitializeFile();
+                this.Close();
+                MainWindow newWindow = new MainWindow();
             }
             else if (btn.Name == "PermissionsBySecurityPrincipalRun")
             {
@@ -2793,6 +2784,7 @@ namespace RBAC
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
         }
+
         /// <summary>
         /// This method closes popup for results of listing security principals by permissions.
         /// </summary>

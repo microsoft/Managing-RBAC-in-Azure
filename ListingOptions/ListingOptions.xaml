@@ -79,6 +79,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
         </Style>
+        
         <Style x:Key="ClosePopupButton" TargetType="{x:Type Button}">
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -169,7 +170,6 @@
             <Setter Property="Background" Value="#FF197597"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
-
 
         <Style x:Key="LabelStyleDirectory" TargetType="{x:Type Label}">
             <Setter Property="FontFamily" Value="Sitka Subheading"/>
