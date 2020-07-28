@@ -246,8 +246,6 @@ namespace RBAC
                     MessageBox.Show($"{ex.Message}: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     this.Close();
                     MainWindow newWindow = new MainWindow();
-
-                    dropdown.SelectedIndex = -1;
                 }
             }
         }
@@ -879,12 +877,6 @@ namespace RBAC
                     MessageBox.Show($"{ex.Message}: No YAML selected or YAML is invalid", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     this.Close();
                     MainWindow newWindow = new MainWindow();
-
-                    BreakdownTypeDropdown.SelectedIndex = -1;
-                    BreakdownScopeDropdown.SelectedIndex = -1;
-                    BreakdownScopeLabel.Visibility = Visibility.Hidden;
-                    BreakdownScopeDropdown.Visibility = Visibility.Hidden;
-                    SelectedScopeBreakdownDropdown.SelectedIndex = -1;
                 }
             }
         }
@@ -1805,7 +1797,7 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        public void Run_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Run_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 77, 101));
@@ -1816,7 +1808,7 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
-        public void Run_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Run_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Button btn = sender as Button;
             btn.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(25, 117, 151));
