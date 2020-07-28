@@ -79,6 +79,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Placement" Value="Center"/>
         </Style>
+        
         <Style x:Key="ClosePopupButton" TargetType="{x:Type Button}">
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -124,6 +125,50 @@
             <Setter Property="Margin" Value="0,20,0,0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="TextDecorations" Value="Underline"/>
+        </Style>
+        <Style x:Key="ChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <Style x:Key="EmptyChartHeaderStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Sitka Display"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+
+        <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontFamily" Value="Sitka Text"/>
+        </Style>
+        <Style x:Key="DataGridSmallHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="FontFamily" Value="Sitka Subheading"/>
+            <Setter Property="Background" Value="#FF197597"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
 
         <Style x:Key="LabelStyleDirectory" TargetType="{x:Type Label}">
@@ -217,48 +262,64 @@
             </Popup>
 
             <!-- #2 Security Principal List Option-->
-            <TextBlock Name="SecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal."
+            <TextBlock Name="PermissionsBySecurityPrincipalList" Text="2. List Assigned Permissions by Security Principal."
                    Grid.Column ="0" Grid.Row="6"
                    Style="{StaticResource FiltersStyle}"/>
 
-            <Label Name="SecurityPrincipalScopeLabel" Content="Choose your scope:"
+            <Label Name="PermissionsBySecurityPrincipalScopeLabel" Content="Choose your scope:"
                Grid.Column="0" Grid.Row="7" Style="{StaticResource LabelStyleVisible}"/>
-            <ComboBox Name="SecurityPrincipalScopeDropdown" 
+            <ComboBox Name="PermissionsBySecurityPrincipalScopeDropdown" 
                   Grid.Column ="0" Grid.Row="8"
                   Style="{StaticResource ComboBoxStyleVisible}"   
-                  SelectionChanged="SecurityPrincipalScopeDropdown_SelectionChanged">
+                  SelectionChanged="PermissionsBySecurityPrincipalScopeDropdown_SelectionChanged">
                 <ComboBoxItem Content="YAML"/>
                 <ComboBoxItem Content="Subscription"/>
                 <ComboBoxItem Content="ResourceGroup"/>
                 <ComboBoxItem Content="KeyVault"/>
             </ComboBox>
 
-            <Button Name ="SecurityPrincipalRun"
-                Grid.Column="0" Grid.Row="9" 
-                Style="{StaticResource RunButton}"/>
 
-            <Label Name="SecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
+            <Label Name="PermissionsBySecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="1" Grid.Row="7" 
                Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="SecurityPrincipalSpecifyScopeDropdown"
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyScopeDropdown"
                   Grid.Column="1" Grid.Row="8" 
-                  Style="{StaticResource ComboBoxStyleHidden}"
-                  SelectionChanged="SecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed"
+                      SelectionChanged="PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
 
 
-            <Label Name="SecurityPrincipalTypeLabel" Content="Choose the type:"
+            <Label Name="PermissionsBySecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="2" Grid.Row="7"
                Style="{StaticResource LabelStyleHidden}"/>
-            <ComboBox Name ="SecurityPrincipalTypeDropdown" 
+            <ComboBox Name ="PermissionsBySecurityPrincipalTypeDropdown" 
                   Grid.Column="2" Grid.Row="8"
-                  Style="{StaticResource ComboBoxStyleHidden}">
+                  Style="{StaticResource ComboBoxStyleHidden}"  SelectionChanged="PermissionsBySecurityPrincipalTypeDropdown_SelectionChanged"> 
                 <ComboBoxItem Content="All"/>
                 <ComboBoxItem Content="User"/>
                 <ComboBoxItem Content="Group"/>
-                <ComboBoxItem Content="Application"/>
-                <ComboBoxItem Content="Service Principal" />
+                <ComboBoxItem Content="Service Principal/Application" />
             </ComboBox>
+            <Label Name="PermissionsBySecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
+               Grid.Column="3" Grid.Row="7" 
+               Style="{StaticResource LabelStyleHidden}"/>
+            <ComboBox Name ="PermissionsBySecurityPrincipalSpecifyTypeDropdown"
+                  Grid.Column="3" Grid.Row="8" 
+                  Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyTypeDropdown_DropDownClosed" />
 
+            <Button Name ="PermissionsBySecurityPrincipalRun"
+                Grid.Column="0" Grid.Row="9" 
+                Style="{StaticResource RunButton}"/>
+
+            <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="750">
+                <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
+                                    VerticalAlignment="Top">
+                            <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Click" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Popup>
             <!-- #3 Permissions List Option-->
 
             <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions."
