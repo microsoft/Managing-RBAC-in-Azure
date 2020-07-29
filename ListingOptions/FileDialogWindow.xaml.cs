@@ -39,10 +39,18 @@ namespace RBAC
 
             if (dialogOK == true)
             {
-                var yaml = (new UpdatePoliciesFromYaml(true)).deserializeYaml(fileDialog.FileName);
-                MainWindow main = new MainWindow(yaml);
-                this.Close();
-                main.ShowDialog();
+                try
+                {
+                    var yaml = (new UpdatePoliciesFromYaml(true)).deserializeYaml(fileDialog.FileName);
+                    MainWindow main = new MainWindow(yaml);
+                    this.Close();
+                    main.ShowDialog();
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    FileDialogRun_Click(sender, e);
+                }
             }
         }
 

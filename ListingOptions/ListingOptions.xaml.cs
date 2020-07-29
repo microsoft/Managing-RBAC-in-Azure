@@ -190,7 +190,7 @@ namespace RBAC
 
                     if (yaml.Count() == 0)
                     {
-                        throw new Exception("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.");
+                        throw new Exception("Yaml is invalid or empty.");
                     }
 
                     PermissionsBySecurityPrincipalSpecifyScopeDropdown.Items.Clear();
@@ -288,7 +288,7 @@ namespace RBAC
                 List<KeyVaultProperties> yaml = Yaml;
 
                 List<string> items = new List<string>();
-
+                items.Add("All");
                 if (scope == "YAML")
                 {
                     if (type == "All")
@@ -515,62 +515,68 @@ namespace RBAC
         /// </summary>
         public void RunPermissionsBySecurityPrincipal()
         {
-            ComboBox specifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
-            List<string> selectedSpecifyTypeItems = getSelectedItemsTemplate(specifyType);
-
-            if (PermissionsBySecurityPrincipalPopUp.IsOpen)
+            this.Dispatcher.Invoke(() =>
             {
-                PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
-            }
-            if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
-            {
-                MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
-            {
-                MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            else
-            {
-                if (selectedSpecifyTypeItems.Count == 0)
+                ComboBox specifyType = PermissionsBySecurityPrincipalSpecifyTypeDropdown as ComboBox;
+                List<string> selectedSpecifyTypeItems = getSelectedItemsTemplate(specifyType);
+                selectedSpecifyTypeItems.Remove("All");
+                if (PermissionsBySecurityPrincipalPopUp.IsOpen)
                 {
-                    MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PermissionsBySecurityPrincipalStackPanel.Children.RemoveRange(1, PermissionsBySecurityPrincipalStackPanel.Children.Count - 1);
+                }
+                if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex == -1)
+                {
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-            }
+                if (PermissionsBySecurityPrincipalTypeDropdown.SelectedIndex == -1)
+                {
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please specify as least one type prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                else
+                {
+                    if (selectedSpecifyTypeItems.Count == 0)
+                    {
+                        PbPopup.IsOpen = false;
+                        MessageBox.Show("Please select at least one security principal prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                }
 
-            List<KeyVaultProperties> yaml = Yaml;
-            ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
-            string scope = selectedScope.Content as string;
-            ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
-            string type = selectedtype.Content as string;
+                List<KeyVaultProperties> yaml = Yaml;
+                ComboBoxItem selectedScope = PermissionsBySecurityPrincipalScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = selectedScope.Content as string;
+                ComboBoxItem selectedtype = PermissionsBySecurityPrincipalTypeDropdown.SelectedItem as ComboBoxItem;
+                string type = selectedtype.Content as string;
 
-            PermissionsBySecurityPrincipalPopUp.IsOpen = true;
-            PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing Assigned Permissions by Security Principal"));
+                PermissionsBySecurityPrincipalPopUp.IsOpen = true;
+                PermissionsBySecurityPrincipalStackPanel.Children.Add(createDataGridTitle($"Listing Assigned Permissions by Security Principal"));
 
-            if (scope == "YAML")
-            {
-                permissionsBySecurityPrincipalGenerateYamlScope(yaml, type, selectedSpecifyTypeItems);
-                return;
-            }
+                if (scope == "YAML")
+                {
+                    permissionsBySecurityPrincipalGenerateYamlScope(yaml, type, selectedSpecifyTypeItems);
+                    return;
+                }
 
-            ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
-            var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
-
-            if (scope == "Subscription")
-            {
-                permissionsBySecurityPrincipalGenerateSubscriptionScope(yaml,type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
-            }
-            else if (scope == "ResourceGroup")
-            {
-                permissionsBySecurityPrincipalGenerateResourceGroupScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
-            }
-            else if (scope == "KeyVault")
-            {
-                permissionsBySecurityPrincipalGenerateKeyVaultScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
-            }
+                ComboBox potentialSpecifyScope = PermissionsBySecurityPrincipalSpecifyScopeDropdown as ComboBox;
+                var selectedSpecifyScopeItems = getSelectedItemsTemplate(potentialSpecifyScope);
+                selectedSpecifyScopeItems.Remove("All");
+                if (scope == "Subscription")
+                {
+                    permissionsBySecurityPrincipalGenerateSubscriptionScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
+                }
+                else if (scope == "ResourceGroup")
+                {
+                    permissionsBySecurityPrincipalGenerateResourceGroupScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
+                }
+                else if (scope == "KeyVault")
+                {
+                    permissionsBySecurityPrincipalGenerateKeyVaultScope(yaml, type, selectedSpecifyTypeItems, selectedSpecifyScopeItems);
+                }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
 
@@ -1214,6 +1220,7 @@ namespace RBAC
             }
             else
             {
+                items.Add("All");
                 if(scope == "Subscription")
                 {
                     foreach(KeyVaultProperties kv in yaml)
@@ -1380,7 +1387,16 @@ namespace RBAC
             ItemCollection items = dropdown.Items;
 
             List<string> selected = getSelectedItemsTemplate(dropdown);
-            if(selected != null)
+            if (selected.Contains("All"))
+            {
+                foreach (var item in dropdown.Items)
+                {
+                    var cb = item as CheckBox;
+                    cb.IsChecked = true;
+                }
+            }
+            selected = getSelectedItemsTemplate(dropdown);
+            if (selected != null)
             {
                 int numChecked = selected.Count();
 
@@ -1477,6 +1493,7 @@ namespace RBAC
                 ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
                 if (scope == null)
                 {
+                    PbPopup.IsOpen = false;
                     MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1490,9 +1507,10 @@ namespace RBAC
                 {
                     ComboBox specifyScopeDropdown = PBPSpecifyScopeDropdown as ComboBox;
                     List<string> selected = getSelectedItemsTemplate(specifyScopeDropdown);
-
+                    selected.Remove("All");
                     if (selected.Count() == 0)
                     {
+                        PbPopup.IsOpen = false;
                         MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -1527,6 +1545,7 @@ namespace RBAC
                 certifsSelected.Remove("All");
                 if (keysSelected.Count() == 0 && secretsSelected.Count() == 0 && certifsSelected.Count() == 0)
                 {
+                    PbPopup.IsOpen = false;
                     MessageBox.Show("Please select as least one permission prior to hitting 'Run'.", "NoPermissionsSelected Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1555,30 +1574,42 @@ namespace RBAC
                 {
                     foreach (var key in k.Keys)
                     {
-                        var a = new ListSpResults
+                        if(k[key].Count != 0)
                         {
-                            Permission = key,
-                            KeyVaults = new List<KVsWithPermission>()
-                        };
-                        foreach (var p in k[key])
-                        {
-                            var toAdd = new KVsWithPermission
+                            var a = new ListSpResults
                             {
-                                VaultName = p.Item1,
-                                SecurityPrincipals = new List<SecPrincipals>()
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var sp in p.Item2)
+                            foreach (var p in k[key])
                             {
-                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                var toAdd = new KVsWithPermission
                                 {
-                                    Type = sp.Type,
-                                    Name = sp.DisplayName,
-                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                                });
+                                    VaultName = p.Item1,
+                                    SecurityPrincipals = new List<SecPrincipals>()
+                                };
+                                foreach (var sp in p.Item2)
+                                {
+                                    toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                    {
+                                        Type = sp.Type,
+                                        Name = sp.DisplayName,
+                                        Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                    });
+                                }
+                                a.KeyVaults.Add(toAdd);
                             }
-                            a.KeyVaults.Add(toAdd);
+                            keys.Add(a);
                         }
-                        keys.Add(a);
+                        else
+                        {
+                            var a = new ListSpResults
+                            {
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission> { new KVsWithPermission { VaultName = "None", SecurityPrincipals = new List<SecPrincipals> { new SecPrincipals { Alias = "N/A", Name = "N/A", Type = "N/A" } } } }
+                            };
+                            keys.Add(a);
+                        }
                     }
                 }
                 if (s.Count == 0)
@@ -1590,30 +1621,42 @@ namespace RBAC
                 {
                     foreach (var key in s.Keys)
                     {
-                        var a = new ListSpResults
+                        if(s[key].Count != 0)
                         {
-                            Permission = key,
-                            KeyVaults = new List<KVsWithPermission>()
-                        };
-                        foreach (var p in s[key])
-                        {
-                            var toAdd = new KVsWithPermission
+                            var a = new ListSpResults
                             {
-                                VaultName = p.Item1,
-                                SecurityPrincipals = new List<SecPrincipals>()
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var sp in p.Item2)
+                            foreach (var p in s[key])
                             {
-                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                var toAdd = new KVsWithPermission
                                 {
-                                    Type = sp.Type,
-                                    Name = sp.DisplayName,
-                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                                });
+                                    VaultName = p.Item1,
+                                    SecurityPrincipals = new List<SecPrincipals>()
+                                };
+                                foreach (var sp in p.Item2)
+                                {
+                                    toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                    {
+                                        Type = sp.Type,
+                                        Name = sp.DisplayName,
+                                        Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                    });
+                                }
+                                a.KeyVaults.Add(toAdd);
                             }
-                            a.KeyVaults.Add(toAdd);
+                            secrets.Add(a);
                         }
-                        secrets.Add(a);
+                        else
+                        {
+                            var a = new ListSpResults
+                            {
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission> { new KVsWithPermission { VaultName = "None", SecurityPrincipals = new List<SecPrincipals> { new SecPrincipals { Alias = "N/A", Name = "N/A", Type = "N/A" } } } }
+                            };
+                            keys.Add(a);
+                        }
                     }
                 }
                 if (c.Count == 0)
@@ -1625,36 +1668,44 @@ namespace RBAC
                 {
                     foreach (var key in c.Keys)
                     {
-                        var a = new ListSpResults
+                        if(c[key].Count != 0)
                         {
-                            Permission = key,
-                            KeyVaults = new List<KVsWithPermission>()
-                        };
-                        foreach (var p in c[key])
-                        {
-                            var toAdd = new KVsWithPermission
+                            var a = new ListSpResults
                             {
-                                VaultName = p.Item1,
-                                SecurityPrincipals = new List<SecPrincipals>()
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var sp in p.Item2)
+                            foreach (var p in c[key])
                             {
-                                toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                var toAdd = new KVsWithPermission
                                 {
-                                    Type = sp.Type,
-                                    Name = sp.DisplayName,
-                                    Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
-                                });
+                                    VaultName = p.Item1,
+                                    SecurityPrincipals = new List<SecPrincipals>()
+                                };
+                                foreach (var sp in p.Item2)
+                                {
+                                    toAdd.SecurityPrincipals.Add(new SecPrincipals
+                                    {
+                                        Type = sp.Type,
+                                        Name = sp.DisplayName,
+                                        Alias = sp.Alias == null || sp.Alias.Length == 0 ? "N/A" : sp.Alias
+                                    });
+                                }
+                                a.KeyVaults.Add(toAdd);
                             }
-                            a.KeyVaults.Add(toAdd);
+                            certificates.Add(a);
                         }
-                        certificates.Add(a);
+                        else
+                        {
+                            var a = new ListSpResults
+                            {
+                                Permission = key,
+                                KeyVaults = new List<KVsWithPermission> { new KVsWithPermission { VaultName = "None", SecurityPrincipals = new List<SecPrincipals> { new SecPrincipals { Alias = "N/A", Name = "N/A", Type = "N/A" } } } }
+                            };
+                            keys.Add(a);
+                        }
                     }
                 }
-
-
-
-
 
                 ListSPKey.ItemsSource = keys;
                 ListSPCertificate.ItemsSource = certificates;
@@ -1898,27 +1949,31 @@ namespace RBAC
         /// <param name="e">The event that occurs when the button is clicked</param>
         private void RunPermissionsBreakdown_Click(object sender, RoutedEventArgs e)
         {
-            ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
-            string scope = breakdownScope.Content as string;
-
-            if(scope != "YAML")
+            this.Dispatcher.Invoke(() =>
             {
-                ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
-                List<string> selected = getSelectedItemsTemplate(scopeDropdown);
+                ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
+                string scope = breakdownScope.Content as string;
 
-                if (selected.Count() == 0)
+                if (scope != "YAML")
                 {
-                    MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
+                    List<string> selected = getSelectedItemsTemplate(scopeDropdown);
+                    selected.Remove("All");
+                    if (selected.Count() == 0)
+                    {
+                        PbPopup.IsOpen = false;
+                        MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        calculatePermissionBreakdown(scope, selected);
+                    }
                 }
                 else
                 {
-                    calculatePermissionBreakdown(scope, selected);
+                    calculatePermissionBreakdown(scope, null);
                 }
-            }
-            else
-            {
-                calculatePermissionBreakdown(scope, null);
-            }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         /// <summary>
@@ -1933,7 +1988,8 @@ namespace RBAC
 
             if(yaml.Count() == 0)
             {
-                MessageBox.Show("The YAML file path must be specified in the Constants.cs file. Please ensure this path is correct before proceeding.", "InvalidFilePath Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                PbPopup.IsOpen = false;
+                MessageBox.Show("Yaml is invalid or empty.", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -2208,7 +2264,11 @@ namespace RBAC
                     MostAccessedSpecifyScopeDropdown.Visibility = Visibility.Visible;
                 }
             }
+
             List<KeyVaultProperties> yaml = Yaml;
+            CheckBox all = new CheckBox();
+            all.Content = "All";
+            MostAccessedSpecifyScopeDropdown.Items.Add(all);
             if (choice == "KeyVault")
             {
                 foreach(KeyVaultProperties kv in yaml)
@@ -2290,6 +2350,9 @@ namespace RBAC
 
             }
             List<KeyVaultProperties> yaml = Yaml;
+            CheckBox all = new CheckBox();
+            all.Content = "All";
+            SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(all);
             if (choice == "KeyVault")
             {
                 foreach(KeyVaultProperties kv in yaml)
@@ -2372,8 +2435,14 @@ namespace RBAC
             }
             else if (btn.Name == "PermissionsBySecurityPrincipalRun")
             {
-                // Execute Code            
-                RunPermissionsBySecurityPrincipal();
+                PbPopup.IsOpen = true;
+                Task.Factory.StartNew(() =>
+                {
+                    RunPermissionsBySecurityPrincipal();
+                }).ContinueWith(task =>
+                {
+                    PbPopup.IsOpen = false;
+                }, System.Threading.CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
             }
             else if(btn.Name == "PermissionsRun")
             {
@@ -2401,16 +2470,37 @@ namespace RBAC
                 }
                 else
                 {
-                    RunPermissionsBreakdown_Click(sender, e);
+                    PbPopup.IsOpen = true;
+                    Task.Factory.StartNew(() =>
+                    {
+                        RunPermissionsBreakdown_Click(sender, e);
+                    }).ContinueWith(task =>
+                    {
+                        PbPopup.IsOpen = false;
+                    }, System.Threading.CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
                 }
             }
             else if(btn.Name == "MostAccessedRun")
             {
-                RunTopKVs(sender, e);
+                PbPopup.IsOpen = true;
+                Task.Factory.StartNew(() =>
+                {
+                    RunTopKVs(sender, e);
+                }).ContinueWith(task =>
+                {
+                    PbPopup.IsOpen = false;
+                }, System.Threading.CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
             }
             else if(btn.Name == "SecurityPrincipalAccessRun")
             {
-                RunTopSPs(sender, e);
+                PbPopup.IsOpen = true;
+                Task.Factory.StartNew(() =>
+                {
+                    RunTopSPs(sender, e);
+                }).ContinueWith(task =>
+                {
+                    PbPopup.IsOpen = false;
+                }, System.Threading.CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
             }
         }
 
@@ -2421,86 +2511,92 @@ namespace RBAC
         /// <param name="e">The event that occurs when run button is clicked</param>
         private void RunTopSPs(object sender, RoutedEventArgs e)
         {
-            ComboBoxItem breakdownScope = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
-            if(breakdownScope == null)
+            this.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            string scope = breakdownScope.Content as string;
-            var cb = SecurityPrincipalAccessSpecifyScopeDropdown;
-            List<string> selected = getSelectedItemsTemplate(cb);
-            if(scope != "YAML" && selected.Count() == 0)
-            {
-                MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else
-            {
-                var typeBox = SecurityPrincipalAccessTypeDropdown.SelectedItem as ComboBoxItem;
-                string type = typeBox.Content as string;
-                List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
-                var topSPs = getTopSPs(vaults, type);
-                if(type == "KeyVaults")
+                ComboBoxItem breakdownScope = SecurityPrincipalAccessScopeDropdown.SelectedItem as ComboBoxItem;
+                if (breakdownScope == null)
                 {
-                    TopSPGrid.Columns.Clear();
-                    var col1 = new DataGridTextColumn();
-                    col1.Header = "Security Principal Type";
-                    col1.Binding = new System.Windows.Data.Binding("type");
-                    col1.Width = 187.5;
-                    TopSPGrid.Columns.Add(col1);
-
-                    var col2 = new DataGridTextColumn();
-                    col2.Header = "Name";
-                    col2.Binding = new System.Windows.Data.Binding("name");
-                    col2.Width = 187.5;
-                    TopSPGrid.Columns.Add(col2);
-                    
-                    var col3 = new DataGridTextColumn();
-                    col3.Header = "Alias";
-                    col3.Binding = new System.Windows.Data.Binding("alias");
-                    col3.Width = 187.5;
-                    TopSPGrid.Columns.Add(col3);
-
-                    var col4 = new DataGridTextColumn();
-                    col4.Header = "KeyVaults Accessed";
-                    col4.Binding = new System.Windows.Data.Binding("count");
-                    col4.Width = 187.5;
-                    TopSPGrid.Columns.Add(col4);
-
-                    TopSPGrid.ItemsSource = topSPs;
-                    TopSPResults.IsOpen = true;
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                string scope = breakdownScope.Content as string;
+                var cb = SecurityPrincipalAccessSpecifyScopeDropdown;
+                List<string> selected = getSelectedItemsTemplate(cb);
+                selected.Remove("All");
+                if (scope != "YAML" && selected.Count() == 0)
+                {
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
-                    TopSPGrid.Columns.Clear();
-                    var col1 = new DataGridTextColumn();
-                    col1.Header = "Security Principal Type";
-                    col1.Binding = new System.Windows.Data.Binding("type");
-                    col1.Width = 187.5;
-                    TopSPGrid.Columns.Add(col1);
+                    var typeBox = SecurityPrincipalAccessTypeDropdown.SelectedItem as ComboBoxItem;
+                    string type = typeBox.Content as string;
+                    List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
+                    var topSPs = getTopSPs(vaults, type);
+                    if (type == "KeyVaults")
+                    {
+                        TopSPGrid.Columns.Clear();
+                        var col1 = new DataGridTextColumn();
+                        col1.Header = "Security Principal Type";
+                        col1.Binding = new System.Windows.Data.Binding("type");
+                        col1.Width = 187.5;
+                        TopSPGrid.Columns.Add(col1);
 
-                    var col2 = new DataGridTextColumn();
-                    col2.Header = "Name";
-                    col2.Binding = new System.Windows.Data.Binding("name");
-                    col2.Width = 187.5;
-                    TopSPGrid.Columns.Add(col2);
+                        var col2 = new DataGridTextColumn();
+                        col2.Header = "Name";
+                        col2.Binding = new System.Windows.Data.Binding("name");
+                        col2.Width = 187.5;
+                        TopSPGrid.Columns.Add(col2);
 
-                    var col3 = new DataGridTextColumn();
-                    col3.Header = "Alias";
-                    col3.Binding = new System.Windows.Data.Binding("alias");
-                    col3.Width = 187.5;
-                    TopSPGrid.Columns.Add(col3);
+                        var col3 = new DataGridTextColumn();
+                        col3.Header = "Alias";
+                        col3.Binding = new System.Windows.Data.Binding("alias");
+                        col3.Width = 187.5;
+                        TopSPGrid.Columns.Add(col3);
 
-                    var col4 = new DataGridTextColumn();
-                    col4.Header = "Permissions Granted";
-                    col4.Binding = new System.Windows.Data.Binding("count");
-                    col4.Width = 187.5;
-                    TopSPGrid.Columns.Add(col4);
+                        var col4 = new DataGridTextColumn();
+                        col4.Header = "KeyVaults Accessed";
+                        col4.Binding = new System.Windows.Data.Binding("count");
+                        col4.Width = 187.5;
+                        TopSPGrid.Columns.Add(col4);
 
-                    TopSPGrid.ItemsSource = topSPs;
-                    TopSPResults.IsOpen = true;
+                        TopSPGrid.ItemsSource = topSPs;
+                        TopSPResults.IsOpen = true;
+                    }
+                    else
+                    {
+                        TopSPGrid.Columns.Clear();
+                        var col1 = new DataGridTextColumn();
+                        col1.Header = "Security Principal Type";
+                        col1.Binding = new System.Windows.Data.Binding("type");
+                        col1.Width = 187.5;
+                        TopSPGrid.Columns.Add(col1);
+
+                        var col2 = new DataGridTextColumn();
+                        col2.Header = "Name";
+                        col2.Binding = new System.Windows.Data.Binding("name");
+                        col2.Width = 187.5;
+                        TopSPGrid.Columns.Add(col2);
+
+                        var col3 = new DataGridTextColumn();
+                        col3.Header = "Alias";
+                        col3.Binding = new System.Windows.Data.Binding("alias");
+                        col3.Width = 187.5;
+                        TopSPGrid.Columns.Add(col3);
+
+                        var col4 = new DataGridTextColumn();
+                        col4.Header = "Permissions Granted";
+                        col4.Binding = new System.Windows.Data.Binding("count");
+                        col4.Width = 187.5;
+                        TopSPGrid.Columns.Add(col4);
+
+                        TopSPGrid.ItemsSource = topSPs;
+                        TopSPResults.IsOpen = true;
+                    }
                 }
-            }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         /// <summary>
@@ -2558,7 +2654,8 @@ namespace RBAC
                 {
                     foreach(PrincipalPermissions pp in kv.AccessPolicies)
                     {
-                        if((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
+                        upInstance.translateShorthands(pp);
+                        if ((pp.Type.ToLower() == "user" || pp.Type.ToLower() == "group") && found.Contains(pp.Alias))
                         {
                             var idx = sps.FindIndex(c => c.alias == pp.Alias);
                             sps[idx].count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
@@ -2598,7 +2695,7 @@ namespace RBAC
             public string name { get; set; }
             public string alias { get; set; }
             public int count { get; set; }
-            public TopSp(string type, string name, int count, string alias = "")
+            public TopSp(string type, string name, int count, string alias = "N/A")
             {
                 this.type = type;
                 this.name = name;
@@ -2613,81 +2710,86 @@ namespace RBAC
         /// <param name="e">The event that occurs when run button is clicked</param>
         private void RunTopKVs(object sender, RoutedEventArgs e)
         {
-            ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
-            if(breakdownScope == null)
+            this.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            string scope = breakdownScope.Content as string;
-            var cb = MostAccessedSpecifyScopeDropdown;
-            List<string> selected = getSelectedItemsTemplate(cb);
-
-            if(scope != "YAML" && selected.Count() == 0)
-            {
-                MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else
-            {
-                var typeBox = MostAccessedTypeDropdown.SelectedItem as ComboBoxItem;
-                string type = typeBox.Content as string;
-                List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
-                var topVaults = getTopKVs(vaults, type);
-                if(type == "Security Principal")
+                ComboBoxItem breakdownScope = MostAccessedScopeDropdown.SelectedItem as ComboBoxItem;
+                if (breakdownScope == null)
                 {
-                    var fill = new List<TopKVSPClass>();
-                    for(int i = 0; i < topVaults.Count; i++)
-                    {
-                        if(i > 9)
-                        {
-                            break;
-                        }
-                        fill.Add(new TopKVSPClass(topVaults[i].Key, topVaults[i].Value));
-                    }
-                    TopKVGrid.Columns.Clear();
-                    var col1 = new DataGridTextColumn();
-                    col1.Header = "KeyVault Name";
-                    col1.Binding = new System.Windows.Data.Binding("VaultName");
-                    col1.Width = 300;
-                    TopKVGrid.Columns.Add(col1);
-
-                    var col2 = new DataGridTextColumn();
-                    col2.Header = "Security Principals with Access";
-                    col2.Binding = new System.Windows.Data.Binding("SecurityPrincipals");
-                    col2.Width = 300;
-                    TopKVGrid.Columns.Add(col2);
-
-                    TopKVGrid.ItemsSource = fill;
-                    TopKVResults.IsOpen = true;
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                string scope = breakdownScope.Content as string;
+                var cb = MostAccessedSpecifyScopeDropdown;
+                List<string> selected = getSelectedItemsTemplate(cb);
+                selected.Remove("All");
+                if (scope != "YAML" && selected.Count() == 0)
+                {
+                    PbPopup.IsOpen = false;
+                    MessageBox.Show("Please specify at least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
-                    var fill = new List<TopKVPermClass>();
-                    for(int i = 0; i < topVaults.Count; i++)
+                    var typeBox = MostAccessedTypeDropdown.SelectedItem as ComboBoxItem;
+                    string type = typeBox.Content as string;
+                    List<KeyVaultProperties> vaults = getScopeKVs(scope, selected);
+                    var topVaults = getTopKVs(vaults, type);
+                    if (type == "Security Principal")
                     {
-                        if(i > 9)
+                        var fill = new List<TopKVSPClass>();
+                        for (int i = 0; i < topVaults.Count; i++)
                         {
-                            break;
+                            if (i > 9)
+                            {
+                                break;
+                            }
+                            fill.Add(new TopKVSPClass(topVaults[i].Key, topVaults[i].Value));
                         }
-                        fill.Add(new TopKVPermClass(topVaults[i].Key, topVaults[i].Value));
+                        TopKVGrid.Columns.Clear();
+                        var col1 = new DataGridTextColumn();
+                        col1.Header = "KeyVault Name";
+                        col1.Binding = new System.Windows.Data.Binding("VaultName");
+                        col1.Width = 300;
+                        TopKVGrid.Columns.Add(col1);
+
+                        var col2 = new DataGridTextColumn();
+                        col2.Header = "Security Principals with Access";
+                        col2.Binding = new System.Windows.Data.Binding("SecurityPrincipals");
+                        col2.Width = 300;
+                        TopKVGrid.Columns.Add(col2);
+
+                        TopKVGrid.ItemsSource = fill;
+                        TopKVResults.IsOpen = true;
                     }
-                    TopKVGrid.Columns.Clear();
-                    var col1 = new DataGridTextColumn();
-                    col1.Header = "KeyVault Name";
-                    col1.Binding = new System.Windows.Data.Binding("VaultName");
-                    col1.Width = 300;
-                    TopKVGrid.Columns.Add(col1);
+                    else
+                    {
+                        var fill = new List<TopKVPermClass>();
+                        for (int i = 0; i < topVaults.Count; i++)
+                        {
+                            if (i > 9)
+                            {
+                                break;
+                            }
+                            fill.Add(new TopKVPermClass(topVaults[i].Key, topVaults[i].Value));
+                        }
+                        TopKVGrid.Columns.Clear();
+                        var col1 = new DataGridTextColumn();
+                        col1.Header = "KeyVault Name";
+                        col1.Binding = new System.Windows.Data.Binding("VaultName");
+                        col1.Width = 300;
+                        TopKVGrid.Columns.Add(col1);
 
-                    var col2 = new DataGridTextColumn();
-                    col2.Header = "Permissions Granted in KeyVault";
-                    col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
-                    col2.Width = 300;
-                    TopKVGrid.Columns.Add(col2);
+                        var col2 = new DataGridTextColumn();
+                        col2.Header = "Permissions Granted in KeyVault";
+                        col2.Binding = new System.Windows.Data.Binding("TotalPermissions");
+                        col2.Width = 300;
+                        TopKVGrid.Columns.Add(col2);
 
-                    TopKVGrid.ItemsSource = fill;
-                    TopKVResults.IsOpen = true;
+                        TopKVGrid.ItemsSource = fill;
+                        TopKVResults.IsOpen = true;
+                    }
                 }
-            }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
         /// <summary>
         /// This class is used to list the Top KeyVaults in a data grid.
@@ -2744,6 +2846,7 @@ namespace RBAC
                     int count = 0;
                     foreach (PrincipalPermissions pp in kv.AccessPolicies)
                     {
+                        upInstance.translateShorthands(pp);
                         count += pp.PermissionsToCertificates.Length + pp.PermissionsToKeys.Length + pp.PermissionsToSecrets.Length;
                     }
                     kvs.Add(kv.VaultName, count);
