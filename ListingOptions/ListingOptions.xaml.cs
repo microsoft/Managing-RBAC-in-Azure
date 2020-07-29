@@ -1404,10 +1404,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method overloads COMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+        /// This method returns the number of selected items so the dropdown does not clear.
         /// </summary>
-        /// <param name="dropdown"></param>
-        /// <returns></returns>
+        /// <param name="dropdown">The ComboBox for which you want to display the number of selected items</param>
+        /// <returns>The number of selected items</returns>
         private List<string> dropDownClosedTemplate(ComboBox dropdown)
         {
             ItemCollection items = dropdown.Items;

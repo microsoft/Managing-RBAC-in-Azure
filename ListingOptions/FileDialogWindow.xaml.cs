@@ -41,7 +41,8 @@ namespace RBAC
             {
                 try
                 {
-                    var yaml = (new UpdatePoliciesFromYaml(true)).deserializeYaml(fileDialog.FileName);
+                    List<KeyVaultProperties> yaml = (new UpdatePoliciesFromYaml(true)).deserializeYaml(fileDialog.FileName);
+                    
                     MainWindow main = new MainWindow(yaml);
                     this.Close();
                     main.ShowDialog();

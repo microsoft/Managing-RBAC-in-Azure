@@ -57,6 +57,11 @@ namespace RBAC
                     {
                         if (principalPermissions.Type.ToLower() == "unknown")
                         {
+                            if (Testing)
+                            {
+                                throw new Exception("Principal policy of Type 'Unknown' was found in KeyVault '{kv.VaultName}'.");
+                            }
+
                             log.Error($"UnknownPrincipal");
                             log.Debug($"There is a policy of type 'Unknown' within KeyVault '{kv.VaultName}', meaning that this principal has recently been deleted from the Tenant. " +
                                 $"Please remove this policy and re-run.");
@@ -68,6 +73,11 @@ namespace RBAC
             }
             catch (Exception e)
             {
+                if (Testing && e.Message.StartsWith("Principal policy of Type 'Unknown'"))
+                {
+                    return yamlVaults;
+                }
+
                 log.Error($"InvalidFields", e);
                 log.Debug("Please add or modify the specified field. 'VaultName', 'ResourceGroupName', 'SubscriptionId', 'Location', 'TenantId', and 'AccessPolicies' " +
                     "should be defined for each KeyVault. For more information on the fields required for each Security Principal in 'AccessPolicies', refer to the " +
