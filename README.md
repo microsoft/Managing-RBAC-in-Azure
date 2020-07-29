@@ -64,11 +64,14 @@ This phase reads in a **MasterConfig.json** file, retrieves the specified KeyVau
 
 ## Running AccessPoliciesToYaml
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. 
-2. Define your file paths by modifying **JSON_FILE_PATH** and **YAML_FILE_PATH** in **AccessPoliciesToYaml/Constants.cs**.
-3. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **AccessPoliciesToYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the Log.log file, followed by a space, and the file path of log4net.config.
+
+***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and Log.log is written to the Config folder.
+
+3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
-We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
+**Log.log** contains timestamps and full debugging information.
 
 # Phase 2: UpdatePolicesFromYaml
 This phase utilizes the generated **YamlOutput.yml** file to propagate any changes to the KeyVault access policies and see those changes reflected in the Azure portal.
@@ -133,15 +136,18 @@ In **AccessPoliciesToYaml/Constants.cs**, we have defined:
 All of these constants can be modified should they need to change.
 
 ### DeletePolicies.yml
-A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml** and can be found in the **Config** folder. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
+A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
 
 ## Running UpdatePoliciesFromYaml
 1. Open the generated **YamlOutput.yml** file from Phase 1 and make any desired changes to the access policies. Once your changes are made, save the file.
-2. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. If your file paths have changed, make sure to modify **JSON_FILE_PATH** and **YAML_FILE_PATH** in  **AccessPoliciesToYaml/Constants.cs**.
-3. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **UpdatePoliciesFromYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the DeletedPolicies.yml and the Log.log files, followed by a space, and the file path of log4net.config.
+
+***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and DeletedPolicies.yml and Log.log are written to the Config folder.
+
+3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
-We have implemented automated logging with timestamps and full debugging information. The **Log.log** file can be found in the **Config** folder.
+**Log.log** contains timestamps and full debugging information.
 
 # Phase 3: Managing-RBAC-in-Azure.ListingOptions
 We have defined 6 listing options for your benefit:
@@ -153,13 +159,13 @@ We have defined 6 listing options for your benefit:
 6. **List Top 10 Security Principals by Permission Access**: lists the 10 security principals with the highest number of granted permissions or the highest number of access policies in a specified scope
 
 ## Running Managing-RBAC-in-Azure.ListingOptions
-1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. If your file paths have changed, make sure to modify **JSON_FILE_PATH** and **YAML_FILE_PATH** in **AccessPoliciesToYaml/Constants.cs**.
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **Managing-RBAC-in-Azure.ListingOptions** from the dropdown. Click **OK**. Your project is now ready to run.
 
-# Managing-RBAC-in-Azure.Test
+# Managing-RBAC-in-Azure.Tests
 We have provided a series of automated test cases to verify your inputs.
 
-## Running Managing-RBAC-in-Azure.Test
+## Running Managing-RBAC-in-Azure.Tests
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.Test** project and select **Run Tests**.
 

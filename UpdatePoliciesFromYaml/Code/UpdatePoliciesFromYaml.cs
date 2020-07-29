@@ -23,7 +23,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, throw an error.
+        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, an error is thrown.
         /// </summary>
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         /// <param name="yamlDirectory">The directory of the yaml file</param>

@@ -10,9 +10,6 @@ namespace RBAC
     /// </summary>
     public static class Constants
     {
-        public const string JSON_FILE_PATH = "../../../../Config/MasterConfig.json";
-        public const string YAML_FILE_PATH = "../../../../Config/YamlOutput.yml";
-
         public const string HTTP = "https://";
         public const string AZURE_URL = ".vault.azure.net";
         public const string MICROSOFT_LOGIN = "https://login.microsoftonline.com/";

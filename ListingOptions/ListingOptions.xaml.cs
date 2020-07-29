@@ -42,7 +42,6 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">The shorthand permission block dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
-        /// 
         private void ShorthandPermissionTypesDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox blockDropdown = sender as ComboBox;
@@ -88,7 +87,6 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">The shorthand dropdown</param>
         /// <param name="e">The event that occurs when a selection changes</param>
-        /// 
         private void ShorthandPermissionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ShorthandPermissionsTranslation.IsOpen = false;
@@ -147,7 +145,6 @@ namespace RBAC
         /// </summary>
         /// <param name="sender">The close popup button</param>
         /// <param name="e">The event that occurs when the button is clicked</param>
-
         private void CloseShorthandPermissionsTranslation_Click(object sender, RoutedEventArgs e)
         {
             ShorthandPermissionsTranslation.IsOpen = false;
@@ -177,7 +174,6 @@ namespace RBAC
             PermissionsBySecurityPrincipalSpecifyTypeLabel.Visibility = Visibility.Hidden;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.SelectedIndex = -1;
             PermissionsBySecurityPrincipalSpecifyTypeDropdown.Visibility = Visibility.Hidden;
-
 
             if (PermissionsBySecurityPrincipalScopeDropdown.SelectedIndex != -1)
             {
@@ -217,7 +213,6 @@ namespace RBAC
                 }
             }
         }
-
 
         /// <summary>
         /// This method makes the type label/dropdown visible when the specify scope selection changes.
@@ -493,7 +488,6 @@ namespace RBAC
                     col.Visibility = vis;
                 }
             }
-
         }
 
         /// <summary>
@@ -578,7 +572,6 @@ namespace RBAC
                 }
             }, System.Windows.Threading.DispatcherPriority.Background);
         }
-
 
         /// <summary>
         /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'YAML' scope is selected.
@@ -951,11 +944,9 @@ namespace RBAC
             }
         }
 
-
         /// <summary>
         /// This is a helper method that removes all the empty datagrids in the sub scope and replaces them with a textblock.
         /// </summary>
-        /// <returns> Remove empty datagrid in sub scope.</returns>
         public void removeEmptySubscriptionsFromStackPanel(int numberOfGroup, String type)
         {
             int index = 3;
@@ -977,7 +968,7 @@ namespace RBAC
         /// <summary>
         /// This method returns the last added datagrid.
         /// </summary>
-        /// <returns>Last added datagrid.</returns>
+        /// <returns>Last added datagrid</returns>
         public DataGrid getLastStackPanelDataGrid()
         {
             return (DataGrid)PermissionsBySecurityPrincipalStackPanel.Children[PermissionsBySecurityPrincipalStackPanel.Children.Count - 1];
@@ -986,7 +977,7 @@ namespace RBAC
         /// <summary>
         /// This method returns the title of the pop up.
         /// </summary>
-        /// <returns>Title of popup.</returns>
+        /// <returns>Title of popup</returns>
         public TextBlock createDataGridTitle(string text)
         {
             TextBlock textBlock = new TextBlock();
@@ -1012,7 +1003,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method creates and returns a a textbblock that tells the user no permissions were found in a scope.
+        /// This method creates and returns a textblock that tells the user no permissions were found in a scope.
         /// </summary>
         /// <param name="text">The Display of the TextBlock </param>
         /// <returns>A TextBlock </returns>
@@ -1078,8 +1069,8 @@ namespace RBAC
         {
             public string VaultName { get; set; }
             public List<SPPermissions> SecurityPrincipals { get; set; }
-
         }
+
         /// <summary>
         /// This class represents a vault and its security principals with no type displayed in the option 2 data grid.
         /// </summary>
@@ -1088,6 +1079,7 @@ namespace RBAC
             public string VaultName { get; set; }
             public List<NoTypePermissions> SecurityPrincipals { get; set; }
         }
+
         /// <summary>
         /// This class represents security principals with their type specified.
         /// </summary>
@@ -1101,6 +1093,7 @@ namespace RBAC
                 this.Type = type;
             }
         }
+
         /// <summary>
         /// This class represents security principals without indicating type.
         /// </summary>
@@ -1323,7 +1316,7 @@ namespace RBAC
         {
             var dropdown = sender as ComboBox;
             List<string> selected = getSelectedItemsTemplate(dropdown);
-            if (selected.Contains("All"))
+            if (selected != null && selected.Contains("All"))
             {
                 foreach (var item in dropdown.Items)
                 {
@@ -1344,7 +1337,7 @@ namespace RBAC
         {
             var dropdown = sender as ComboBox;
             List<string> selected = getSelectedItemsTemplate(dropdown);
-            if (selected.Contains("All"))
+            if (selected != null && selected.Contains("All"))
             {
                 foreach (var item in dropdown.Items)
                 {
@@ -1365,7 +1358,7 @@ namespace RBAC
         {
             var dropdown = sender as ComboBox;
             List<string> selected = getSelectedItemsTemplate(dropdown);
-            if (selected.Contains("All"))
+            if (selected != null && selected.Contains("All"))
             {
                 foreach (var item in dropdown.Items)
                 {
@@ -1387,7 +1380,7 @@ namespace RBAC
             ItemCollection items = dropdown.Items;
 
             List<string> selected = getSelectedItemsTemplate(dropdown);
-            if (selected.Contains("All"))
+            if (selected != null && selected.Contains("All"))
             {
                 foreach (var item in dropdown.Items)
                 {
@@ -1410,6 +1403,11 @@ namespace RBAC
             }
         }
 
+        /// <summary>
+        /// This method overloads COMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+        /// </summary>
+        /// <param name="dropdown"></param>
+        /// <returns></returns>
         private List<string> dropDownClosedTemplate(ComboBox dropdown)
         {
             ItemCollection items = dropdown.Items;
@@ -1725,7 +1723,7 @@ namespace RBAC
         }
         /// <summary>
         /// This Class is Used to populate the datagrid for listing Security Principals by permission.
-        /// It stores a KeyVault and a List of Security Principals with a certain permission
+        /// It stores a KeyVault and a List of Security Principals with a certain permission.
         /// </summary>
         internal class KVsWithPermission
         {
@@ -1734,7 +1732,7 @@ namespace RBAC
         }
         /// <summary>
         /// This Class is Used to populate the datagrid for listing Security Principals by permission.
-        /// It stores a Security Principal's type, name, and alias
+        /// It stores a Security Principal's type, name, and alias.
         /// </summary>
         internal class SecPrincipals
         {
@@ -2685,9 +2683,10 @@ namespace RBAC
                 return sps;
             }
         }
+
         /// <summary>
         /// This class is used to list the top Security Principals in a data grid.
-        /// It stores each principals's type, name, alias, and number of permissions/kevaults.
+        /// It stores each principals's type, name, alias, and number of permissions/keyvaults.
         /// </summary>
         internal class TopSp
         {
@@ -2791,6 +2790,7 @@ namespace RBAC
                 }
             }, System.Windows.Threading.DispatcherPriority.Background);
         }
+
         /// <summary>
         /// This class is used to list the Top KeyVaults in a data grid.
         /// It stores the VaultName and number of principals with access.
@@ -2805,6 +2805,7 @@ namespace RBAC
                 SecurityPrincipals = count;
             }
         }
+
         /// <summary>
         /// This class is used to list the Top KeyVaults in a data grid.
         /// It stores the VaultName and number of individual permissions granted.
@@ -2819,6 +2820,7 @@ namespace RBAC
                 TotalPermissions = count;
             }
         }
+
         /// <summary>
         /// This method gets the most accessible KeyVaults within a scope.
         /// </summary>
@@ -2858,7 +2860,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// Gets list of KeyVaults within a specified scope
+        /// This method gets the list of KeyVaults within a specified scope.
         /// </summary>
         /// <param name="scope">Type of scope</param>
         /// <param name="selected">Items specified in scope</param>
@@ -2905,7 +2907,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method makes the button a different color when the user hovers over it
+        /// This method makes the button a different color when the user hovers over it.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -2939,6 +2941,7 @@ namespace RBAC
             PBPSpecifyScopeLabel.Visibility = Visibility.Hidden;
             PBPSpecifyScopeDropdown.Visibility = Visibility.Hidden;
         }
+
         /// <summary>
         /// This method updates dropdown when a new item is selected.
         /// </summary>
@@ -2948,6 +2951,7 @@ namespace RBAC
         {
             dropDownClosedTemplate(sender, e);
         }
+
         /// <summary>
         /// This method shows more options when type is specified for Option 5.
         /// </summary>
@@ -2958,6 +2962,7 @@ namespace RBAC
             MostAccessedScopeDropdown.Visibility = Visibility.Visible;
             MostAccessedScopeLabel.Visibility = Visibility.Visible;
         }
+
         /// <summary>
         /// This method closes the popup for listing the top KeyVaults and closes all dropdowns
         /// </summary>
@@ -2986,6 +2991,7 @@ namespace RBAC
             SecurityPrincipalAccessScopeLabel.Visibility = Visibility.Visible;
             SecurityPrincipalAccessScopeDropdown.Visibility = Visibility.Visible;
         }
+
         /// <summary>
         /// This method updates dropdown when a new item is selected.
         /// </summary>
@@ -3016,23 +3022,6 @@ namespace RBAC
 
         private List<KeyVaultProperties> Yaml { get;  set; }
         private UpdatePoliciesFromYaml upInstance { get; set; }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var btn = sender as Button;
-            if(btn.Name == "AllKeyBtn")
-            {
-
-            }
-            else if(btn.Name == "AllSecBtn")
-            {
-
-            }
-            else
-            {
-
-            }
-        }
     }
 }
 

@@ -127,6 +127,7 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
+        
         <Style x:Key="ChartHeaderStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontFamily" Value="Sitka Display"/>
             <Setter Property="FontSize" Value="20"/>
@@ -146,7 +147,6 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
 
-
         <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="16"/>
@@ -157,10 +157,12 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
+        
         <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
             <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontFamily" Value="Sitka Text"/>
         </Style>
+        
         <Style x:Key="DataGridSmallHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="13.5"/>
@@ -230,8 +232,6 @@
             <Label Name="ShorthandPermissionTypesLabel" Content="Choose your permission block:"
                 Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
                 Style="{StaticResource LabelStyleVisible}"/>
-
-
             <ComboBox Name ="ShorthandPermissionTypesDropdown" 
                   Grid.Column="0" Grid.Row="4" Style="{StaticResource ComboBoxStyleVisible}"
                   SelectionChanged="ShorthandPermissionTypesDropdown_SelectionChanged">
@@ -247,8 +247,6 @@
             <Label Name="ShorthandPermissionsLabel" Content="Choose your shorthand:" 
                Grid.Column="1" Grid.Row ="3" Style="{StaticResource LabelStyleHidden}"
                Visibility="Hidden"/>
-
-
             <ComboBox Name="ShorthandPermissionsDropdown"
                   Grid.Column="1" Grid.Row="4" Style="{StaticResource ComboBoxStyleHidden}"   
                   SelectionChanged="ShorthandPermissionsDropdown_SelectionChanged"/>
@@ -278,7 +276,6 @@
                 <ComboBoxItem Content="KeyVault"/>
             </ComboBox>
 
-
             <Label Name="PermissionsBySecurityPrincipalSpecifyScopeLabel" Content="Specify the scope:"
                Grid.Column="1" Grid.Row="7" 
                Style="{StaticResource LabelStyleHidden}"/>
@@ -286,7 +283,6 @@
                   Grid.Column="1" Grid.Row="8" 
                   Style="{StaticResource ComboBoxStyleHidden}" DropDownClosed="PermissionsBySecurityPrincipalSpecifyScopeDropdown_DropDownClosed"
                       SelectionChanged="PermissionsBySecurityPrincipalSpecifyScopeDropdown_SelectionChanged"/>
-
 
             <Label Name="PermissionsBySecurityPrincipalTypeLabel" Content="Choose the type:"
                Grid.Column="2" Grid.Row="7"
@@ -299,6 +295,7 @@
                 <ComboBoxItem Content="Group"/>
                 <ComboBoxItem Content="Service Principal/Application" />
             </ComboBox>
+            
             <Label Name="PermissionsBySecurityPrincipalSpecifyTypeLabel" Content="Specify the type:"
                Grid.Column="3" Grid.Row="7" 
                Style="{StaticResource LabelStyleHidden}"/>
@@ -313,15 +310,14 @@
             <Popup x:Name="PermissionsBySecurityPrincipalPopUp" IsOpen="False" Style="{StaticResource PopupStyle}" Height="750">
                 <Border BorderThickness="0.3" Height="Auto" Width="Auto" BorderBrush="#FFE0E0E0" Background="White">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True"
-                                    VerticalAlignment="Top">
+                        <StackPanel x:Name="PermissionsBySecurityPrincipalStackPanel" Height="Auto" Width="Auto" Background="White" CanVerticallyScroll="True" VerticalAlignment="Top" ClipToBounds="False">
                             <Button Name="ClosePermissionsBySecurityPrincipal" Style="{StaticResource ClosePopupButton}" Click="ClosePermissionsBySecurityPrincipal_Click" />
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
             </Popup>
+            
             <!-- #3 Permissions List Option-->
-
             <TextBlock Name="PermissionsList" Text="3. List Security Principal by Assigned Permissions."
                    Grid.Column="0" Grid.Row="10"
                    Style="{StaticResource FiltersStyle}"/>
@@ -815,10 +811,7 @@
                 </Border>
             </Popup>
 
-
-
             <Popup x:Name="TopKVResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
-
                 <Border BorderThickness="0.3" Height="Auto" Width="600" BorderBrush="#FFE0E0E0">
                     <StackPanel Name="TopKVStackPanel" Height="Auto" Width="600" Background="White">
                         <Button Name="CloseTopKVResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopKVResults_Click" />
@@ -847,12 +840,11 @@
                                 </Style>
                             </DataGrid.Resources>
                         </DataGrid>
-
                     </StackPanel>
                 </Border>
             </Popup>
-            <Popup x:Name="TopSPResults"  IsOpen="False" Style="{StaticResource PopupStyle}">
 
+            <Popup x:Name="TopSPResults" IsOpen="False" Style="{StaticResource PopupStyle}">
                 <Border BorderThickness="0.3" Height="Auto" Width="750" BorderBrush="#FFE0E0E0">
                     <StackPanel Name="TopSPStackPanel" Height="Auto" Width="750" Background="White">
                         <Button Name="CloseTopSPResults" Style="{StaticResource ClosePopupButton}" Click="CloseTopSPResults_Click" />
@@ -885,6 +877,7 @@
                     </StackPanel>
                 </Border>
             </Popup>
+            
             <Popup x:Name="PbPopup" IsOpen="False" Style="{StaticResource PopupStyle}">
                 <Border BorderThickness="0.3" Height="Auto" Width="300" BorderBrush="#FFE0E0E0" >
                     <StackPanel Name="PbPanel" Height="Auto" Width="300" Background="White">
@@ -892,6 +885,7 @@
                     </StackPanel>
                 </Border>
             </Popup>
+            
         </Grid>
     </Viewbox>
 </Window>
