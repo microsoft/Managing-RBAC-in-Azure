@@ -252,6 +252,7 @@ namespace RBAC
             return secrets;
         }
 
+        /// <summary>
         /// This method creates and returns a KeyVaulManagementClient.
         /// </summary>
         /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
