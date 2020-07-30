@@ -96,7 +96,7 @@ namespace RBAC
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(true);
             var json = ap.readJsonFile("../../../Input/MasterConfig.json");
-            var exp = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
+            var exp = createExpectedJson(new List<Resource>());
             Assert.IsTrue(exp.Equals(json));
         }
 
@@ -111,7 +111,7 @@ namespace RBAC
             JObject configVaults = JObject.Parse(masterConfig);
             List<Testing<JsonInput>> testCasesJsonFieldsValid = new List<Testing<JsonInput>>()
             {
-                new Testing <JsonInput> (createExpectedJson( new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId"))
+                new Testing <JsonInput> (createExpectedJson( new List<Resource>()))
             };
             foreach (Testing<JsonInput> testCase in testCasesJsonFieldsValid)
             {
@@ -138,42 +138,14 @@ namespace RBAC
 
             List<Testing<JsonInput>> testCasesJsonFieldsInvalid = new List<Testing<JsonInput>>()
             {
-                new Testing <JsonInput> (createExpectedJson( null, new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId"),
-                "Missing AadAppKeyDetails in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'."),
-                new Testing <JsonInput> (createExpectedJson( new AadAppKey() , null, "AppName", "KeyVault", "ClientId","ClientKey", "TenantId"),
-                "Missing Resources in Json. Invalid fields were defined; valid fields are 'AadAppKeyDetails' and 'Resources'.")
+                new Testing <JsonInput> (createExpectedJson( null),
+                "Missing Resources in Json. Invalid fields were defined; Only valid field is 'Resources'.")
             };
             foreach (Testing<JsonInput> testCase in testCasesJsonFieldsInvalid)
             {
                 try
                 {
                     ap.checkJsonFields(testCase.testObject, configVaults);
-                    Assert.Fail();
-                }
-                catch (Exception e)
-                {
-                    Assert.AreEqual(testCase.error, e.Message);
-                }
-            }
-
-            List<Testing<JsonInput>> testCasesAadFieldsInvalid = new List<Testing<JsonInput>>()
-            {
-                new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), null, "KeyVault", "ClientId", "ClientKey", "TenantId"),
-                "Missing AadAppName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'."),
-                new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), "Appname", null, "ClientId", "ClientKey", "TenantId"),
-                "Missing VaultName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'."),
-                new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), "Appname", "KeyVault", null, "ClientKey", "TenantId"),
-                "Missing ClientIdSecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'."),
-                new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), "Appname", "KeyVault", "ClientId" , null, "TenantId"),
-                "Missing ClientKeySecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'."),
-                new Testing <JsonInput> (createExpectedJson(new AadAppKey(), new List<Resource>(), "Appname", "KeyVault", "ClientId" , "ClientKey", null),
-                "Missing TenantIdSecretName for AadAppKeyDetails. Invalid fields were defined; valid fields are 'AadAppName', 'VaultName', 'ClientIdSecretName', 'ClientKeySecretName', and 'TenantIdSecretName'.")
-            };
-            foreach (Testing<JsonInput> testCase in testCasesAadFieldsInvalid)
-            {
-                try
-                {
-                    ap.checkMissingAadFields(testCase.testObject, configVaults);
                     Assert.Fail();
                 }
                 catch (Exception e)
@@ -195,7 +167,7 @@ namespace RBAC
 
             List<Testing<JsonInput>> testMissingResourcesFieldsValid = new List<Testing<JsonInput>>()
             {
-                new Testing <JsonInput> (createExpectedJson( new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId"))
+                new Testing <JsonInput> (createExpectedJson(new List<Resource>()))
             };
             foreach (Testing<JsonInput> testCase in testMissingResourcesFieldsValid)
             {
@@ -220,9 +192,9 @@ namespace RBAC
             string masterConfig = System.IO.File.ReadAllText("../../../Input/MasterConfig.json");
             JObject configVaults = JObject.Parse(masterConfig);
 
-            JsonInput missingResourceGroupName = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKey", "TenantId");
+            JsonInput missingResourceGroupName = createExpectedJson(new List<Resource>());
             missingResourceGroupName.Resources[0].ResourceGroups[0].ResourceGroupName = null;
-            JsonInput missingSubscriptionId = createExpectedJson(new AadAppKey(), new List<Resource>(), "AppName", "KeyVault", "ClientId", "ClientKeye", "TenantId");
+            JsonInput missingSubscriptionId = createExpectedJson(new List<Resource>());
             missingSubscriptionId.Resources[1].SubscriptionId = null;
             List<Testing<JsonInput>> negativeTestMissingResourceFields = new List<Testing<JsonInput>>()
             {
@@ -290,22 +262,11 @@ namespace RBAC
         /// <param name="clientKeySecretName"> ClientKeySecretName </param>
         /// <param name="tenantIdSecretName"> TenantIdSecretName </param>
         /// <returns>The expected deserialized JsonInput</returns>
-        private JsonInput createExpectedJson( AadAppKey aadAppKeyDetails, List<Resource> resources, string aadAppName,
-            string vaultName, string clientIdSecretName, string clientKeySecretName, string tenantIdSecretName)
+        private JsonInput createExpectedJson( List<Resource> resources)
         {
             var expectedJson = new JsonInput();
-            expectedJson.AadAppKeyDetails = aadAppKeyDetails;
             expectedJson.Resources = resources;
 
-            if (aadAppKeyDetails != null)
-            {
-                expectedJson.AadAppKeyDetails.AadAppName = aadAppName;
-                expectedJson.AadAppKeyDetails.VaultName = vaultName;
-                expectedJson.AadAppKeyDetails.ClientIdSecretName = clientIdSecretName;
-                expectedJson.AadAppKeyDetails.ClientKeySecretName = clientKeySecretName;
-                expectedJson.AadAppKeyDetails.TenantIdSecretName = tenantIdSecretName;
-
-            }
 
             if ( resources != null)
             {

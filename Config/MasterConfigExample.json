@@ -1,11 +1,4 @@
 {
-  "AadAppKeyDetails": {
-    "AadAppName": "AppName",
-    "VaultName": "KeyVaultNameWithStoredSecrets",
-    "ClientIdSecretName": "NameOfClientIdSecret",
-    "ClientKeySecretName": "NameOfClientKeySecret",
-    "TenantIdSecretName": "NameOfTenantIdSecret"
-  },
   "Resources": [
     {
       "SubscriptionId": "EXAMPLE1-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

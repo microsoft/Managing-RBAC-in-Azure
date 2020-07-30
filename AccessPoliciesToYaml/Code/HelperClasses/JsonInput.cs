@@ -9,13 +9,11 @@ namespace RBAC
     /// </summary>
     public class JsonInput
     {
-        public AadAppKey AadAppKeyDetails { get; set; }
         public List<Resource> Resources { get; set; }
 
         public override bool Equals(object obj)
         {
             return obj is JsonInput input &&
-                   EqualityComparer<AadAppKey>.Default.Equals(AadAppKeyDetails, input.AadAppKeyDetails) &&
                    Resources.SequenceEqual(input.Resources);
         }
 
@@ -25,32 +23,6 @@ namespace RBAC
         }
     }
 
-    /// <summary>
-    /// This class stores the client information obtained from the MasterConfig.json file that is later needed to create the KeyVaultManagementClient and GraphServiceClient.
-    /// </summary>
-    public class AadAppKey
-    {
-        public string AadAppName { get; set; }
-        public string VaultName { get; set; }
-        public string ClientIdSecretName { get; set; }
-        public string ClientKeySecretName { get; set; }
-        public string TenantIdSecretName { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            return obj is AadAppKey key &&
-                   AadAppName == key.AadAppName &&
-                   VaultName == key.VaultName &&
-                   ClientIdSecretName == key.ClientIdSecretName &&
-                   ClientKeySecretName == key.ClientKeySecretName &&
-                   TenantIdSecretName == key.TenantIdSecretName;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(AadAppName, VaultName, ClientIdSecretName, ClientKeySecretName, TenantIdSecretName);
-        }
-    }
 
     /// <summary>
     /// This class stores the Resources information specified in the MasterConfig.json file.
