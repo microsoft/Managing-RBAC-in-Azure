@@ -223,10 +223,35 @@ namespace RBAC
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             try
             {
-                secrets["appName"] = Environment.GetEnvironmentVariable("APP_NAME");
-                secrets["clientId"] = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
-                secrets["clientKey"] = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET");
-                secrets["tenantId"] = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+                var app = Environment.GetEnvironmentVariable("APP_NAME");
+                if(app == null)
+                {
+                    throw new Exception("'APP_NAME' environmental variable not defined.");
+                }
+
+                var cId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
+                if (cId == null)
+                {
+                    throw new Exception("'AZURE_CLIENT_ID' environmental variable not defined.");
+                }
+
+                var cSec = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET"); ;
+                if (cSec == null)
+                {
+                    throw new Exception("'AZURE_CLIENT_SECRET' environmental variable not defined.");
+                }
+                
+
+                var ten = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+                if (ten == null)
+                {
+                    throw new Exception("'AZURE_TENANT_ID' environmental variable not defined.");
+                }
+                
+                secrets["appName"] = app;
+                secrets["clientId"] = cId;
+                secrets["clientKey"] = cSec;
+                secrets["tenantId"] = ten;
             }
             catch (Exception e)
             {
