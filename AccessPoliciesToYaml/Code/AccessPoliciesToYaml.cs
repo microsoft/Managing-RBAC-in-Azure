@@ -19,6 +19,7 @@ using System.IO;
 using log4net;
 using log4net.Config;
 using System.Reflection;
+using Constants = RBAC.AccessPoliciesToYamlConstants;
 
 namespace RBAC
 {
@@ -46,44 +47,28 @@ namespace RBAC
             {
                 if (args.Length == 0 || args == null)
                 {
-                    throw new Exception("Missing 4 input files.");
+                    throw new Exception("Missing 2 input files.");
                 }
                 if (args.Length == 1)
                 {
-                    throw new Exception("Missing 3 input files.");
-                }
-                if (args.Length == 2)
-                {
-                    throw new Exception("Missing 2 input files.");
-                }
-                if (args.Length == 3)
-                {
                     throw new Exception("Missing 1 input file.");
                 }
-                if (args.Length > 4)
+                if (args.Length > 2)
                 {
-                    throw new Exception("Too many input files. Maximum needed is 4.");
+                    throw new Exception("Too many input files. Maximum needed is 2.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
                     throw new Exception("The 1st argument is not a .json file.");
                 }
-                if (System.IO.Path.GetExtension(args[1]) != ".yml")
+                if (!System.IO.Directory.Exists(args[1]))
                 {
-                    throw new Exception("The 2nd argument is not a .yml file.");
-                }
-                if (!System.IO.Directory.Exists(args[2]))
-                {
-                    throw new Exception("The 3rd argument is not a valid path.");
-                }
-                if (System.IO.Path.GetExtension(args[3]) != ".config")
-                {
-                    throw new Exception("The 4th argument is not a .config file.");
+                    throw new Exception("The 2nd argument is not a valid path.");
                 }
 
-                log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                log4net.GlobalContext.Properties["Log"] = $"{args[1]}/Log";
                 var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
-                XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
+                XmlConfigurator.Configure(logRepo, new FileInfo(Path.GetFullPath("log4net.config")));
 
                 log.Info("Program started!");
                 log.Info("File extensions verified!");
@@ -91,7 +76,8 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
-                log.Debug("Please open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. 4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log, followed by a space, and the file path of log4net.config.");
+                log.Debug("If you're running using Visual Studio, open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
+                    "\n2 arguments are required: the file path to your local MasterConfig.json file, followed by a space, and the path of the directory of which you want to write Log.log.");
                 Exit(e.Message);
             }
         }
@@ -158,8 +144,6 @@ namespace RBAC
                 throw new Exception($"Missing {string.Join(" ,", missingInputs)} in Json.");
             }
         }
-
-
 
         /// <summary>
         /// This method verifies that all of the required inputs exist for each Resource object.
@@ -258,7 +242,6 @@ namespace RBAC
                 secrets["clientId"] = cId;
                 secrets["clientKey"] = cSec;
                 secrets["tenantId"] = ten;
-
             }
             catch (Exception e)
             {
@@ -588,7 +571,7 @@ namespace RBAC
                 var serializer = new SerializerBuilder().Build();
                 string yaml = serializer.Serialize(vaultsRetrieved);
 
-                System.IO.File.WriteAllText(yamlDirectory, yaml);
+                System.IO.File.WriteAllText($"{yamlDirectory}/YamlOutput.yml", yaml);
                 log.Info("YAML created!");
             }
             catch (Exception e)

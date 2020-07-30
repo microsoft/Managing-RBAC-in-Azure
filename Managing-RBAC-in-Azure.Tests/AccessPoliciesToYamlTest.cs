@@ -43,7 +43,7 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesValid = new List<Testing<string[]>>()
             {
-                new Testing<string[]> (new string[] { "file.json", "file.yml", "../../../output", "file.config" })
+                new Testing<string[]> (new string[] { "file.json", "../../../output" })
             };
             foreach (Testing<string[]> testCase in testCasesValid)
             {
@@ -68,14 +68,11 @@ namespace RBAC
 
             List<Testing<string[]>> testCasesInvalid = new List<Testing<string[]>>()
             {
-                new Testing <string[]> (new string[] {}, "Missing 4 input files."),
-                new Testing <string[]> (new string[] { "file.json" }, "Missing 3 input files."),
-                new Testing <string[]> (new string[] { "file.json", "file.yml" }, "Missing 2 input files."),
-                new Testing <string[]> (new string[] { "file1.json", "file2.json", "../../../output", "file3.json", "file4.json" }, "Too many input files. Maximum needed is 4."),
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml", "../../../output", "log4net.config" }, "The 1st argument is not a .json file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml", "../../../output", "log4net.config" }, "The 2nd argument is not a .yml file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yml", "../../../outp1ut", "log4net.config" }, "The 3rd argument is not a valid path."),
-                new Testing <string[]> (new string[] { "file.json", "file.yml", "../../../output", "log4net.json" }, "The 4th argument is not a .config file.")
+                new Testing <string[]> (new string[] {}, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file.json" }, "Missing 1 input file."),
+                new Testing <string[]> (new string[] { "file1.json", "file2.yml", "../../../output" }, "Too many input files. Maximum needed is 2."),
+                new Testing <string[]> (new string[] { "file.jsn", "../../../output" }, "The 1st argument is not a .json file."),
+                new Testing <string[]> (new string[] { "file.json", "../../../outp1ut" }, "The 2nd argument is not a valid path."),
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {

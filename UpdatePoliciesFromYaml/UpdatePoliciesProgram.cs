@@ -15,13 +15,14 @@ namespace RBAC
         public static List<KeyVaultProperties> runProgram(string[] args, bool testing)
         {
             AccessPoliciesToYaml ap = new AccessPoliciesToYaml(testing);
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(testing);
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("Refer to 'Log.log' for more details should an error be thrown.\n");
             Console.ResetColor();
 
             Console.WriteLine("Reading input files...");
-            ap.verifyFileExtensions(args);
+            up.verifyFileExtensions(args);
             JsonInput vaultList = ap.readJsonFile(args[0]);
             Console.WriteLine("Finished!");
 
@@ -39,8 +40,6 @@ namespace RBAC
             ap.checkAccess(vaultList, azureClient);
             List<KeyVaultProperties> vaultsRetrieved = ap.getVaults(vaultList, kvmClient, graphClient);
             Console.WriteLine("Finished!");
-
-            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(testing);
 
             Console.WriteLine("Reading yaml file...");
             List<KeyVaultProperties> yamlVaults = up.deserializeYaml(args[1]);

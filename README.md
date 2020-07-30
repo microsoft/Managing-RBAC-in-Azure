@@ -23,8 +23,7 @@ This project uses the following NuGet packages:
 
 ## Creating an AAD Application
 This project uses an Azure Active Directory Application (AAD) to retrieve the KeyVaults. 
-1. Create your AAD Application by navigating to the **App registrations** tab within your Azure Active Directory and clicking **New registration**. Fill in 
-the necessary information, and click **Register**. 
+1. Create your AAD Application by navigating to the **App registrations** tab within your Azure Active Directory and clicking **New registration**. Fill in the necessary information, and click **Register**. 
 2. Click on the newly-created application. Take note of the Application (client) Id. 
 3. Navigate to the **Certificates & secrets** tab and click **New client secret**. Fill in the necessary information, and click **Add**. 
 Take note of the ClientKey value. 
@@ -43,15 +42,9 @@ the **Contributor** role in each KeyVault you want to access.
 
 For more information on RBAC in Azure, [click here.](https://docs.microsoft.com/en-us/azure/key-vault/general/overview-security)
 
-## Storing the Secrets in a KeyVault 
-Follow [these steps](https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal) to create an Azure KeyVault and add three secrets 
-for the AAD Application ClientId, ClientKey, and your AAD tenantId. The tenantId can be found in the **Overview** tab within Azure Active Directory. 
-
 ## Creating the MasterConfig.json File 
 This project requires a custom **MasterConfig.json** file upload. 
 Refer to the [MasterConfigExample.json file](Config/MasterConfigExample.json) for formatting and inputs.
-
-Note that **all** of the fields within **AadAppKeyDetails** are required, but not all fields are required within **Resources** for each Resource object.
 
 There are 3 ways to obtain a list of KeyVaults: 
 1. Provide only the SubscriptionId, which gets all of the KeyVaults in the subscription.
@@ -63,12 +56,20 @@ Note that you can add multiple ResourceGroup names per SubscriptionId and can sp
 This phase reads in a **MasterConfig.json** file, retrieves the specified KeyVaults and their access policies, and writes the results to **YamlOutput.yml**.
 
 ## Running AccessPoliciesToYaml
-1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. 
-2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **AccessPoliciesToYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the Log.log file, followed by a space, and the file path of log4net.config.
 
-***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and Log.log is written to the Config folder.
+### Visual Studio
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **AccessPoliciesToYaml** and select **Properties**. Now click on the **Debug** tab.
+3. Within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, and the path of the directory of which you want to write YamlOutput.yml and Log.log.
 
-3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config". In this example, MasterConfig.json is located in the Config folder, and YamlOutput.yml and Log.log are written to the Config folder.
+
+4. Within **Environment variables**, define 4 variables:
+	1. APP_NAME - this is the DisplayName of your AAD Application
+	2. AZURE_CLIENT_ID - this is the Application (client) Id of your AAD Application
+	3. AZURE_CLIENT_SECRET - this is the ClientKey of your AAD Application
+	4. AZURE_TENANT_ID - this is the tenantId of your associated Tenant
+5. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
 **Log.log** contains timestamps and full debugging information.
@@ -119,12 +120,12 @@ To ease the usability aspect of the automation, we have made shorthands, or comm
 - **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
    - Note that a space must be added after the shorthand keyword.
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-- All of the shorthands are defined in **AccessPoliciesToYaml/Constants.cs** and can be modified
+- All of the shorthands are defined in **UpdatePoliciesFromYaml/Constants.cs** and can be modified
 
 ## Design Considerations
 
 ### Global Constants
-In **AccessPoliciesToYaml/Constants.cs**, we have defined:
+In **UpdatePoliciesFromYaml/Constants.cs**, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
   - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users 
@@ -135,16 +136,24 @@ In **AccessPoliciesToYaml/Constants.cs**, we have defined:
 
 All of these constants can be modified should they need to change.
 
-### DeletePolicies.yml
-A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
+### DeletedPolicies.yml
+A **DeletedPolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
 
 ## Running UpdatePoliciesFromYaml
+
+### Visual Studio
 1. Open the generated **YamlOutput.yml** file from Phase 1 and make any desired changes to the access policies. Once your changes are made, save the file.
-2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **UpdatePoliciesFromYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the DeletedPolicies.yml and the Log.log files, followed by a space, and the file path of log4net.config.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **UpdatePoliciesFromYaml** and select **Properties**. Now click on the **Debug** tab.
+3. Within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the DeletedPolicies.yml and the Log.log files, followed by a space, and the file path of log4net.config.
 
 ***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and DeletedPolicies.yml and Log.log are written to the Config folder.
 
-3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+4. Within **Environment variables**, define 4 variables:
+	1. APP_NAME - this is the DisplayName of your AAD Application
+	2. AZURE_CLIENT_ID - this is the Application (client) Id of your AAD Application
+	3. AZURE_CLIENT_SECRET - this is the ClientKey of your AAD Application
+	4. AZURE_TENANT_ID - this is the tenantId of your associated Tenant
+5. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
 **Log.log** contains timestamps and full debugging information.
@@ -159,6 +168,8 @@ We have defined 6 listing options for your benefit:
 6. **List Top 10 Security Principals by Permission Access**: lists the 10 security principals with the highest number of granted permissions or the highest number of access policies in a specified scope
 
 ## Running Managing-RBAC-in-Azure.ListingOptions
+
+### Visual Studio
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **Managing-RBAC-in-Azure.ListingOptions** from the dropdown. Click **OK**. Your project is now ready to run.
 
@@ -166,6 +177,8 @@ We have defined 6 listing options for your benefit:
 We have provided a series of automated test cases to verify your inputs.
 
 ## Running Managing-RBAC-in-Azure.Tests
+
+### Visual Studio
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.Test** project and select **Run Tests**.
 
