@@ -43,15 +43,9 @@ the **Contributor** role in each KeyVault you want to access.
 
 For more information on RBAC in Azure, [click here.](https://docs.microsoft.com/en-us/azure/key-vault/general/overview-security)
 
-## Storing the Secrets in a KeyVault 
-Follow [these steps](https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal) to create an Azure KeyVault and add three secrets 
-for the AAD Application ClientId, ClientKey, and your AAD tenantId. The tenantId can be found in the **Overview** tab within Azure Active Directory. 
-
 ## Creating the MasterConfig.json File 
 This project requires a custom **MasterConfig.json** file upload. 
 Refer to the [MasterConfigExample.json file](Config/MasterConfigExample.json) for formatting and inputs.
-
-Note that **all** of the fields within **AadAppKeyDetails** are required, but not all fields are required within **Resources** for each Resource object.
 
 There are 3 ways to obtain a list of KeyVaults: 
 1. Provide only the SubscriptionId, which gets all of the KeyVaults in the subscription.
@@ -63,12 +57,20 @@ Note that you can add multiple ResourceGroup names per SubscriptionId and can sp
 This phase reads in a **MasterConfig.json** file, retrieves the specified KeyVaults and their access policies, and writes the results to **YamlOutput.yml**.
 
 ## Running AccessPoliciesToYaml
-1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio. 
-2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **AccessPoliciesToYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the Log.log file, followed by a space, and the file path of log4net.config.
 
-***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and Log.log is written to the Config folder.
+### Visual Studio
+1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **AccessPoliciesToYaml** and select **Properties**. Now click on the **Debug** tab.
+3. Within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, and the path of the directory of which you want to write YamlOutput.yml and Log.log.
 
-3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config". In this example, MasterConfig.json is located in the Config folder, and YamlOutput.yml and Log.log are written to the Config folder.
+
+4. Within **Environment variables**, define 4 variables:
+	1. APP_NAME - this is the DisplayName of your AAD Application
+	2. AZURE_CLIENT_ID - this is the Application (client) Id of your AAD Application
+	3. AZURE_CLIENT_SECRET - this is the ClientKey of your AAD Application
+	4. AZURE_TENANT_ID - this is the tenantId of your associated Tenant
+5. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **AccessPoliciesToYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
 **Log.log** contains timestamps and full debugging information.
@@ -139,12 +141,20 @@ All of these constants can be modified should they need to change.
 A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
 
 ## Running UpdatePoliciesFromYaml
+
+### Visual Studio
 1. Open the generated **YamlOutput.yml** file from Phase 1 and make any desired changes to the access policies. Once your changes are made, save the file.
-2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **UpdatePoliciesFromYaml** and select **Properties**. Now click on the **Debug** tab and within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the DeletedPolicies.yml and the Log.log files, followed by a space, and the file path of log4net.config.
+2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on **UpdatePoliciesFromYaml** and select **Properties**. Now click on the **Debug** tab.
+3. Within **Application arguments**, define the file path of your local MasterConfig.json, followed by a space, the file path of your local YamlOutput.yml, followed by a space, and the path of the directory of which you want to write the DeletedPolicies.yml and the Log.log files, followed by a space, and the file path of log4net.config.
 
 ***Example arguments:*** "../../../../Config/MasterConfig.json ../../../../Config/YamlOutput.yml ../../../../Config ../../../../AccessPoliciesToYaml/log4net.config". In this example, MasterConfig.json and YamlOutput.yml are located in the Config folder and DeletedPolicies.yml and Log.log are written to the Config folder.
 
-3. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
+4. Within **Environment variables**, define 4 variables:
+	1. APP_NAME - this is the DisplayName of your AAD Application
+	2. AZURE_CLIENT_ID - this is the Application (client) Id of your AAD Application
+	3. AZURE_CLIENT_SECRET - this is the ClientKey of your AAD Application
+	4. AZURE_TENANT_ID - this is the tenantId of your associated Tenant
+5. Navigate back to the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **UpdatePoliciesFromYaml** from the dropdown. Click **OK**. Your project is now ready to run.
 
 ## Debugging
 **Log.log** contains timestamps and full debugging information.
