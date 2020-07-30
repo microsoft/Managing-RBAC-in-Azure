@@ -19,6 +19,7 @@ using System.IO;
 using log4net;
 using log4net.Config;
 using System.Reflection;
+using Constants = RBAC.AccessPoliciesToYamlConstants;
 
 namespace RBAC
 {
@@ -46,23 +47,19 @@ namespace RBAC
             {
                 if (args.Length == 0 || args == null)
                 {
-                    throw new Exception("Missing 4 input files.");
+                    throw new Exception("Missing 3 input files.");
                 }
                 if (args.Length == 1)
                 {
-                    throw new Exception("Missing 3 input files.");
+                    throw new Exception("Missing 2 input files.");
                 }
                 if (args.Length == 2)
                 {
-                    throw new Exception("Missing 2 input files.");
-                }
-                if (args.Length == 3)
-                {
                     throw new Exception("Missing 1 input file.");
                 }
-                if (args.Length > 4)
+                if (args.Length > 3)
                 {
-                    throw new Exception("Too many input files. Maximum needed is 4.");
+                    throw new Exception("Too many input files. Maximum needed is 3.");
                 }
                 if (System.IO.Path.GetExtension(args[0]) != ".json")
                 {
@@ -76,14 +73,10 @@ namespace RBAC
                 {
                     throw new Exception("The 3rd argument is not a valid path.");
                 }
-                if (System.IO.Path.GetExtension(args[3]) != ".config")
-                {
-                    throw new Exception("The 4th argument is not a .config file.");
-                }
 
                 log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                 var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
-                XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
+                XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
 
                 log.Info("Program started!");
                 log.Info("File extensions verified!");
@@ -91,7 +84,8 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
-                log.Debug("Please open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. 4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log, followed by a space, and the file path of log4net.config.");
+                log.Debug("If you're running using Visual Studio, please open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
+                    "\n3 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, and the path of the directory of which you want to write Log.log.");
                 Exit(e.Message);
             }
         }
@@ -326,13 +320,17 @@ namespace RBAC
                 log.Info("AAD application name retrieved!");
 
                 // Creates the SecretClient and grabs secrets
-                string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
-                string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
-                SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+                //string keyVaultName = vaultList.AadAppKeyDetails.VaultName;
+                //string keyVaultUri = Constants.HTTP + keyVaultName + Constants.AZURE_URL;
+                //SecretClient secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
 
-                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientIdSecretName, "clientId");
-                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
-                getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
+                //getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientIdSecretName, "clientId");
+                //getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.ClientKeySecretName, "clientKey");
+                //getSecret(secretClient, secrets, vaultList.AadAppKeyDetails.TenantIdSecretName, "tenantId");
+
+                secrets["clientId"] = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
+                secrets["clientKey"] = Environment.GetEnvironmentVariable("AZURE_CLIENT_SECRET");
+                secrets["tenantId"] = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
 
             }
             catch (Exception e)

@@ -1,5 +1,4 @@
-﻿using log4net.Util;
-using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
@@ -7,6 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using YamlDotNet.Serialization;
+using log4net;
+using log4net.Config;
+using Constants = RBAC.UpdatePoliciesFromYamlConstants;
+using System.Reflection;
+using System.IO;
 
 namespace RBAC
 {
@@ -20,6 +24,67 @@ namespace RBAC
         {
             Testing = testing;
             Changed = new List<KeyVaultProperties>();
+        }
+
+        /// <summary>
+        /// This method verifies that the file arguments are of the correct type.
+        /// </summary>
+        /// <param name="args">The string array of program arguments</param>
+        public void verifyFileExtensions(string[] args)
+        {
+            try
+            {
+                if (args.Length == 0 || args == null)
+                {
+                    throw new Exception("Missing 4 input files.");
+                }
+                if (args.Length == 1)
+                {
+                    throw new Exception("Missing 3 input files.");
+                }
+                if (args.Length == 2)
+                {
+                    throw new Exception("Missing 2 input files.");
+                }
+                if (args.Length == 3)
+                {
+                    throw new Exception("Missing 1 input file.");
+                }
+                if (args.Length > 4)
+                {
+                    throw new Exception("Too many input files. Maximum needed is 4.");
+                }
+                if (System.IO.Path.GetExtension(args[0]) != ".json")
+                {
+                    throw new Exception("The 1st argument is not a .json file.");
+                }
+                if (System.IO.Path.GetExtension(args[1]) != ".yml")
+                {
+                    throw new Exception("The 2nd argument is not a .yml file.");
+                }
+                if (!System.IO.Directory.Exists(args[2]))
+                {
+                    throw new Exception("The 3rd argument is not a valid path.");
+                }
+                if (System.IO.Path.GetExtension(args[3]) != ".config")
+                {
+                    throw new Exception("The 4th argument is not a .config file.");
+                }
+
+                log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
+                var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                XmlConfigurator.Configure(logRepo, new FileInfo(args[3]));
+
+                log.Info("Program started!");
+                log.Info("File extensions verified!");
+            }
+            catch (Exception e)
+            {
+                log.Error("InvalidArgs", e);
+                log.Debug("If you're running using Visual Studio, open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
+                    "\n4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log, followed by a space, and the file path of log4net.config.");
+                Exit(e.Message);
+            }
         }
 
         /// <summary>
