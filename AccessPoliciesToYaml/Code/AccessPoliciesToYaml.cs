@@ -91,8 +91,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
-                log.Debug("To define the location of your input MasterConfig.json file and the output YamlOutput.yml file, edit the Project Properties. " +
-                    "\n Click on the Debug tab and within Application arguments, add your file path to the json file, enter a space, and add your file path to the yaml file.");
+                log.Debug("Please open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. 4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log, followed by a space, and the file path of log4net.config.");
                 Exit(e.Message);
             }
         }
@@ -119,7 +118,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("DeserializationFail", e);
-                log.Debug("Refer to https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/Config/MasterConfigExample.jsonfor for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
+                log.Debug("Refer to https://github.com/microsoft/Managing-RBAC-in-Azure/blob/master/Config/MasterConfigExample.json for questions on formatting and inputs. Ensure that you have all the required fields with valid values, then try again.");
                 Exit(e.Message);
                 return null;
             }
@@ -225,7 +224,7 @@ namespace RBAC
         /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
         public Dictionary<string, string> getSecrets(JsonInput vaultList)
         {
-            log.Info("Getting Secrets...");
+            log.Info("Retrieving secrets...");
 
             Dictionary<string, string> secrets = new Dictionary<string, string>();
             try
@@ -263,7 +262,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error($"AppName was NOT retrieved.", e);
+                log.Error($"AAD application name was not retrieved.", e);
                 Exit(e.Message);
             }
             log.Info("Secrets retrieved!");
@@ -289,7 +288,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("KVMClientFail", e);
-                log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultMananagentClient class");
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.keyvault.keyvaultmanagementclient?view=azure-dotnet for information on KeyVaultManagementClient class.");
                 Exit(e.Message);
                 return null;
             }
@@ -326,7 +325,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("GraphClientFail", e);
-                log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a graph client");
+                log.Debug($"Refer to https://docs.microsoft.com/en-us/graph/sdks/create-client?tabs=CS for information on creating a GraphServiceClient.");
                 Exit(e.Message);
                 return null;
             }

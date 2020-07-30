@@ -70,10 +70,12 @@ namespace RBAC
             {
                 new Testing <string[]> (new string[] {}, "Missing 4 input files."),
                 new Testing <string[]> (new string[] { "file.json" }, "Missing 3 input files."),
-                new Testing <string[]> (new string[] { "file.json", "file2.yml" }, "Missing 2 input files."),
-                new Testing <string[]> (new string[] { "file1.json", "file2.json", "yaml.json", "yaml2.json", "yaml3.yml" }, "Too many input files. Maximum needed is 4."),
-                new Testing <string[]> (new string[] { "file.jsn", "file.yml",  "yaml.json", "yaml2.json" }, "The 1st argument is not a .json file."),
-                new Testing <string[]> (new string[] { "file.json", "file.yaml", "yaml.json", "yaml2.json" }, "The 2nd argument is not a .yml file.")
+                new Testing <string[]> (new string[] { "file.json", "file.yml" }, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file1.json", "file2.json", "../../../output", "file3.json", "file4.json" }, "Too many input files. Maximum needed is 4."),
+                new Testing <string[]> (new string[] { "file.jsn", "file.yml", "../../../output", "log4net.config" }, "The 1st argument is not a .json file."),
+                new Testing <string[]> (new string[] { "file.json", "file.yaml", "../../../output", "log4net.config" }, "The 2nd argument is not a .yml file."),
+                new Testing <string[]> (new string[] { "file.json", "file.yml", "../../../outp1ut", "log4net.config" }, "The 3rd argument is not a valid path."),
+                new Testing <string[]> (new string[] { "file.json", "file.yml", "../../../output", "log4net.json" }, "The 4th argument is not a .config file.")
             };      
             foreach (Testing<string[]> testCase in testCasesInvalid)
             {
