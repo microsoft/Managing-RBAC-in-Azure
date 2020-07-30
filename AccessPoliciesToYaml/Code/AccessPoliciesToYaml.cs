@@ -76,7 +76,7 @@ namespace RBAC
             catch (Exception e)
             {
                 log.Error("InvalidArgs", e);
-                log.Debug("If you're running using Visual Studio, please open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
+                log.Debug("If you're running using Visual Studio, open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
                     "\n2 arguments are required: the file path to your local MasterConfig.json file, followed by a space, and the path of the directory of which you want to write Log.log.");
                 Exit(e.Message);
             }

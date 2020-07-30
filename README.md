@@ -23,8 +23,7 @@ This project uses the following NuGet packages:
 
 ## Creating an AAD Application
 This project uses an Azure Active Directory Application (AAD) to retrieve the KeyVaults. 
-1. Create your AAD Application by navigating to the **App registrations** tab within your Azure Active Directory and clicking **New registration**. Fill in 
-the necessary information, and click **Register**. 
+1. Create your AAD Application by navigating to the **App registrations** tab within your Azure Active Directory and clicking **New registration**. Fill in the necessary information, and click **Register**. 
 2. Click on the newly-created application. Take note of the Application (client) Id. 
 3. Navigate to the **Certificates & secrets** tab and click **New client secret**. Fill in the necessary information, and click **Add**. 
 Take note of the ClientKey value. 
@@ -121,12 +120,12 @@ To ease the usability aspect of the automation, we have made shorthands, or comm
 - **<Shorthand> - <permission(s)>** commands are also available to remove a list of permissions, separated by commas, from the shorthand i.e. **Read - list**
    - Note that a space must be added after the shorthand keyword.
 - The **All** shorthand can be used in conjunction with other shorthands i.e. **All - read**
-- All of the shorthands are defined in **AccessPoliciesToYaml/Constants.cs** and can be modified
+- All of the shorthands are defined in **UpdatePoliciesFromYaml/Constants.cs** and can be modified
 
 ## Design Considerations
 
 ### Global Constants
-In **AccessPoliciesToYaml/Constants.cs**, we have defined:
+In **UpdatePoliciesFromYaml/Constants.cs**, we have defined:
 - various URL addresses utilized to create the KeyVaultManagement and Graph clients
 - **MIN_NUM_USERS** to ensure that all KeyVaults contain access policies for at least this number of User
   - This number is currently set to 2, meaning that each KeyVault must define access policies for at least 2 users 
@@ -137,8 +136,8 @@ In **AccessPoliciesToYaml/Constants.cs**, we have defined:
 
 All of these constants can be modified should they need to change.
 
-### DeletePolicies.yml
-A **DeletePolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
+### DeletedPolicies.yml
+A **DeletedPolicies.yml** file will be generated to display the access policies that were deleted upon each run of **UpdatePoliciesFromYaml**. This removes the need to re-run **AccessPoliciesToYaml** with every run of **UpdatePoliciesFromYaml** as it reflects the changes made in the portal since the most recent **AccessPoliciesToYaml** run. 
 
 ## Running UpdatePoliciesFromYaml
 
@@ -169,6 +168,8 @@ We have defined 6 listing options for your benefit:
 6. **List Top 10 Security Principals by Permission Access**: lists the 10 security principals with the highest number of granted permissions or the highest number of access policies in a specified scope
 
 ## Running Managing-RBAC-in-Azure.ListingOptions
+
+### Visual Studio
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.sln** file, select **Properties**, select **Single Startup Object**, and choose **Managing-RBAC-in-Azure.ListingOptions** from the dropdown. Click **OK**. Your project is now ready to run.
 
@@ -176,6 +177,8 @@ We have defined 6 listing options for your benefit:
 We have provided a series of automated test cases to verify your inputs.
 
 ## Running Managing-RBAC-in-Azure.Tests
+
+### Visual Studio
 1. Open the **Managing-RBAC-in-Azure.sln** file in Visual Studio.
 2. Hit CTRL-ALT-L to open the Solution Explorer. Right-click on the **Managing-RBAC-in-Azure.Test** project and select **Run Tests**.
 

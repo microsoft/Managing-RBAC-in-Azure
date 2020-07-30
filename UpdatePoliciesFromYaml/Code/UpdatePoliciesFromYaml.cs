@@ -82,7 +82,7 @@ namespace RBAC
             {
                 log.Error("InvalidArgs", e);
                 log.Debug("If you're running using Visual Studio, open 'Project Properties', click on the 'Debug' tab and verify your arguments within 'Application arguments'. Otherwise, be sure to specify your arguments on the command line." +
-                    "\n4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log, followed by a space, and the file path of log4net.config.");
+                    "\n4 arguments are required: the file path to your local MasterConfig.json file, followed by a space, the file path of your local YamlOutput.yml file, followed by a space, the path of the directory of which you want to write Log.log and DeletedPolicies.yml, followed by a space, and the file path of log4net.config.");
                 Exit(e.Message);
             }
         }
