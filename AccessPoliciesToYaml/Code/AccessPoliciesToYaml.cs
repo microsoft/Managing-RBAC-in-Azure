@@ -76,7 +76,7 @@ namespace RBAC
 
                 log4net.GlobalContext.Properties["Log"] = $"{args[2]}/Log";
                 var logRepo = LogManager.GetRepository(Assembly.GetEntryAssembly());
-                XmlConfigurator.Configure(logRepo, new FileInfo("../../../../AccessPoliciesToYaml/log4net.config"));
+                XmlConfigurator.Configure(logRepo, new FileInfo(Path.GetFullPath("log4net.config")));
 
                 log.Info("Program started!");
                 log.Info("File extensions verified!");
