@@ -35,6 +35,31 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
+        /// This method verifies that valid file extensions work.
+        /// </summary>
+        public void TestVerifyFileExtensionsValid()
+        {
+            UpdatePoliciesFromYaml up = new UpdatePoliciesFromYaml(true);
+
+            List<Testing<string[]>> testCasesValid = new List<Testing<string[]>>()
+            {
+                new Testing<string[]> (new string[] { "file.json", "file.yml", "../../../output", "log4net.config" })
+            };
+            foreach (Testing<string[]> testCase in testCasesValid)
+            {
+                try
+                {
+                    up.verifyFileExtensions(testCase.testObject);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
+            }
+        }
+
+        [TestMethod]
+        /// <summary>
         /// This method verifies that invalid file extensions are handled.
         /// </summary>
         public void TestVerifyFileExtensionsInvalid()
@@ -46,6 +71,7 @@ namespace RBAC
                 new Testing <string[]> (new string[] {}, "Missing 4 input files."),
                 new Testing <string[]> (new string[] { "file.json" }, "Missing 3 input files."),
                 new Testing <string[]> (new string[] { "file.json", "file.yml" }, "Missing 2 input files."),
+                new Testing <string[]> (new string[] { "file.json", "file.yml", "../../../output" }, "Missing 1 input file."),
                 new Testing <string[]> (new string[] { "file1.json", "file2.json", "../../../output", "file3.json", "file4.json" }, "Too many input files. Maximum needed is 4."),
                 new Testing <string[]> (new string[] { "file.jsn", "file.yml", "../../../output", "log4net.config" }, "The 1st argument is not a .json file."),
                 new Testing <string[]> (new string[] { "file.json", "file.yaml", "../../../output", "log4net.config" }, "The 2nd argument is not a .yml file."),
