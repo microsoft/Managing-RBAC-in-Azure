@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Management.KeyVault;
+using Microsoft.Graph;
+using static Microsoft.Azure.Management.Fluent.Azure;
 
 namespace RBAC
 {
@@ -27,13 +30,13 @@ namespace RBAC
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Grabbing secrets...");
-            var secrets = ap.getSecrets(vaultList);
+            Dictionary<string,string> secrets = ap.getSecrets();
             Console.WriteLine("Finished!");
 
             Console.WriteLine("Creating KeyVaultManagementClient, GraphServiceClient, and AzureClient...");
-            var kvmClient = ap.createKVMClient(secrets);
-            var graphClient = ap.createGraphClient(secrets);
-            var azureClient = ap.createAzureClient(secrets);
+            KeyVaultManagementClient kvmClient = ap.createKVMClient(secrets);
+            GraphServiceClient graphClient = ap.createGraphClient(secrets);
+            IAuthenticated azureClient = ap.createAzureClient(secrets);
             Console.WriteLine("Finished!"); ;
 
             Console.WriteLine("Checking access and retrieving key vaults...");

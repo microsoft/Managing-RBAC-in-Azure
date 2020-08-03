@@ -51,7 +51,7 @@ namespace RBAC
     }
 
     /// <summary>
-    /// This class stores the details on the ResourceGroups specified in the MasterConfig.json file.
+    /// This class stores the details of the ResourceGroups specified in the MasterConfig.json file.
     /// </summary>
     /// <remarks>If the ResourceGroups field is not null, the MasterConfig.json file must include a ResourceGroup Name, but specific KeyVault names are not required.</remarks>
     public class ResourceGroup

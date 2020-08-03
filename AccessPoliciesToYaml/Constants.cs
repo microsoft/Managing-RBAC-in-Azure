@@ -1,12 +1,9 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
-using System.Linq;
-using System;
-[assembly: log4net.Config.XmlConfigurator]
+﻿[assembly: log4net.Config.XmlConfigurator]
 
 namespace RBAC
 {
     /// <summary>
-    /// This class stores the global constants.
+    /// This class stores the global constants for phase 1.
     /// </summary>
     public static class AccessPoliciesToYamlConstants
     {
