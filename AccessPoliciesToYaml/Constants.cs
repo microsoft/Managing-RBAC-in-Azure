@@ -1,4 +1,6 @@
-﻿[assembly: log4net.Config.XmlConfigurator]
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+[assembly: log4net.Config.XmlConfigurator]
 
 namespace RBAC
 {

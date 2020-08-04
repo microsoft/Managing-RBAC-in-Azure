@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;

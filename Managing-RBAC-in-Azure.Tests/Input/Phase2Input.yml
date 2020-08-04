@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
 - VaultName: RG1Test1
   ResourceGroupName: RG1
   SubscriptionId: 00000000-0000-0000-0000-000000000000

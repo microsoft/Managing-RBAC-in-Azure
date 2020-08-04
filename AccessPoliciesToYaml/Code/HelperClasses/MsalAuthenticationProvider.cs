@@ -1,4 +1,6 @@
-﻿using Microsoft.Graph;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+using Microsoft.Graph;
 using Microsoft.Identity.Client;
 using System.Net.Http;
 using System.Net.Http.Headers;
