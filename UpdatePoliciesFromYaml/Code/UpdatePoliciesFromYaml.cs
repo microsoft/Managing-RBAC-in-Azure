@@ -496,7 +496,7 @@ namespace RBAC
                 }
                 log.Info("Updates finished!");
             }
-            return changed.Item1;
+            return (changed.Item1);
         }
 
         /// <summary>

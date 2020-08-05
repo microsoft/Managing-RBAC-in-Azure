@@ -8,7 +8,7 @@ using System;
 namespace RBAC
 {
     /// <summary>
-    /// This class stores the global constants for phase 2.
+    /// This class stores the global constants.
     /// </summary>
     public static class UpdatePoliciesFromYamlConstants
     {

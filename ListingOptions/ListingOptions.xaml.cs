@@ -1471,7 +1471,7 @@ namespace RBAC
             foreach(var item in items)
             {
                 CheckBox checkBox = item as CheckBox;
-                if((bool)checkBox.IsChecked)
+                if((bool)(checkBox.IsChecked))
                 {
                     selected.Add((string)checkBox.Content);
                 }
