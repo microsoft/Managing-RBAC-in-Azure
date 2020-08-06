@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using System;
@@ -127,7 +129,7 @@ namespace RBAC
 
         [TestMethod]
         /// <summary>
-        /// This method verifies that reading in invalid Json fields are handled (checks if AppKeyDetails or Resources is null).
+        /// This method verifies that reading in invalid Json fields are handled (checks if Resources is null).
         /// </summary>
         public void TestCheckJsonFieldsInvalid()
         {
@@ -137,7 +139,7 @@ namespace RBAC
 
             List<Testing<JsonInput>> testCasesJsonFieldsInvalid = new List<Testing<JsonInput>>()
             {
-                new Testing <JsonInput> (createExpectedJson( null),
+                new Testing <JsonInput> (createExpectedJson(null),
                 "Missing Resources in Json. Invalid fields were defined; Only valid field is 'Resources'.")
             };
             foreach (Testing<JsonInput> testCase in testCasesJsonFieldsInvalid)
@@ -253,13 +255,7 @@ namespace RBAC
         /// <summary>
         /// This method creates an expected json that is used for testing purposes.
         /// </summary>
-        /// <param name="aadAppKeyDetails"> An AadAppKey </param>
         /// <param name="resources"> List of Resources </param>
-        /// <param name="aadAppName"> aadAppName </param>
-        /// <param name="vaultName"> A keyVault name </param>
-        /// <param name="clientIdSecretName"> ClientIdSecretName </param>
-        /// <param name="clientKeySecretName"> ClientKeySecretName </param>
-        /// <param name="tenantIdSecretName"> TenantIdSecretName </param>
         /// <returns>The expected deserialized JsonInput</returns>
         private JsonInput createExpectedJson( List<Resource> resources)
         {

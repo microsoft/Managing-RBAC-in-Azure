@@ -1,9 +1,9 @@
+// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.Identity.Client;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
@@ -38,7 +38,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the file arguments are of the correct type.
+        /// This method verifies that the file arguments are of the correct number, type, and path.
         /// </summary>
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
@@ -202,11 +202,10 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method retrieves the AadAppSecrets using a SecretClient and returns a Dictionary of the secrets.
+        /// This method retrieves the AadAppSecrets using environment variables and returns a dictionary of the secrets.
         /// </summary>
-        /// <param name="vaultList">The KeyVault information obtaind from MasterConfig.json file</param>
-        /// <returns>The dictionary of secrets obtained from the SecretClient</returns>
-        public Dictionary<string, string> getSecrets(JsonInput vaultList)
+        /// <returns>The dictionary of secrets obtained from environment variables</returns>
+        public Dictionary<string, string> getSecrets()
         {
             log.Info("Retrieving secrets...");
 
@@ -231,7 +230,6 @@ namespace RBAC
                     throw new Exception("'AZURE_CLIENT_SECRET' environmental variable not defined.");
                 }
                 
-
                 var ten = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
                 if (ten == null)
                 {
@@ -245,7 +243,7 @@ namespace RBAC
             }
             catch (Exception e)
             {
-                log.Error($"AAD application name was not retrieved.", e);
+                log.Error($"AAD application name, clientId, clientKey, or tenantId was not retrieved.", e);
                 Exit(e.Message);
             }
             log.Info("Secrets retrieved!");
@@ -255,16 +253,16 @@ namespace RBAC
         /// <summary>
         /// This method creates and returns a KeyVaulManagementClient.
         /// </summary>
-        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="secrets">The dictionary of information obtained from environment variables</param>
         /// <returns>The KeyVaultManagementClient created using the secret information</returns>
-        public Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
+        public KeyVaultManagementClient createKVMClient(Dictionary<string, string> secrets)
         {
             log.Info("Creating KVM Client...");
             try
             {
                 AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(secrets["clientId"],
                     secrets["clientKey"], secrets["tenantId"], AzureEnvironment.AzureGlobalCloud);
-                var kvmClient = new Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient(credentials);
+                var kvmClient = new KeyVaultManagementClient(credentials);
                 log.Info("KVM Client created!");
                 return kvmClient;
             }
@@ -280,7 +278,7 @@ namespace RBAC
         /// <summary>
         /// This method creates and returns a GraphServiceClient.
         /// </summary>
-        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="secrets">The dictionary of information obtained from environment variables</param>
         /// <returns>The GraphServiceClient created using the secret information</returns>
         public GraphServiceClient createGraphClient(Dictionary<string, string> secrets)
         {
@@ -317,7 +315,7 @@ namespace RBAC
         /// <summary>
         /// This method creates and returns an azure client.
         /// </summary>
-        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="secrets">The dictionary of information obtained from environment variables</param>
         /// <returns>The azure client created using the secret information</returns>
         public Microsoft.Azure.Management.Fluent.Azure.IAuthenticated createAzureClient(Dictionary<string, string> secrets)
         {
@@ -421,14 +419,13 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method retrieves each of the KeyVaults specified in the vaultList.
+        /// This method retrieves each of the KeyVaults specified in "vaultList".
         /// </summary>
         /// <param name="vaultList">The data obtained from deserializing json file</param>
         /// <param name="kvmClient">The KeyVaultManagementClient containing Vaults</param>
         /// <param name="graphClient">The Microsoft GraphServiceClient for obtaining display names</param>
         /// <returns>The list of KeyVaultProperties containing the properties of each KeyVault</returns>
-        public List<KeyVaultProperties> getVaults(JsonInput vaultList,
-            Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
+        public List<KeyVaultProperties> getVaults(JsonInput vaultList, KeyVaultManagementClient kvmClient, GraphServiceClient graphClient)
         {
             log.Info("Getting Vaults...");
             List<Vault> vaultsRetrieved = new List<Vault>();
@@ -503,8 +500,7 @@ namespace RBAC
         /// <param name="vaultsRetrieved">The list of Vault objects to add to</param>
         /// <param name="resourceGroup">The ResourceGroup name(if applicable). Default is null.</param>
         /// <returns>The updated vaultsRetrieved list</returns>
-        public List<Vault> getVaultsAllPages(Microsoft.Azure.Management.KeyVault.KeyVaultManagementClient kvmClient,
-            List<Vault> vaultsRetrieved, string resourceGroup = "")
+        public List<Vault> getVaultsAllPages(KeyVaultManagementClient kvmClient, List<Vault> vaultsRetrieved, string resourceGroup = "")
         {
             IPage<Vault> vaultsCurPg = null;
             // Retrieves the first page of KeyVaults at the Subscription scope

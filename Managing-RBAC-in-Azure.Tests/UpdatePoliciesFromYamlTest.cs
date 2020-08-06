@@ -1,8 +1,9 @@
+// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using YamlDotNet.Serialization;
 using Constants = RBAC.UpdatePoliciesFromYamlConstants;
 
 namespace RBAC

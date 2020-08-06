@@ -1,6 +1,5 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
-using System.Linq;
-using System;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
 [assembly: log4net.Config.XmlConfigurator]
 
 namespace RBAC

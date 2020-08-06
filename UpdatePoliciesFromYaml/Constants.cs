@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Management.KeyVault.Models;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+using Microsoft.Azure.Management.KeyVault.Models;
 using System.Linq;
 using System;
 [assembly: log4net.Config.XmlConfigurator]

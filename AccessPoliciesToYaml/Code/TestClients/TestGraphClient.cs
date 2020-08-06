@@ -1,11 +1,10 @@
-﻿using Microsoft.Graph;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq.Expressions;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

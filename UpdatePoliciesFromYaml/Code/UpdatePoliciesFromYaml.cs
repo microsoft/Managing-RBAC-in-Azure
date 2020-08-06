@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Management.ContainerRegistry.Fluent;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Graph;
@@ -27,7 +29,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method verifies that the file arguments are of the correct type.
+        /// This method verifies that the file arguments are of the correct number, type, and path.
         /// </summary>
         /// <param name="args">The string array of program arguments</param>
         public void verifyFileExtensions(string[] args)
@@ -88,7 +90,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method reads in the Yaml file and stores the data in a list of KeyVaultProperties. If any of the fields are removed, an error is thrown.
+        /// This method reads in the Yaml file and stores the data in a list of "KeyVaultProperties". If any of the fields are removed, an error is thrown.
         /// </summary>
         /// <returns>The list of KeyVaultProperties if the input file has the correct formatting. Otherwise, exits the program.</returns>
         /// <param name="yamlDirectory">The directory of the yaml file</param>
@@ -437,10 +439,10 @@ namespace RBAC
         /// <summary>
         /// This method updates the access policies for each KeyVault in the yamlVaults list.
         /// </summary>
-        /// <param name="yamlVaults">The list of KeyVaultProperties obtained from the Yaml file</param>
-        /// <param name="vaultsRetrieved">The list of KeyVaultProperties obtained from the MasterConfig.json file</param>
+        /// <param name="yamlVaults">The list of "KeyVaultProperties" obtained from the Yaml file</param>
+        /// <param name="vaultsRetrieved">The list of "KeyVaultProperties" obtained from the MasterConfig.json file</param>
         /// <param name="kvmClient">The KeyManagementClient</param>
-        /// <param name="secrets">The dictionary of information obtained from SecretClient</param>
+        /// <param name="secrets">The dictionary of information obtained from environment variables</param>
         /// <param name="graphClient">The GraphServiceClient to obtain the security principal's data</param>
         public List<KeyVaultProperties> updateVaults(List<KeyVaultProperties> yamlVaults, List<KeyVaultProperties> vaultsRetrieved, KeyVaultManagementClient kvmClient,
             Dictionary<string, string> secrets, GraphServiceClient graphClient)
@@ -893,7 +895,6 @@ namespace RBAC
 
             log.Info("Shorthands translated!");
         }
-
 
         /// <summary>
         /// This method translates the specified shorthand to its respective permissions.

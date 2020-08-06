@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license-->
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -8,7 +10,6 @@ using LiveCharts.Wpf;
 using System.Windows.Media;
 using System.Windows.Data;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Constants = RBAC.UpdatePoliciesFromYamlConstants;
 
 namespace RBAC
@@ -236,7 +237,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method makes the specify scope dropdown indicate how many items were selected when the dropdown is close.
+        /// This method makes the specify scope dropdown indicate how many items were selected when the dropdown closes.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -575,7 +576,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'YAML' scope is selected.
+        /// This method generates the 'Listing Assigned Permissions by Security Principal' data grid if the 'YAML' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -646,7 +647,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'Subscription' scope is selected.
+        /// This method generates the 'Listing Assigned Permissions by Security Principal' data grid if the 'Subscription' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -761,7 +762,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'ResourceGroup' scope is selected.
+        /// This method generates the 'Listing Assigned Permissions by Security Principal' data grid if the 'ResourceGroup' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -856,7 +857,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method generates the 'Assigned Permissions by Security Principal data grid' if the 'KeyVault' scope is selected.
+        /// This method generates the 'Listing Assigned Permissions by Security Principal' data grid if the 'KeyVault' scope is selected.
         /// </summary>
         /// <param name="yaml">The deserialized list of KeyVaultProperties objects</param>
         /// <param name="type">The security principal type</param>
@@ -1467,12 +1468,12 @@ namespace RBAC
                     // Do nothing, means the last item is a CheckBox and thus no removal is necessary
                 }
             }
-            foreach (var item in items)
+            foreach(var item in items)
             {
                 CheckBox checkBox = item as CheckBox;
                 if((bool)(checkBox.IsChecked))
                 {
-                    selected.Add((string)(checkBox.Content));
+                    selected.Add((string)checkBox.Content);
                 }
             }
             return selected;
@@ -1490,7 +1491,7 @@ namespace RBAC
                 List<KeyVaultProperties> yaml = Yaml;
 
                 ComboBoxItem scope = PBPScopeDropdown.SelectedItem as ComboBoxItem;
-                if (scope == null)
+                if(scope == null)
                 {
                     PbPopup.IsOpen = false;
                     MessageBox.Show("Please select scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1498,7 +1499,7 @@ namespace RBAC
                 }
 
                 List<KeyVaultProperties> vaultsInScope = new List<KeyVaultProperties>();
-                if (scope.Content.ToString() == "YAML")
+                if(scope.Content.ToString() == "YAML")
                 {
                     vaultsInScope = yaml;
                 }
@@ -1507,18 +1508,18 @@ namespace RBAC
                     ComboBox specifyScopeDropdown = PBPSpecifyScopeDropdown as ComboBox;
                     List<string> selected = getSelectedItemsTemplate(specifyScopeDropdown);
                     selected.Remove("All");
-                    if (selected.Count() == 0)
+                    if(selected.Count() == 0)
                     {
                         PbPopup.IsOpen = false;
                         MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     ILookup<string, KeyVaultProperties> lookup;
-                    if (scope.Content.ToString() == "Subscription")
+                    if(scope.Content.ToString() == "Subscription")
                     {
                         lookup = yaml.ToLookup(kv => kv.SubscriptionId);
                     }
-                    else if (scope.Content.ToString() == "ResourceGroup")
+                    else if(scope.Content.ToString() == "ResourceGroup")
                     {
                         lookup = yaml.ToLookup(kv => kv.ResourceGroupName);
                     }
@@ -1527,7 +1528,7 @@ namespace RBAC
                         lookup = yaml.ToLookup(kv => kv.VaultName);
                     }
 
-                    foreach (var specifiedScope in selected)
+                    foreach(var specifiedScope in selected)
                     {
                         vaultsInScope.AddRange(lookup[specifiedScope].ToList());
                     }
@@ -1564,14 +1565,14 @@ namespace RBAC
                 var k = data["Keys"];
                 var s = data["Secrets"];
                 var c = data["Certificates"];
-                if (k.Count == 0)
+                if(k.Count == 0)
                 {
                     KeyTitle.Visibility = Visibility.Collapsed;
                     ListSPKey.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    foreach (var key in k.Keys)
+                    foreach(var key in k.Keys)
                     {
                         if(k[key].Count != 0)
                         {
@@ -1580,14 +1581,14 @@ namespace RBAC
                                 Permission = key,
                                 KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var p in k[key])
+                            foreach(var p in k[key])
                             {
                                 var toAdd = new KVsWithPermission
                                 {
                                     VaultName = p.Item1,
                                     SecurityPrincipals = new List<SecPrincipals>()
                                 };
-                                foreach (var sp in p.Item2)
+                                foreach(var sp in p.Item2)
                                 {
                                     toAdd.SecurityPrincipals.Add(new SecPrincipals
                                     {
@@ -1611,14 +1612,14 @@ namespace RBAC
                         }
                     }
                 }
-                if (s.Count == 0)
+                if(s.Count == 0)
                 {
                     SecTitle.Visibility = Visibility.Collapsed;
                     ListSPSecret.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    foreach (var key in s.Keys)
+                    foreach(var key in s.Keys)
                     {
                         if(s[key].Count != 0)
                         {
@@ -1627,14 +1628,14 @@ namespace RBAC
                                 Permission = key,
                                 KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var p in s[key])
+                            foreach(var p in s[key])
                             {
                                 var toAdd = new KVsWithPermission
                                 {
                                     VaultName = p.Item1,
                                     SecurityPrincipals = new List<SecPrincipals>()
                                 };
-                                foreach (var sp in p.Item2)
+                                foreach(var sp in p.Item2)
                                 {
                                     toAdd.SecurityPrincipals.Add(new SecPrincipals
                                     {
@@ -1665,7 +1666,7 @@ namespace RBAC
                 }
                 else
                 {
-                    foreach (var key in c.Keys)
+                    foreach(var key in c.Keys)
                     {
                         if(c[key].Count != 0)
                         {
@@ -1674,14 +1675,14 @@ namespace RBAC
                                 Permission = key,
                                 KeyVaults = new List<KVsWithPermission>()
                             };
-                            foreach (var p in c[key])
+                            foreach(var p in c[key])
                             {
                                 var toAdd = new KVsWithPermission
                                 {
                                     VaultName = p.Item1,
                                     SecurityPrincipals = new List<SecPrincipals>()
                                 };
-                                foreach (var sp in p.Item2)
+                                foreach(var sp in p.Item2)
                                 {
                                     toAdd.SecurityPrincipals.Add(new SecPrincipals
                                     {
@@ -1714,7 +1715,7 @@ namespace RBAC
             
         }
         /// <summary>
-        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// This Class is used to populate the datagrid for listing Security Principals by permission.
         /// It stores a Permission and a list of KeyVaults with access policies containing the permission.
         /// </summary>
         internal class ListSpResults
@@ -1723,7 +1724,7 @@ namespace RBAC
             public List<KVsWithPermission> KeyVaults { get; set; }
         }
         /// <summary>
-        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// This Class is used to populate the datagrid for listing Security Principals by permission.
         /// It stores a KeyVault and a List of Security Principals with a certain permission.
         /// </summary>
         internal class KVsWithPermission
@@ -1732,7 +1733,7 @@ namespace RBAC
             public List<SecPrincipals> SecurityPrincipals { get; set; }
         }
         /// <summary>
-        /// This Class is Used to populate the datagrid for listing Security Principals by permission.
+        /// This Class is used to populate the datagrid for listing Security Principals by permission.
         /// It stores a Security Principal's type, name, and alias.
         /// </summary>
         internal class SecPrincipals
@@ -1762,7 +1763,7 @@ namespace RBAC
                 foreach(PrincipalPermissions principal in kv.AccessPolicies)
                 {
                     upInstance.translateShorthands(principal);
-                    if (keysSelected.Count != 0)
+                    if(keysSelected.Count != 0)
                     {
 
                         foreach(string key in keysSelected)
@@ -1786,7 +1787,7 @@ namespace RBAC
                     }
                     if(secretsSelected.Count() != 0)
                     {
-                        foreach (string secret in secretsSelected)
+                        foreach(string secret in secretsSelected)
                         {
                             List<PrincipalPermissions> secretPrincipals = new List<PrincipalPermissions>();
                             if(principal.PermissionsToSecrets.Contains(secret.ToLower()))
@@ -1953,12 +1954,12 @@ namespace RBAC
                 ComboBoxItem breakdownScope = BreakdownScopeDropdown.SelectedItem as ComboBoxItem;
                 string scope = breakdownScope.Content as string;
 
-                if (scope != "YAML")
+                if(scope != "YAML")
                 {
                     ComboBox scopeDropdown = SelectedScopeBreakdownDropdown as ComboBox;
                     List<string> selected = getSelectedItemsTemplate(scopeDropdown);
                     selected.Remove("All");
-                    if (selected.Count() == 0)
+                    if(selected.Count() == 0)
                     {
                         PbPopup.IsOpen = false;
                         MessageBox.Show("Please specify as least one scope prior to hitting 'Run'.", "ScopeInvalid Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -2120,10 +2121,10 @@ namespace RBAC
         private void checkForShorthands(Dictionary<string, Dictionary<string, int>> usages, PrincipalPermissions principal)
         {
             upInstance.translateShorthands(principal);
-            foreach (string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
+            foreach(string shorthand in Constants.SHORTHANDS_KEYS.Where(val => val != "all").ToArray())
             {
                 var permissions = upInstance.getShorthandPermissions(shorthand, "key");
-                if (principal.PermissionsToKeys.Intersect(permissions).Count() == permissions.Count())
+                if(principal.PermissionsToKeys.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["keyBreakdown"][shorthand];
                 }
@@ -2132,7 +2133,7 @@ namespace RBAC
             foreach(string shorthand in Constants.SHORTHANDS_SECRETS.Where(val => val != "all").ToArray())
             {
                 var permissions = upInstance.getShorthandPermissions(shorthand, "secret");
-                if (principal.PermissionsToSecrets.Intersect(permissions).Count() == permissions.Count())
+                if(principal.PermissionsToSecrets.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["secretBreakdown"][shorthand];
                 }
@@ -2141,7 +2142,7 @@ namespace RBAC
             foreach(string shorthand in Constants.SHORTHANDS_CERTIFICATES.Where(val => val != "all").ToArray())
             {
                 var permissions = upInstance.getShorthandPermissions(shorthand, "certificate");
-                if (principal.PermissionsToCertificates.Intersect(permissions).Count() == permissions.Count())
+                if(principal.PermissionsToCertificates.Intersect(permissions).Count() == permissions.Count())
                 {
                     ++usages["certificateBreakdown"][shorthand];
                 }
@@ -2268,7 +2269,7 @@ namespace RBAC
             CheckBox all = new CheckBox();
             all.Content = "All";
             MostAccessedSpecifyScopeDropdown.Items.Add(all);
-            if (choice == "KeyVault")
+            if(choice == "KeyVault")
             {
                 foreach(KeyVaultProperties kv in yaml)
                 {
@@ -2352,7 +2353,7 @@ namespace RBAC
             CheckBox all = new CheckBox();
             all.Content = "All";
             SecurityPrincipalAccessSpecifyScopeDropdown.Items.Add(all);
-            if (choice == "KeyVault")
+            if(choice == "KeyVault")
             {
                 foreach(KeyVaultProperties kv in yaml)
                 {
@@ -2401,7 +2402,7 @@ namespace RBAC
         // "Run" Buttons that Execute Code & Output ----------------------------------------------------------------------------------
 
         /// <summary>
-        /// This method displays an output when a button is clicked
+        /// This method displays an output when a button is clicked.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -2919,7 +2920,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method returns the button to its original color when a user exits or isn't hovering over the button
+        /// This method returns the button to its original color when a user exits or isn't hovering over the button.
         /// </summary>
         /// <param name="sender">Button</param>
         /// <param name="e">Mouse event</param>
@@ -2965,7 +2966,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method closes the popup for listing the top KeyVaults and closes all dropdowns
+        /// This method closes the popup for listing the top KeyVaults and closes all dropdowns.
         /// </summary>
         /// <param name="sender">CloseTopKVResults button</param>
         /// <param name="e">Event triggered from clicking button</param>
@@ -3004,7 +3005,7 @@ namespace RBAC
         }
 
         /// <summary>
-        /// This method closes the popup for listing the top Security Principals and closes all dropdowns
+        /// This method closes the popup for listing the top Security Principals and closes all dropdowns.
         /// </summary>
         /// <param name="sender">CloseTopSPResults button</param>
         /// <param name="e">Event triggered from clicking button</param>
